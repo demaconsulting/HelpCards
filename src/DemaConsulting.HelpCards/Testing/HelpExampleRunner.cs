@@ -121,6 +121,7 @@ public static class HelpExampleRunner
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
 
         var root = Path.GetFullPath(directory);
+        Directory.CreateDirectory(root);
         var written = new List<string>();
         foreach (var example in card.Examples.Where(example => example.Kind == HelpExample.SourceKind && example.FileName is not null))
         {

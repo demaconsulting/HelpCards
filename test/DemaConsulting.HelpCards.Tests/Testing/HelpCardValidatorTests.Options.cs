@@ -25,37 +25,40 @@ public partial class HelpCardValidatorTests
 
     /// <summary>
     ///     Proves that a root summary at the default limit is accepted and takes at most two lines of the topic index at
-    ///     the default width beside a command label of 32 characters.
+    ///     the default width beside the command label of the longest topic of the adopter.
     /// </summary>
     [Fact]
     public void HelpValidationOptions_RootSummaryAtDefaultLimit_FitsTwoIndexLines()
     {
         // Arrange: a root card named like the adopter's longest topic and a summary of exactly 80 characters
+        const string toolName = "reqstream";
+        const string topic = "requirements-file";
+        var label = $"{toolName} help {topic}";
         var summary = string.Join(" ", Enumerable.Repeat("abcdefg", 9)) + " abcdefgh";
         var output = new StringWriter();
         var cli = HelpCli.Create(new HelpCliOptions
         {
-            ToolName = "reqstream",
+            ToolName = toolName,
             ConfigureCatalog = (builder, culture) => builder.AddSource(HelpSource.FromFiles(
-                SourceReading.Files(("requirements-file.md", SourceReading.Card(title: "Requirements file", summary: summary))),
+                SourceReading.Files(($"{topic}.md", SourceReading.Card(title: "Requirements file", summary: summary))),
                 "test")),
             Output = output,
         });
         var source = HelpSource.FromFiles(
-            SourceReading.Files(("requirements-file.md", SourceReading.Card(title: "Requirements file", summary: summary))),
+            SourceReading.Files(($"{topic}.md", SourceReading.Card(title: "Requirements file", summary: summary))),
             "test");
 
         // Act
         cli.Run([]);
         var warnings = HelpCardValidator.Validate(source);
         var lines = output.ToString().Split('\n');
-        var first = Array.FindIndex(lines, line => line.StartsWith("reqstream help requirements-file", StringComparison.Ordinal));
+        var first = Array.FindIndex(lines, line => line.StartsWith(label, StringComparison.Ordinal));
         var entry = lines.Skip(first).TakeWhile(line => line.Length > 0).ToList();
 
         // Assert
-        Assert.Equal(80, summary.Length);
+        Assert.Equal(new HelpValidationOptions().MaxRootSummaryChars, summary.Length);
         Assert.Empty(warnings);
-        Assert.Equal(32, "reqstream help requirements-file".Length);
+        Assert.True(first >= 0);
         Assert.Equal(2, entry.Count);
         Assert.All(entry, line => Assert.True(line.Length <= 78));
     }

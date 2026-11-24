@@ -17,7 +17,8 @@ sections:
                 title: >-
                   The runner shall write every source example of a card to a folder under its file name, with LF
                   line endings, exactly one trailing line feed, UTF-8 without a byte order mark, and the folders
-                  created, let a later example with the same name overwrite an earlier one, write neither snippets
+                  created (and the folder itself, even for a card with no source example), let a later example with the
+                  same name overwrite an earlier one, write neither snippets
                   nor commands, return the names it wrote in the order of the examples, and reject a file name that
                   would leave the folder.
                 justification: |
@@ -28,6 +29,7 @@ sections:
                   - HelpExampleRunner_Materialize_SnippetAndCommand_AreNotWritten
                   - HelpExampleRunner_Materialize_SameName_LastWins
                   - HelpExampleRunner_Materialize_EscapingName_Throws
+                  - HelpExampleRunner_Materialize_CommandOnlyCard_CreatesTheFolder
 
               - id: HelpCards-Testing-HelpExampleRunner-Order
                 title: >-
@@ -43,6 +45,7 @@ sections:
                   - HelpExampleRunner_Run_Commands_RunInOrderWithParsedArguments
                   - HelpExampleRunner_Run_Catalog_UsesFreshFolderPerCardAndDeletesIt
                   - HelpExampleRunner_Run_Catalog_WithoutCommands_RunsNothing
+                  - HelpExampleRunner_Run_CommandOnlyCard_WorkingDirectoryExists
 
               - id: HelpCards-Testing-HelpExampleRunner-ExitCode
                 title: >-
@@ -65,6 +68,7 @@ sections:
                 tests:
                   - HelpExampleRunner_Run_MissingFragment_ReportsExampleOutputPerFragment
                   - HelpExampleOutcome_Equality_ComparesByValue
+                  - HelpExampleRunner_Run_NullOutput_IsTreatedAsEmpty
 
               - id: HelpCards-Testing-HelpExampleRunner-Parse
                 title: >-

@@ -256,6 +256,17 @@ public class FrontMatterDecoderTests
     }
 
     /// <summary>
+    ///     Proves that a block scalar for <c>content</c> or <c>expect</c> inside a list other than the examples is not allowed.
+    /// </summary>
+    [Fact]
+    public void FrontMatterDecoder_TryDecode_BlockScalarContentOrExpectInOtherList_Rejected()
+    {
+        // Arrange / Act / Assert
+        Reject("---\nlinks:\n  - expect: |\n      text\n---\n", RuleIds.BlockScalarNotAllowed, 3);
+        Reject("---\nlinks:\n  - content: |\n      text\n---\n", RuleIds.BlockScalarNotAllowed, 3);
+    }
+
+    /// <summary>
     ///     Proves that a block scalar is still rejected for the other keys of an example.
     /// </summary>
     [Fact]

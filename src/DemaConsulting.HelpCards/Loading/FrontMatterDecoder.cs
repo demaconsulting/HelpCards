@@ -245,7 +245,7 @@ internal sealed partial class FrontMatterDecoder
         }
 
         // A literal block scalar is allowed only as the content or the expected output of an example
-        var allowBlock = listKey == "examples" && key is "content" or "expect";
+        var allowBlock = listKey == "examples" && key is ("content" or "expect");
         return new FrontMatterEntry(key, line, ParseScalar(rest, line, index, column, allowBlock), null);
     }
 

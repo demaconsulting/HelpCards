@@ -107,6 +107,7 @@ sections:
                   - FrontMatterDecoder_TryDecode_BlockScalarAsListItem_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarContentOutsideExamples_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarExpectOutsideExamples_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarContentOrExpectInOtherList_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarForOtherExampleKey_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarKeepIndicator_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarIndentationIndicator_Rejected

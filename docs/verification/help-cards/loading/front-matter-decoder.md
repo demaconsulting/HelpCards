@@ -32,8 +32,8 @@ and each rejected construct yields exactly one problem with the expected rule an
   item, document markers, unterminated quotes, an unsupported escape, text after a closing quote, a list item
   without a key, unexpected indentation, a key with a space before the colon, an empty list item, misaligned
   keys in a list item.
-- **Block scalars where they are not allowed**: an ordinary key, a list item, a `content` key outside an
-  example list, an `expect` key outside an example list, and another key of an example (rule
-  `block-scalar-not-allowed`); `|+`, `|2`, and `>` (rule `syntax`).
+- **Block scalars where they are not allowed**: an ordinary key, a list item, a `content` key outside an example list,
+  an `expect` key outside an example list, `content` and `expect` in a list that is not `examples`, and another key of
+  an example (rule `block-scalar-not-allowed`); `|+`, `|2`, and `>` (rule `syntax`).
 - **Delimiters and arguments**: missing opening delimiter, missing closing delimiter, a null text, and the
   source name and file in the problem.

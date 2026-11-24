@@ -11,4 +11,4 @@ namespace DemaConsulting.HelpCards.Testing;
 /// </remarks>
 /// <param name="ExitCode">The exit code of the command.</param>
 /// <param name="Output">The text the command wrote; <see langword="null"/> is treated like an empty text.</param>
-public sealed record HelpExampleOutcome(int ExitCode, string Output);
+public sealed record HelpExampleOutcome(int ExitCode, string? Output);

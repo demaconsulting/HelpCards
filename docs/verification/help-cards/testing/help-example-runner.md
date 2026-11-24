@@ -23,14 +23,16 @@ content, scratch folders are deleted on every path, and arguments are checked.
 
 - **Materialize**: source examples with a folder and an inline text, LF, one trailing line feed, no byte order mark;
   snippets and commands not written; the same name written twice (last wins, both names returned); a name that escapes
-  the folder (an argument error, and nothing written outside).
+  the folder (an argument error, and nothing written outside); a card with only commands still creates the folder.
 - **Run order**: the commands of a card in order with the arguments after the tool name and the folder as working
-  directory, with the saved files present; a catalog run with one fresh folder for each card, the files of the card
-  saved there, and every folder deleted; a catalog without commands runs nothing.
+  directory, with the saved files present, and a working directory that exists even for a card with only commands; a
+  catalog run with one fresh folder for each card, the files of the card saved there, and every folder deleted; a
+  catalog without commands runs nothing.
 - **Exit code**: a mismatch is one `example-exit-code` problem at the card file, line 0, naming the example, the card,
   both codes, and the output.
 - **Output**: one `example-output` problem for every missing fragment, CRLF accepted, the comparison case-sensitive, the
-  output cut at 400 characters in the message, and a null output treated as empty.
+  output cut at 400 characters in the message, and a null output treated as empty (for a command with and without an
+  expected output).
 - **Parse**: a command with a pipe is an `example-parse` problem and is not run; the next command still runs; the tool
   name defaults to the one of the catalog, then the first source, and an explicit name wins.
 - **Report**: `AssertSucceeded` throws a catalog exception with the same problems for a failed run and does nothing for

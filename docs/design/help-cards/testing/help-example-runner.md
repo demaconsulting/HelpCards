@@ -16,7 +16,7 @@ The class is static and has no state. Three small public types go with it, all i
 | Type | Meaning |
 | --- | --- |
 | `HelpExampleInvocation` | The card, the command example, the arguments after the tool name, and the folder |
-| `HelpExampleOutcome` | The exit code and the output of one run (a record; the delegate creates it) |
+| `HelpExampleOutcome` | The exit code and the output of one run (a record; the output may be null) |
 | `HelpExampleRunReport` | The number of commands run and the problems; `Succeeded` and `AssertSucceeded` |
 
 The problems are ordinary `HelpProblem` errors at the card file with line 0, with the rules `example-parse`,
@@ -24,13 +24,14 @@ The problems are ordinary `HelpProblem` errors at the card file with line 0, wit
 
 #### Key Methods
 
-- **`Materialize(card, directory)`** writes every example of the kind `source` to `directory` under its file name:
-  `/` separates folders, which are created; the text has LF line endings and exactly one trailing line feed; the
-  encoding is UTF-8 without a byte order mark. A later example with the same file name overwrites an earlier one.
-  Snippets are fragments that are never claimed to work alone, and commands are not files, so neither is written. The
-  resolved path of each file is checked to stay below the folder (the loader already rejects `..` and rooted names,
-  so this is defense in depth) and an escaping name is an `ArgumentException` before anything is written for it. The
-  method returns the names it wrote, in the order of the examples.
+- **`Materialize(card, directory)`** creates `directory` (also when the card has no source example, so that it is a
+  usable working directory) and writes every example of the kind `source` to `directory` under its file name: `/`
+  separates folders, which are created; the text has LF line endings and exactly one trailing line feed; the encoding is
+  UTF-8 without a byte order mark. A later example with the same file name overwrites an earlier one. Snippets are
+  fragments that are never claimed to work alone, and commands are not files, so neither is written. The resolved path
+  of each file is checked to stay below the folder (the loader already rejects `..` and rooted names, so this is defense
+  in depth) and an escaping name is an `ArgumentException` before anything is written for it. The method returns the
+  names it wrote, in the order of the examples.
 - **`Run(card, directory, execute, toolName)`** materializes the card, then takes its command examples in order. Each
   command is split with `ExampleCommandLine.TryParse` and the tool name; a command that cannot be split is an
   `example-parse` problem, is not run, and the loop goes on. Otherwise the delegate is called with an invocation, and

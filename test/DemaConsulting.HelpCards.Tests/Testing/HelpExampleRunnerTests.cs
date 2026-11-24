@@ -375,6 +375,98 @@ public class HelpExampleRunnerTests
     }
 
     /// <summary>
+    ///     Creates a catalog whose only card has a command example and no source example.
+    /// </summary>
+    /// <param name="expect">The <c>expect</c> line of the command, or an empty text for none.</param>
+    /// <returns>The catalog, whose tool is <c>demo</c> and which holds the card <c>a</c>.</returns>
+    private static HelpCatalog CommandOnlyCatalog(string expect = "")
+    {
+        var items = "  - name: run\n    kind: command\n    language: shell\n    content: '{{tool}} run'\n"
+            + expect
+            + "    description: D.\n";
+        return CatalogBuilding.Create(
+            CatalogBuilding.Named("test", ("a.md", SourceReading.Card(extraFrontMatter: "examples:\n" + items))),
+            builder => builder.ToolName("demo"));
+    }
+
+    /// <summary>
+    ///     Creates a card that has a command example and no source example.
+    /// </summary>
+    /// <param name="expect">The <c>expect</c> line of the command, or an empty text for none.</param>
+    /// <returns>The card <c>a</c>.</returns>
+    private static HelpCard CommandOnlyCard(string expect = "")
+    {
+        return CommandOnlyCatalog(expect).Find("a")!;
+    }
+
+    /// <summary>
+    ///     Proves that the folder is created even when the card has no source example to write.
+    /// </summary>
+    [Fact]
+    public void HelpExampleRunner_Materialize_CommandOnlyCard_CreatesTheFolder()
+    {
+        // Arrange: a folder that does not exist yet
+        using var directory = new TemporaryDirectory();
+        var target = Path.Combine(directory.FullPath, "new", "work");
+
+        // Act
+        var written = HelpExampleRunner.Materialize(CommandOnlyCard(), target);
+
+        // Assert
+        Assert.Empty(written);
+        Assert.True(Directory.Exists(target));
+        Assert.Empty(Directory.GetFileSystemEntries(target));
+    }
+
+    /// <summary>
+    ///     Proves that the working directory of a command exists when the card has no source example, for both overloads.
+    /// </summary>
+    [Fact]
+    public void HelpExampleRunner_Run_CommandOnlyCard_WorkingDirectoryExists()
+    {
+        // Arrange
+        using var directory = new TemporaryDirectory();
+        var target = Path.Combine(directory.FullPath, "new");
+        var existed = new List<bool>();
+        HelpExampleOutcome Execute(HelpExampleInvocation invocation)
+        {
+            existed.Add(Directory.Exists(invocation.WorkingDirectory));
+            return new HelpExampleOutcome(0, string.Empty);
+        }
+
+        // Act
+        var cardReport = HelpExampleRunner.Run(CommandOnlyCard(), target, Execute, "demo");
+        var catalogReport = HelpExampleRunner.Run(CommandOnlyCatalog(), Execute);
+
+        // Assert
+        Assert.Equal([true, true], existed);
+        Assert.True(cardReport.Succeeded);
+        Assert.True(catalogReport.Succeeded);
+    }
+
+    /// <summary>
+    ///     Proves that a null output is treated like an empty text: no exception, no problem without an <c>expect</c>
+    ///     fragment, and one problem per fragment with one.
+    /// </summary>
+    [Fact]
+    public void HelpExampleRunner_Run_NullOutput_IsTreatedAsEmpty()
+    {
+        // Arrange
+        using var directory = new TemporaryDirectory();
+        Func<HelpExampleInvocation, HelpExampleOutcome> execute = _ => new HelpExampleOutcome(0, null);
+
+        // Act
+        var without = HelpExampleRunner.Run(CommandOnlyCard(), directory.FullPath, execute, "demo");
+        var with = HelpExampleRunner.Run(CommandOnlyCard("    expect: done\n"), directory.FullPath, execute, "demo");
+
+        // Assert
+        Assert.True(without.Succeeded);
+        var problem = Assert.Single(with.Problems);
+        Assert.Equal(RuleIds.ExampleOutput, problem.RuleId);
+        Assert.Null(new HelpExampleOutcome(0, null).Output);
+    }
+
+    /// <summary>
     ///     Proves that null and blank arguments are rejected at the call.
     /// </summary>
     [Fact]
@@ -410,7 +502,7 @@ public class HelpExampleRunnerTests
         var right = new HelpExampleOutcome(1, "a");
         var report = HelpExampleRunner.Run(
             CatalogBuilding.Runnable(),
-            _ => new HelpExampleOutcome(0, null!));
+            _ => new HelpExampleOutcome(0, null));
 
         // Assert: a null output lacks every fragment but does not throw
         Assert.Equal(left, right);
