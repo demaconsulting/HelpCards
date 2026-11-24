@@ -1,0 +1,66 @@
+---
+# HelpFileProvider Unit Requirements
+#
+# Requirements for the HelpFileProvider unit of the Loading subsystem: the seam that lists and reads the
+# files of a source from assembly resources, a directory, or memory.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        sections:
+          - title: HelpFileProvider Requirements
+            requirements:
+              - id: HelpCards-Loading-HelpFileProvider-OrdinalListing
+                title: >-
+                  Every provider shall list its files as relative paths with "/" as the separator in ordinal
+                  order.
+                justification: |
+                  A catalog must be identical on every machine; a stable file order is the base of stable
+                  problem order, overlay order, and sibling order.
+                tests:
+                  - MemoryFileProvider_ListFiles_UnsortedInput_ReturnsOrdinalOrder
+                  - AssemblyFileProvider_ListFiles_ExplicitPrefix_ReturnsRelativePathsBelowPrefix
+                  - DirectoryFileProvider_ListFiles_NestedFiles_ReturnsRelativeOrdinalPaths
+
+              - id: HelpCards-Loading-HelpFileProvider-AssemblyResources
+                title: >-
+                  The assembly provider shall list the resources whose names start with the resource prefix and a
+                  slash (the assembly name followed by ".Help" by default, ignoring a trailing slash on a given
+                  prefix), and read each as the text that was authored.
+                justification: |
+                  The packaged build files embed cards under this naming scheme, so the loader must find exactly
+                  those resources and no others, whichever separator the build wrote.
+                tests:
+                  - AssemblyFileProvider_ListFiles_ExplicitPrefix_ReturnsRelativePathsBelowPrefix
+                  - AssemblyFileProvider_ListFiles_PrefixWithTrailingSlash_ReturnsSameFiles
+                  - AssemblyFileProvider_ListFiles_NullPrefix_UsesAssemblyNameHelp
+                  - AssemblyFileProvider_ListFiles_UnknownPrefix_ReturnsEmpty
+                  - AssemblyFileProvider_ReadText_EmbeddedFile_ReturnsAuthoredText
+                  - AssemblyFileProvider_ReadText_UnknownPath_ThrowsArgumentException
+
+              - id: HelpCards-Loading-HelpFileProvider-Utf8Text
+                title: >-
+                  Every provider shall read files as UTF-8 text without a byte order mark, and the file-based
+                  providers shall refuse bytes that are not valid UTF-8 instead of replacing them.
+                justification: |
+                  A damaged card must be found, not silently altered, and an invisible byte order mark must not
+                  break the first line of the front matter.
+                tests:
+                  - MemoryFileProvider_ReadText_LeadingByteOrderMark_IsRemoved
+                  - DirectoryFileProvider_ReadText_Utf8WithByteOrderMark_RemovesMark
+                  - DirectoryFileProvider_ReadText_InvalidUtf8_ThrowsArgumentException
+
+              - id: HelpCards-Loading-HelpFileProvider-Isolation
+                title: >-
+                  The in-memory provider shall copy its files, the directory provider shall read only files below
+                  its directory and report a missing directory, and reading a file that was not listed shall be
+                  refused.
+                justification: |
+                  A provider must serve exactly the files of its source: later changes by the caller must not
+                  leak in, and a crafted path must never reach a file outside the help folder.
+                tests:
+                  - MemoryFileProvider_Constructor_SourceDictionaryChanged_ProviderUnaffected
+                  - MemoryFileProvider_ReadText_UnknownPath_ThrowsArgumentException
+                  - DirectoryFileProvider_ListFiles_MissingDirectory_ThrowsDirectoryNotFoundException
+                  - DirectoryFileProvider_ReadText_PathOutsideDirectory_ThrowsArgumentException

@@ -56,6 +56,66 @@ with `/` separators after the loader's separator conversion.
 
 Reads one embedded card as UTF-8 text and asserts that it holds the authored content.
 
+### Sources: Assembly, Directory, and Memory
+
+**Tests**: `HelpCards_Sources_Assembly_ReadsEmbeddedCards`, `HelpCards_Sources_Directory_ReadsFilesOnDisk`,
+`HelpCards_Sources_Memory_ReadsFiles`
+
+Reads the same kind of cards from the embedded fixture of the test assembly, from a temporary directory, and
+from in-memory text, and asserts that each yields its cards, titles, and example content without problems.
+
+### Sources: Construction Performs No I/O
+
+**Test**: `HelpCards_Sources_Construction_PerformsNoIo`
+
+Creates a source over a counting provider and derives other sources from it with a name, tokens, and an
+import, then asserts that the provider was never asked to list or read a file.
+
+### Front Matter: Valid Subset
+
+**Test**: `HelpCards_FrontMatter_ValidSubset_ReadsCard`
+
+Reads a card that uses comments, single- and double-quoted values, a list, a list of maps with a literal
+block for example content, and an extension key, and asserts every value.
+
+### Front Matter: Unsupported Constructs and Unknown Keys
+
+**Tests**: `HelpCards_FrontMatter_UnsupportedConstruct_ReportsFileAndLine`,
+`HelpCards_FrontMatter_UnknownKey_ReportsKeyAndAllowedKeys`
+
+Reads a card with a flow sequence and a card with a misspelled key, and asserts that the problems carry the
+rule, the file, and the line, and that the key problem names the key and the allowed keys.
+
+### Tokens: Replacement and Unknown Tokens
+
+**Tests**: `HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced`, `HelpCards_Tokens_UnknownToken_ReportsFileAndLine`
+
+Reads cards that use the built-in tokens and a token of the source, and a card with an unknown token on its
+second body line; asserts the replaced text and the exact file and line of the problem.
+
+### Cultures: Per-File Selection With Fallback
+
+**Test**: `HelpCards_Cultures_Translation_IsSelectedPerFileWithFallback`
+
+Reads a source for `de-DE` and for the neutral culture and asserts that the language translation is used for
+the translated card only and that the neutral culture ignores translations.
+
+### Links: Recognition and Typos
+
+**Test**: `HelpCards_Links_OutsideCode_AreRecognizedAndTyposReported`
+
+Reads a body with a local link, an external link, a link in a code span, and a typo, and asserts the links and
+the line of the problem.
+
+### Diagnostics: Fields and Collection of All Defects
+
+**Tests**: `HelpCards_Diagnostics_Defects_AreReportedWithAllFields`,
+`HelpCards_Diagnostics_SeveralDefectiveFiles_AreAllCollected`
+
+Reads a source with a bad file name and asserts all six fields of the problem; reads a source with three
+different defects in three files and one valid card and asserts that all defects are reported and the valid
+card is read.
+
 ## Acceptance Criteria
 
 A system-level test run passes when all scenarios above pass without error or exception beyond

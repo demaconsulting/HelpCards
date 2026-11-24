@@ -1,0 +1,43 @@
+---
+# HelpProblem Unit Requirements
+#
+# Requirements for the HelpProblem unit of the Catalog subsystem: the problem model (HelpProblem,
+# HelpSeverity, and the rule identifiers) that every other part of the library reports defects with.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: HelpProblem Requirements
+            requirements:
+              - id: HelpCards-Catalog-HelpProblem-Fields
+                title: >-
+                  A problem shall carry its severity, rule identifier, source name, file, line, and message, and
+                  two problems with the same fields shall be equal.
+                justification: |
+                  Problems are collected, sorted, filtered, and compared by callers and tests; a plain value
+                  with all six fields makes each of those straightforward.
+                tests:
+                  - HelpProblem_Constructor_AllFields_ExposesFields
+                  - HelpProblem_Equality_SameFields_AreEqual
+                  - HelpProblem_Equality_DifferentLine_AreNotEqual
+                  - HelpProblem_CreateError_GivenFields_CreatesErrorProblem
+
+              - id: HelpCards-Catalog-HelpProblem-Severity
+                title: >-
+                  Severities shall be ordered from informational through warning to error.
+                justification: |
+                  Callers decide what to do with a problem by comparing severities, so the order is part of the
+                  contract.
+                tests:
+                  - HelpSeverity_Values_AreOrderedInfoWarningError
+
+              - id: HelpCards-Catalog-HelpProblem-RuleIds
+                title: >-
+                  Every rule of the failure model shall have a distinct lower-case dashed identifier.
+                justification: |
+                  Tests and adopters match on rule identifiers, so they must be stable, unique, and complete.
+                tests:
+                  - RuleIds_Constants_AreDistinctKebabCaseNames
+                  - RuleIds_Constants_CoverSpecifiedErrorRules

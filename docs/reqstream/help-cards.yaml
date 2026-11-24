@@ -8,30 +8,132 @@
 
 sections:
   - title: HelpCards Requirements
-    sections:
-      - title: Resource Embedding
-        requirements:
-          - id: HelpCards-Embedding-DefaultDirectory
-            title: >-
-              A project that references the package shall embed every file of its Help folder as an assembly
-              resource whose name starts with the assembly name followed by ".Help/" without any further
-              configuration.
-            tags: [system]
-            justification: |
-              Library authors expect to drop Markdown cards into a Help folder and have them travel with
-              the assembly; any required boilerplate would be repeated in every adopting project.
-            tests:
-              - HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix
+    requirements:
+      - id: HelpCards-Embedding-DefaultDirectory
+        title: >-
+          A project that references the package shall embed every file of its Help folder as an assembly
+          resource whose name starts with the assembly name followed by ".Help/" without any further
+          configuration.
+        tags: [system]
+        justification: |
+          Library authors expect to drop Markdown cards into a Help folder and have them travel with
+          the assembly; any required boilerplate would be repeated in every adopting project.
+        tests:
+          - HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix
 
-          - id: HelpCards-Embedding-OverriddenDirectory
-            title: >-
-              A project shall be able to override the embedded folder and the resource name prefix, and every
-              file below the folder, including nested folders and data files, shall be embedded under the
-              prefix with "/" separators.
-            tags: [system]
-            justification: |
-              Projects that already use another folder name, or that embed several sources side by side,
-              need to choose the folder and the prefix without changing the package.
-            tests:
-              - HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix
-              - HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent
+      - id: HelpCards-Embedding-OverriddenDirectory
+        title: >-
+          A project shall be able to override the embedded folder and the resource name prefix, and every
+          file below the folder, including nested folders and data files, shall be embedded under the
+          prefix with "/" separators.
+        tags: [system]
+        justification: |
+          Projects that already use another folder name, or that embed several sources side by side,
+          need to choose the folder and the prefix without changing the package.
+        tests:
+          - HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix
+          - HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent
+
+      - id: HelpCards-Embedding-LoadSources
+        title: >-
+          A help source shall be creatable from the embedded resources of an assembly, from the files of a
+          directory, or from text held in memory, and creating a source shall perform no I/O.
+        tags: [system]
+        justification: |
+          Libraries embed cards, authors edit them in a directory while writing, and tools generate help at
+          run time; creating a source must be cheap because a library keeps it in a static field.
+        children:
+          - HelpCards-Loading-Sources
+        tests:
+          - HelpCards_Sources_Assembly_ReadsEmbeddedCards
+          - HelpCards_Sources_Directory_ReadsFilesOnDisk
+          - HelpCards_Sources_Memory_ReadsFiles
+          - HelpCards_Sources_Construction_PerformsNoIo
+
+      - id: HelpCards-FrontMatter-RestrictedSubset
+        title: >-
+          Cards shall be written in a restricted subset of YAML front matter that is decoded without any
+          YAML dependency, and every construct outside the subset shall be rejected with an error that
+          names the file and the line.
+        tags: [system]
+        justification: |
+          A dependency-free decoder keeps every adopting library and tool dependency-free, and strict,
+          line-accurate errors let authors fix a card without guessing what a YAML parser would have done.
+        children:
+          - HelpCards-Loading-FrontMatter
+        tests:
+          - HelpCards_FrontMatter_ValidSubset_ReadsCard
+          - HelpCards_FrontMatter_UnsupportedConstruct_ReportsFileAndLine
+
+      - id: HelpCards-FrontMatter-Keys
+        title: >-
+          Cards, overlays, translations, and the source description shall accept only the keys defined for
+          them, with every value following the grammar of its key, and an unknown key shall be reported with
+          the keys that are allowed.
+        tags: [system]
+        justification: |
+          A strict key matrix catches typos such as "tag" for "tags" that would otherwise silently drop
+          information from the help.
+        children:
+          - HelpCards-Loading-Cards
+        tests:
+          - HelpCards_FrontMatter_UnknownKey_ReportsKeyAndAllowedKeys
+
+      - id: HelpCards-Tokens-Substitution
+        title: >-
+          Text of cards shall be able to use tokens that are replaced with the values of the source and the
+          built-in tool name and version, and an unknown token shall be an error that names the file and the
+          line.
+        tags: [system]
+        justification: |
+          Tokens keep values such as limits and tool names in one place so that help stays correct when
+          they change.
+        children:
+          - HelpCards-Loading-Tokens
+        tests:
+          - HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced
+          - HelpCards_Tokens_UnknownToken_ReportsFileAndLine
+
+      - id: HelpCards-Cultures-Fallback
+        title: >-
+          Cards shall be translatable per file, an explicitly requested culture shall select the most
+          specific translation with fallback to less specific cultures and to the neutral text, and the
+          neutral culture shall select neutral text only.
+        tags: [system]
+        justification: |
+          Help is read in the language of the reader; a partly translated source must still be complete.
+        children:
+          - HelpCards-Loading-Cultures
+        tests:
+          - HelpCards_Cultures_Translation_IsSelectedPerFileWithFallback
+
+      - id: HelpCards-Links-Syntax
+        title: >-
+          Card bodies shall be able to link to cards, to examples, and to cards of other sources outside code
+          spans and fences, and text that starts like a link but is not one shall be an error.
+        tags: [system]
+        justification: |
+          Cards refer to each other; links that fail silently would leave readers with broken references,
+          while code samples must be able to show the same brackets.
+        children:
+          - HelpCards-Loading-Links
+        tests:
+          - HelpCards_Links_OutsideCode_AreRecognizedAndTyposReported
+
+      - id: HelpCards-Diagnostics-Problems
+        title: >-
+          Every defect of a source shall be reported as a problem that carries its severity, rule, source,
+          file, line, and message, and all defects of a source shall be collected instead of stopping at the
+          first.
+        tags: [system]
+        justification: |
+          Authors fix their help in one pass; a precise, structured problem list is also what tests and
+          tools need to assert that cards are valid.
+        children:
+          - HelpCards-Loading-Diagnostics
+          - HelpCards-Catalog-HelpProblem-Fields
+          - HelpCards-Catalog-HelpProblem-Severity
+          - HelpCards-Catalog-HelpProblem-RuleIds
+        tests:
+          - HelpCards_Diagnostics_Defects_AreReportedWithAllFields
+          - HelpCards_Diagnostics_SeveralDefectiveFiles_AreAllCollected

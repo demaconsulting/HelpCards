@@ -58,6 +58,8 @@ words:
   - shopt
   - snupkg
   - sonarscanner
+  - subtag
+  - subtags
   - Syside
   - thirdparty
   - unidirectionality

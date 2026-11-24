@@ -13,4 +13,8 @@ package HelpCardsDesignViews {
     view HelpCardsView {
         expose HelpCardsSystem;
     }
+
+    view LoadingView {
+        expose LoadingSubsystem;
+    }
 }

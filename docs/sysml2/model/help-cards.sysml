@@ -1,5 +1,8 @@
 package HelpCards {
     private import SoftwareItemMetadata::*;
+    public import HelpCards_LoadingSubsystem::*;
+    // The problem model belongs to the Catalog subsystem; until that subsystem has its own facade the system owns it directly.
+    public import HelpCards_HelpProblem::*;
 
     doc
     /*
@@ -17,5 +20,8 @@ package HelpCards {
             verificationFiles = ("docs/verification/help-cards.md");
             requirementFiles = ("docs/reqstream/help-cards.yaml");
         }
+
+        part loading : LoadingSubsystem;
+        part helpProblem : HelpProblem;
     }
 }

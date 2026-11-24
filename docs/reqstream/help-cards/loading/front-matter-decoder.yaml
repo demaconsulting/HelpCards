@@ -1,0 +1,124 @@
+---
+# FrontMatterDecoder Unit Requirements
+#
+# Requirements for the FrontMatterDecoder unit of the Loading subsystem, which decodes the restricted subset
+# of YAML front matter and splits off the Markdown body.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        sections:
+          - title: FrontMatterDecoder Requirements
+            requirements:
+              - id: HelpCards-Loading-FrontMatterDecoder-AcceptedSubset
+                title: >-
+                  The decoder shall accept plain, single-quoted, and double-quoted scalars, full-line comments,
+                  lists of scalars, lists of maps of scalars, empty values, extension keys, and the complete
+                  example of the card format, whatever the line ending and with or without a byte order mark.
+                justification: |
+                  Authors write cards in a familiar subset of YAML; each accepted construct must work exactly as
+                  documented so that the README table of accepted constructs is true.
+                tests:
+                  - FrontMatterDecoder_TryDecode_PlainScalar_Accepted
+                  - FrontMatterDecoder_TryDecode_SingleQuotedScalar_Accepted
+                  - FrontMatterDecoder_TryDecode_DoubleQuotedScalar_Accepted
+                  - FrontMatterDecoder_TryDecode_FullLineComments_Accepted
+                  - FrontMatterDecoder_TryDecode_IndentedListOfScalars_Accepted
+                  - FrontMatterDecoder_TryDecode_ListAtFirstColumn_Accepted
+                  - FrontMatterDecoder_TryDecode_ListOfMaps_Accepted
+                  - FrontMatterDecoder_TryDecode_ColonWithoutSpaceInValue_Accepted
+                  - FrontMatterDecoder_TryDecode_EmptyValue_Accepted
+                  - FrontMatterDecoder_TryDecode_ExtensionKey_Accepted
+                  - FrontMatterDecoder_TryDecode_CrLfLineEndings_Accepted
+                  - FrontMatterDecoder_TryDecode_ByteOrderMark_Accepted
+                  - FrontMatterDecoder_TryDecode_SpecificationExample_Accepted
+
+              - id: HelpCards-Loading-FrontMatterDecoder-RejectedConstructs
+                title: >-
+                  The decoder shall reject flow collections, anchors, aliases, tags, trailing comments, plain
+                  values that start with an indicator character or contain or end with a colon, tabs in
+                  indentation, duplicate keys, nesting deeper than a list of maps, document markers, unterminated
+                  quotes, unsupported escapes, and text after a closing quote.
+                justification: |
+                  Rejecting what the subset does not support, with a message that says how to fix it, keeps
+                  decoding deterministic and prevents a YAML dialect from drifting into the card format.
+                tests:
+                  - FrontMatterDecoder_TryDecode_FlowSequence_Rejected
+                  - FrontMatterDecoder_TryDecode_FlowMapping_Rejected
+                  - FrontMatterDecoder_TryDecode_FlowSequenceAsListItem_Rejected
+                  - FrontMatterDecoder_TryDecode_Anchor_Rejected
+                  - FrontMatterDecoder_TryDecode_Alias_Rejected
+                  - FrontMatterDecoder_TryDecode_Tag_Rejected
+                  - FrontMatterDecoder_TryDecode_TrailingComment_Rejected
+                  - FrontMatterDecoder_TryDecode_CommentAfterQuotedValue_Rejected
+                  - FrontMatterDecoder_TryDecode_ValueStartingWithHash_Rejected
+                  - FrontMatterDecoder_TryDecode_ValueStartingWithPercent_Rejected
+                  - FrontMatterDecoder_TryDecode_ValueStartingWithAt_Rejected
+                  - FrontMatterDecoder_TryDecode_ValueStartingWithBacktick_Rejected
+                  - FrontMatterDecoder_TryDecode_PlainValueWithColonSpace_Rejected
+                  - FrontMatterDecoder_TryDecode_PlainValueEndingWithColon_Rejected
+                  - FrontMatterDecoder_TryDecode_TabInIndentation_Rejected
+                  - FrontMatterDecoder_TryDecode_DuplicateKey_Rejected
+                  - FrontMatterDecoder_TryDecode_DuplicateKeyInListItem_Rejected
+                  - FrontMatterDecoder_TryDecode_NestedMappingBelowKey_Rejected
+                  - FrontMatterDecoder_TryDecode_ListInsideListItem_Rejected
+                  - FrontMatterDecoder_TryDecode_DocumentMarker_Rejected
+                  - FrontMatterDecoder_TryDecode_DocumentEndMarker_Rejected
+                  - FrontMatterDecoder_TryDecode_UnterminatedSingleQuote_Rejected
+                  - FrontMatterDecoder_TryDecode_UnterminatedDoubleQuote_Rejected
+                  - FrontMatterDecoder_TryDecode_UnsupportedEscape_Rejected
+                  - FrontMatterDecoder_TryDecode_TextAfterClosingQuote_Rejected
+                  - FrontMatterDecoder_TryDecode_ListItemWithoutKey_Rejected
+                  - FrontMatterDecoder_TryDecode_UnexpectedIndentation_Rejected
+                  - FrontMatterDecoder_TryDecode_KeyWithSpaceBeforeColon_Rejected
+                  - FrontMatterDecoder_TryDecode_EmptyListItem_Rejected
+                  - FrontMatterDecoder_TryDecode_MisalignedKeysInListItem_Rejected
+
+              - id: HelpCards-Loading-FrontMatterDecoder-ErrorLocation
+                title: >-
+                  The decoder shall report a rejected file as one problem that names the source, the file, and
+                  the line of the defect, and shall reject a file without an opening or a closing delimiter.
+                justification: |
+                  Authors fix a card from the message alone; an exact line is the difference between a
+                  one-second and a ten-minute fix.
+                tests:
+                  - FrontMatterDecoder_TryDecode_NullText_ThrowsArgumentNullException
+                  - FrontMatterDecoder_TryDecode_MissingOpeningDelimiter_Rejected
+                  - FrontMatterDecoder_TryDecode_MissingClosingDelimiter_Rejected
+                  - FrontMatterDecoder_TryDecode_Rejected_ProblemNamesSourceAndFile
+
+              - id: HelpCards-Loading-FrontMatterDecoder-LiteralBlocks
+                title: >-
+                  The decoder shall accept a literal block scalar ("|" or "|-") only as the content of an
+                  example, remove its indent, keep inner blank lines, hash lines, and deeper indentation, drop
+                  trailing blank lines, and reject block scalars elsewhere and the forms "|+", an indentation
+                  indicator, and ">".
+                justification: |
+                  Example files must be embeddable in a card without escaping, but allowing blocks anywhere
+                  would let multi-line text into titles and summaries that must stay one line.
+                tests:
+                  - FrontMatterDecoder_TryDecode_ExampleBlockScalarPipe_Accepted
+                  - FrontMatterDecoder_TryDecode_ExampleBlockScalarPipeMinus_Accepted
+                  - FrontMatterDecoder_TryDecode_BlockScalarKeepsBlankHashAndNestedLines_Accepted
+                  - FrontMatterDecoder_TryDecode_BlockScalarTrailingBlankLines_Accepted
+                  - FrontMatterDecoder_TryDecode_BlockScalarForOrdinaryKey_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarAsListItem_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarContentOutsideExamples_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarKeepIndicator_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarIndentationIndicator_Rejected
+                  - FrontMatterDecoder_TryDecode_FoldedBlockScalar_Rejected
+
+              - id: HelpCards-Loading-FrontMatterDecoder-Body
+                title: >-
+                  The decoder shall return everything after the closing delimiter as the body, without one
+                  blank separator line and without trailing line feeds, together with the line the body starts
+                  on, and shall keep a line of three dashes inside the body.
+                justification: |
+                  Bodies are Markdown that authors expect to be preserved exactly, and later problems about the
+                  body need the real line of the file.
+                tests:
+                  - FrontMatterDecoder_TryDecode_PlainScalar_Accepted
+                  - FrontMatterDecoder_TryDecode_BlankLineBeforeBody_Accepted
+                  - FrontMatterDecoder_TryDecode_NoBody_Accepted
+                  - FrontMatterDecoder_TryDecode_ThematicBreakInBody_Accepted

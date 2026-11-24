@@ -1,0 +1,85 @@
+---
+# HelpSource Unit Requirements
+#
+# Requirements for the HelpSource unit of the Loading subsystem, which describes where the cards of a
+# library or tool come from without reading them.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        sections:
+          - title: HelpSource Requirements
+            requirements:
+              - id: HelpCards-Loading-HelpSource-Factories
+                title: >-
+                  A source shall be creatable from the embedded resources of an assembly with an optional
+                  resource prefix, from a directory, and from a dictionary of in-memory files, and an invalid
+                  argument shall be rejected with an argument exception.
+                justification: |
+                  Libraries ship cards as embedded resources, authors edit them in a directory, and tools
+                  generate them in memory. One immutable value type for all three keeps adopters independent of
+                  where cards come from, and rejecting bad arguments at the call site avoids confusing failures
+                  later.
+                tests:
+                  - HelpSource_FromAssembly_NullAssembly_ThrowsArgumentNullException
+                  - HelpSource_FromAssembly_EmptyPrefix_ThrowsArgumentException
+                  - HelpSource_FromAssembly_DefaultPrefix_ListsEmbeddedFiles
+                  - HelpSource_FromDirectory_EmptyDirectory_ThrowsArgumentException
+                  - HelpSource_FromDirectory_ExistingDirectory_ReadsFilesOnDisk
+                  - HelpSource_FromFiles_NullFiles_ThrowsArgumentNullException
+                  - HelpSource_FromFiles_PathsEqualAfterSeparatorNormalization_ThrowsArgumentException
+                  - HelpSource_FromFiles_NullText_ThrowsArgumentException
+                  - HelpSource_FromFiles_WithName_KeepsName
+
+              - id: HelpCards-Loading-HelpSource-PathNormalization
+                title: >-
+                  An in-memory source shall store the paths of its files with "/" as the separator whatever
+                  separator the caller used.
+                justification: |
+                  Card ids are derived from paths, so the same card must have the same id on every platform and
+                  whichever separator the caller typed.
+                tests:
+                  - HelpSource_FromFiles_BackslashPath_IsStoredWithForwardSlash
+
+              - id: HelpCards-Loading-HelpSource-Immutability
+                title: >-
+                  A source shall be immutable: setting a name, tokens, or an import shall return a new source,
+                  leave the original unchanged, and keep imports in declaration order, and a dictionary given
+                  by the caller shall be copied.
+                justification: |
+                  A library keeps its source in a shared static field. An adopter that derives a source with
+                  other tokens or imports must never change what other adopters see.
+                tests:
+                  - HelpSource_FromFiles_DictionaryChangedAfterCreation_SourceUnchanged
+                  - HelpSource_WithName_ReturnsNewSourceAndKeepsOriginal
+                  - HelpSource_WithTokens_ReturnsNewSourceAndKeepsOriginal
+                  - HelpSource_WithTokens_CalledTwice_ReplacesEarlierTokens
+                  - HelpSource_WithTokens_DictionaryChangedAfterCall_SourceUnchanged
+                  - HelpSource_Imports_TwoImports_KeepsDeclarationOrderAndOriginal
+
+              - id: HelpCards-Loading-HelpSource-Validation
+                title: >-
+                  A source shall reject an empty name, a token name that is not made of letters and digits, a
+                  null token value, and an import of null or of itself with an argument exception.
+                justification: |
+                  These are programming errors that can be detected at the call site; reporting them there
+                  keeps them apart from defects in cards, which are reported as problems.
+                tests:
+                  - HelpSource_WithName_EmptyName_ThrowsArgumentException
+                  - HelpSource_WithTokens_InvalidName_ThrowsArgumentException
+                  - HelpSource_WithTokens_NullValue_ThrowsArgumentException
+                  - HelpSource_WithTokens_NullTokens_ThrowsArgumentNullException
+                  - HelpSource_Imports_Itself_ThrowsArgumentException
+                  - HelpSource_Imports_Null_ThrowsArgumentNullException
+
+              - id: HelpCards-Loading-HelpSource-NoIo
+                title: >-
+                  Creating a source, setting its name or tokens, and importing another source shall perform no
+                  file or assembly I/O, and a missing directory shall not fail until the source is read.
+                justification: |
+                  A library keeps its source in a static field and a tool may never need its help, so creating
+                  a source must not slow the start-up of every program that loads the library.
+                tests:
+                  - HelpSource_Construction_AllFactoriesAndWithMethods_PerformNoIo
+                  - HelpSource_FromDirectory_MissingDirectory_DoesNotThrowAtCreation

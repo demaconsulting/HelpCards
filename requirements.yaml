@@ -10,6 +10,15 @@ includes:
   - docs/reqstream/quality.yaml
   - docs/reqstream/help-cards.yaml
   - docs/reqstream/help-cards/platform-requirements.yaml
+  - docs/reqstream/help-cards/loading.yaml
+  - docs/reqstream/help-cards/loading/help-source.yaml
+  - docs/reqstream/help-cards/loading/help-file-provider.yaml
+  - docs/reqstream/help-cards/loading/front-matter-decoder.yaml
+  - docs/reqstream/help-cards/loading/card-reader.yaml
+  - docs/reqstream/help-cards/loading/token-resolver.yaml
+  - docs/reqstream/help-cards/loading/culture-selector.yaml
+  - docs/reqstream/help-cards/loading/body-parser.yaml
+  - docs/reqstream/help-cards/catalog/help-problem.yaml
   - docs/reqstream/ots/xunit.yaml
   - docs/reqstream/ots/reqstream.yaml
   - docs/reqstream/ots/buildmark.yaml

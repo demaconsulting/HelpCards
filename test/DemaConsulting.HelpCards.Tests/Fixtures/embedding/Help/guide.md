@@ -5,7 +5,7 @@ examples:
   - name: diagram
     kind: source
     language: mermaid
-    file: diagram.mmd
+    file: guide/diagram.mmd
     description: A tiny diagram stored next to the card.
 ---
 The guide card lives in a folder of the same name.

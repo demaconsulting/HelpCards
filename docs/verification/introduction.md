@@ -25,6 +25,11 @@ This document covers the verification design for the HelpCards system and its
 constituent software items, specifically:
 
 - **HelpCards (System)** — The complete HelpCards .NET library system
+- **Loading (Subsystem)** — Finds the files of a source, decodes front matter, and reads cards, overlays,
+  translations, tokens, and bodies into definitions; its units are HelpSource, HelpFileProvider,
+  FrontMatterDecoder, CardReader, TokenResolver, CultureSelector, and BodyParser
+- **HelpProblem (Unit)** — The problem model (severity, rule identifiers, and the problem value) that every
+  subsystem reports defects with; it belongs to the Catalog subsystem
 
 The following OTS items are also covered:
 
