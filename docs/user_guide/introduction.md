@@ -1,75 +1,38 @@
 # Introduction
 
-The following diagram shows how an application uses the library: its cards go in as Markdown files, the subsystems
-load and compose them into an immutable catalog, and the catalog renders text, Markdown, or JSON.
+HelpCards turns Markdown files into help for people and knowledge for AI agents. You write one Markdown file per
+topic, a *card*, with a small block of front matter. The package embeds the cards in your assembly, and the library
+loads them into an immutable catalog that renders text, Markdown, or JSON.
 
-![Architecture of HelpCards: help cards flow through the Loading, Composition, and Catalog subsystems, and Presentation and Testing serve the application](architecture.svg)
+The following diagram shows how four kinds of consumers use the library: a library that ships cards, a command-line
+tool, an agent host, and a test project. The cards go in as Markdown files, the Loading, Composition, and Catalog
+subsystems turn them into a catalog, and Presentation, Integration, and Testing build on that catalog.
+
+![Architecture of HelpCards: consumers use six subsystems that turn Markdown cards into a catalog](architecture.svg)
 
 ## Purpose
 
-This document is the user guide for HelpCards, a .NET library for authoring help and knowledge
-content as Markdown cards with YAML front matter, embedded in assemblies and served as
-command-line help for people and as searchable knowledge for AI agents.
+This document is the user guide for HelpCards, a .NET library for authoring help and knowledge content as Markdown
+cards with YAML front matter, embedded in assemblies and served as command-line help for people and as searchable
+knowledge for AI agents. It explains how to write cards, package them, compose the cards of several libraries,
+connect them to a command line or an agent, and test them.
 
 ## Scope
 
 This user guide covers:
 
-- Installation of the library
-- Basic usage and examples
-- API reference
+- Installation of the library and a first working example
+- Writing cards: file layout, front matter, links, tokens, examples, and cultures
+- Packaging and embedding the cards in an assembly
+- Composing the cards of several libraries: mounts, imports, overlays, and collisions
+- The command-line helper, its options, its exit codes, and its JSON output
+- The agent knowledge tool, its arguments, its schema, and its output budgets
+- The helpers that test your cards
+- Versioning, compatibility, and security notes
 
-# Continuous Compliance
+The guide describes version 0.1 of HelpCards. It does not describe the internals of the library; the design
+document does.
 
-This repository follows the
-[Continuous Compliance](https://github.com/demaconsulting/ContinuousCompliance) methodology, which ensures
-compliance evidence is generated automatically on every CI run.
-
-## Key Practices
-
-- **Requirements Traceability**: Every requirement is linked to passing tests, and a trace matrix is
-  auto-generated on each release
-- **Linting Enforcement**: LintMark, TextLint, and yamllint are enforced before any build proceeds
-- **Automated Audit Documentation**: Each release ships with generated requirements, justifications,
-  trace matrix, and quality reports
-- **CodeQL and SonarCloud**: Security and quality analysis runs on every build
-
-# Installation
-
-Install the library using the .NET CLI:
-
-```bash
-dotnet add package DemaConsulting.HelpCards
-```
-
-The package targets .NET 8, 9, 10, and 11 and has no dependencies beyond the .NET Base Class Library.
-
-# Usage
-
-## Basic Usage
-
-Put Markdown cards in a `Help` folder of your project. The package embeds every file of that folder in
-your assembly, so the cards travel with it. Then load them as a source and build a catalog:
-
-```csharp
-using DemaConsulting.HelpCards.Catalog;
-using DemaConsulting.HelpCards.Loading;
-
-var catalog = HelpCatalog.Create(builder => builder
-    .AddSource(HelpSource.FromAssembly(typeof(Program).Assembly)));
-var card = catalog.Find("getting-started");
-Console.WriteLine(card is null ? catalog.RenderIndex() : catalog.Render(card));
-```
-
-## Embedding Options
-
-Two MSBuild properties let a project change where the cards come from:
-
-- `HelpCardsDirectory` is the folder below the project directory that is embedded (default `Help`).
-- `HelpCardsPrefix` is the resource name prefix (default `{AssemblyName}.Help`).
-
-Set `HelpCardsEnabled` to `false` to switch embedding off.
-
-# References
+## References
 
 - [REF-1] Continuous Compliance Methodology (<https://github.com/demaconsulting/ContinuousCompliance>)
