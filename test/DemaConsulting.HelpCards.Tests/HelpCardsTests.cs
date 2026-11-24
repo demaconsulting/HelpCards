@@ -1007,6 +1007,10 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Testing.ExampleCommandLine: TryParse",
             "DemaConsulting.HelpCards.Testing.HelpCardMarkdown: Bullets, GetSection, Headings",
             "DemaConsulting.HelpCards.Testing.HelpCardValidator: AssertValid, CompareToDirectory, Validate",
+            "DemaConsulting.HelpCards.Testing.HelpExampleInvocation: Arguments, Card, Example, WorkingDirectory",
+            "DemaConsulting.HelpCards.Testing.HelpExampleOutcome: .ctor, ExitCode, Output",
+            "DemaConsulting.HelpCards.Testing.HelpExampleRunReport: AssertSucceeded, CommandsRun, Problems, Succeeded",
+            "DemaConsulting.HelpCards.Testing.HelpExampleRunner: Materialize, Run",
             "DemaConsulting.HelpCards.Testing.HelpExamples: Enumerate",
             "DemaConsulting.HelpCards.Testing.HelpValidationOptions: .ctor, MaxCardChars, MaxLineLength, MaxRootIndexChars, MaxRootSummaryChars, MaxSummaryChars, RequireExternalSources, Rules, WarningsAreErrors",
             "DemaConsulting.HelpCards.Testing.IHelpCardRule: Check"
@@ -1131,6 +1135,46 @@ public class HelpCardsTests
         Assert.Equal(["run", "input.txt"], arguments);
         Assert.False(rejected);
         Assert.Contains("shell operator '|'", rejection);
+    }
+
+    /// <summary>
+    ///     Proves that a product can run every command example of its catalog through its own delegate: the source
+    ///     examples are saved, the commands run in order with the arguments after the tool name, the stated exit codes
+    ///     and output are compared, every difference is reported, and the library starts no process itself.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Validation_RunExamples_MaterializesRunsAndReportsMismatches()
+    {
+        // Arrange: the runnable fixture, whose commands state their results
+        var catalog = CatalogBuilding.Runnable();
+        var arguments = new List<string>();
+
+        // Act: a correct run, then a run in which one command exits with another code and another prints other text
+        var correct = HelpExampleRunner.Run(catalog, invocation =>
+        {
+            arguments.Add(string.Join(' ', invocation.Arguments));
+            Assert.True(File.Exists(Path.Combine(invocation.WorkingDirectory, "notes.txt")) || invocation.Card.Id == "check/details");
+            return invocation.Example.Name switch
+            {
+                "ok" => new HelpExampleOutcome(0, "Checked 1 file\r\nNo problems\r\n"),
+                "missing" => new HelpExampleOutcome(2, "Cannot open absent.yaml"),
+                _ => new HelpExampleOutcome(0, "Verbose output for demo"),
+            };
+        });
+        var broken = HelpExampleRunner.Run(catalog, invocation => invocation.Example.Name switch
+        {
+            "ok" => new HelpExampleOutcome(0, "Checked 1 file\nNo problems"),
+            "missing" => new HelpExampleOutcome(0, "Cannot open absent.yaml"),
+            _ => new HelpExampleOutcome(0, "Something else"),
+        });
+
+        // Assert
+        Assert.Equal(3, correct.CommandsRun);
+        correct.AssertSucceeded();
+        Assert.Equal(["check check/config.yaml", "check absent.yaml", "check --verbose check/config.yaml"], arguments);
+        Assert.Equal(["example-exit-code", "example-output"], broken.Problems.Select(problem => problem.RuleId));
+        var exception = Assert.Throws<HelpCatalogException>(broken.AssertSucceeded);
+        Assert.Equal(broken.Problems, exception.Problems);
     }
 
     /// <summary>

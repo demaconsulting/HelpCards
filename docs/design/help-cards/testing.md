@@ -6,7 +6,8 @@
 
 The Testing subsystem gives an adopter the helpers to test its own help in its own test project: a validator that
 returns the problems of a source or catalog, a parser for the command line of an example, an enumeration of examples,
-and readers for the structure of a card body. It references no test framework and starts no process; a product asserts
+a runner that runs the commands of examples through a delegate of the product, and readers for the structure of a card
+body. It references no test framework and starts no process; a product asserts
 on the results with whatever framework it uses. Every member is a pure function of its arguments and the files of
 the sources it is given.
 
@@ -19,6 +20,9 @@ The subsystem contains these units:
   product implements to add rules of its own.
 - **HelpExamples** (public, static) enumerates the examples of a catalog with their cards.
 - **ExampleCommandLine** (public, static) reads the one-line content of a command example into arguments.
+- **HelpExampleRunner** (public, static) saves the source examples of a card to a folder and runs its command examples
+  through a delegate of the product, comparing each result with the exit code and the output that the example states.
+  With it go the public `HelpExampleInvocation`, `HelpExampleOutcome`, and `HelpExampleRunReport`.
 - **HelpCardMarkdown** (public, static) reads the headings, sections, and bullets of a card body, and classifies the
   lines of a body for the validator. With it go the internal `MarkdownLine` and `MarkdownLineKind`.
 
@@ -31,6 +35,7 @@ The subsystem contains these units:
 | `HelpValidationOptions`, `IHelpCardRule` | Inbound (adopters) | Set limits, add product rules |
 | `HelpExamples.Enumerate` | Inbound (adopters) | List examples with their cards |
 | `ExampleCommandLine.TryParse` | Inbound (adopters) | Read the arguments of a command |
+| `HelpExampleRunner.Materialize`, `Run` | Inbound (adopters) | Save the files of a card and run its commands |
 | `HelpCardMarkdown` | Inbound (adopters) | Read headings, sections, and bullets |
 | `HelpCatalogBuilder.Compose`, `Sources` | Outbound (Composition) | Compose without an exception |
 | `HelpCatalog.FromData`, `Render` | Outbound (Catalog) | Read the cards as adopters see them |
@@ -69,6 +74,13 @@ an absent external source into an error with the same file and line.
 **Command lines.** The grammar of `ExampleCommandLine` is a single left-to-right scan: spaces separate words, quotes
 group, and every character a shell would interpret is an error that names the character and the column. The first
 word must equal the tool name; the rest are the arguments.
+
+**Running examples.** The runner takes the arguments of a command from `ExampleCommandLine` and leaves the running to a
+delegate of the product, so the library never starts a process or a shell. It saves the source examples of a card
+to a folder first, so a command can name them, runs the commands of the card in order, and compares the exit code
+and the output with the keys `exit` and `expect` of the example. Differences are problems of a report (`example-parse`,
+`example-exit-code`, `example-output`); the test decides to fail with `AssertSucceeded`. The catalog overload gives each
+card a fresh scratch folder and deletes it afterwards, also when the delegate throws.
 
 **Failure model.** Defects of cards are returned, never thrown, except by `AssertValid`, which throws one
 `HelpCatalogException`. A null argument throws `ArgumentNullException`; an invalid argument, a builder without a source,

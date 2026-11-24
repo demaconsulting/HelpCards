@@ -48,8 +48,8 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>syntax</c></term><description>Error. The front matter is not valid in the supported subset: missing <c>---</c> line, flow collection, anchor, trailing comment, tab indentation, duplicate key, unterminated quote, an unquoted value that must be quoted, and so on.</description></item>
 ///         <item><term><c>key-unknown</c></term><description>Error. A front-matter key is not allowed for this kind of file; the message lists the allowed keys.</description></item>
 ///         <item><term><c>key-missing</c></term><description>Error. A required key is missing: <c>title</c> or <c>summary</c> of a card, <c>extends</c> of an overlay, <c>name</c>, <c>kind</c>, <c>language</c> or <c>description</c> of an example, the <c>file</c> of a <c>source</c> or <c>snippet</c> example, or the <c>content</c> of a <c>command</c> example.</description></item>
-///         <item><term><c>value-invalid</c></term><description>Error. A value does not follow the grammar of its key (for example an <c>order</c> that is not an integer, a tag that is not a segment, an unknown example <c>kind</c>, or a <c>file</c> on a <c>command</c> example).</description></item>
-///         <item><term><c>block-scalar-not-allowed</c></term><description>Error. A literal block (<c>|</c>) is used anywhere but the <c>content</c> of an example.</description></item>
+///         <item><term><c>value-invalid</c></term><description>Error. A value does not follow the grammar of its key (for example an <c>order</c> that is not an integer, a tag that is not a segment, an unknown example <c>kind</c>, a <c>file</c> on a <c>command</c> example, an <c>exit</c> that is not an integer from 0 to 255, an empty <c>expect</c>, or an <c>exit</c> or <c>expect</c> on a <c>source</c> or <c>snippet</c>).</description></item>
+///         <item><term><c>block-scalar-not-allowed</c></term><description>Error. A literal block (<c>|</c>) is used anywhere but the <c>content</c> or the <c>expect</c> of an example.</description></item>
 ///         <item><term><c>token-unknown</c></term><description>Error. A <c>{{token}}</c> is not defined in the scope of its file.</description></item>
 ///         <item><term><c>token-redefined</c></term><description>Error. A token name is defined twice in one scope or redefines <c>tool</c> or <c>version</c>.</description></item>
 ///         <item><term><c>link-syntax</c></term><description>Error. Text starts like a <c>[[link]]</c> but is not one.</description></item>
@@ -94,6 +94,9 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>line-length</c></term><description>Warning. A body line is longer than <c>MaxLineLength</c> (off unless set).</description></item>
 ///         <item><term><c>command-parse</c></term><description>Warning. A <c>command</c> example cannot be split into arguments by <c>ExampleCommandLine</c>.</description></item>
 ///         <item><term><c>resources-mismatch</c></term><description>Warning. <c>CompareToDirectory</c> found a file on only one side: on disk but not embedded, or embedded but not on disk.</description></item>
+///         <item><term><c>example-parse</c></term><description>Error, example runner only. A <c>command</c> example cannot be split into arguments by <c>ExampleCommandLine</c>, so <c>HelpExampleRunner</c> did not run it. It is reported in the run report, never by <c>HelpCatalog.Create</c>.</description></item>
+///         <item><term><c>example-exit-code</c></term><description>Error, example runner only. A command ended with another exit code than the <c>exit</c> key of its example states (0 when absent).</description></item>
+///         <item><term><c>example-output</c></term><description>Error, example runner only. The output of a command does not contain a fragment of the <c>expect</c> key of its example; one problem for each missing fragment.</description></item>
 ///     </list>
 ///     <para>
 ///         A rule you add through <c>HelpValidationOptions.Rules</c> reports its own rule ids.

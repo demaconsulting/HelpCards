@@ -52,6 +52,7 @@ input-files:
   - docs/design/help-cards/testing/help-card-validator.md
   - docs/design/help-cards/testing/help-examples.md
   - docs/design/help-cards/testing/example-command-line.md
+  - docs/design/help-cards/testing/help-example-runner.md
   - docs/design/help-cards/testing/help-card-markdown.md
   - docs/design/ots.md
   - docs/design/ots/apimark.md

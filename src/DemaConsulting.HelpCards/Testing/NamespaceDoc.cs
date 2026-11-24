@@ -3,13 +3,14 @@ namespace DemaConsulting.HelpCards.Testing;
 /// <summary>
 ///     Helpers that prove, in your own tests, that your help cards are valid, that your command examples parse and
 ///     that the embedded files match the files on disk: <c>HelpCardValidator</c> (with <c>HelpValidationOptions</c>
-///     and your own <c>IHelpCardRule</c> rules), <c>HelpExamples</c>, <c>ExampleCommandLine</c> and
+///     and your own <c>IHelpCardRule</c> rules), <c>HelpExamples</c>, <c>ExampleCommandLine</c>, <c>HelpExampleRunner</c>
+///     (which runs your command examples through your own delegate and compares the result they state) and
 ///     <c>HelpCardMarkdown</c>. Start at <c>HelpCardValidator.AssertValid</c>. The helpers do not depend on a test
 ///     framework.
 /// </summary>
 /// <remarks>
 ///     <para>
-///         The common pattern in a test project that references your library is three steps:
+///         The common pattern in a test project that references your library is four steps:
 ///     </para>
 ///     <list type="number">
 ///         <item><description>
@@ -31,6 +32,13 @@ namespace DemaConsulting.HelpCards.Testing;
 ///             <c>HelpCardValidator.CompareToDirectory</c> to prove the embedded files match the folder that holds
 ///             your cards.
 ///         </description></item>
+///         <item><description>
+///             Run the examples. A <c>command</c> example can state the exit code (<c>exit</c>) and the output text
+///             (<c>expect</c>) it gives. <c>HelpExampleRunner.Run</c> saves the <c>source</c> examples of each card to a
+///             scratch folder, splits every command, calls your delegate to run it (HelpCards never starts a process or a
+///             shell), and compares the exit code and the output; <c>AssertSucceeded</c> fails the test with every
+///             difference. This is the supported way to prove that the help of a product is true.
+///         </description></item>
 ///     </list>
 ///     <para>
 ///         Key rules: <c>Validate</c> returns every problem (the errors of building the catalog first, then the
@@ -46,7 +54,7 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         for these helpers without embedding anything (it embeds only a <c>Help</c> folder of its own).
 ///     </para>
 ///     <para>
-///         <b>Two tests, both need valid cards.</b> A test that builds a catalog itself, such as the
+///         <b>Tests that build a catalog need valid cards.</b> A test that builds a catalog itself, such as the
 ///         <c>CommandExamples_Parse</c> test below, calls <c>HelpCatalog.Create</c>, which throws a
 ///         <c>HelpCatalogException</c> (not an assertion failure) for an invalid card. A broken card therefore fails
 ///         every test that builds a catalog, not only the one that calls <c>AssertValid</c>; read the first failure.
@@ -56,10 +64,14 @@ namespace DemaConsulting.HelpCards.Testing;
 /// </remarks>
 /// <example>
 ///     An xUnit test class for a library <c>MyLib</c> that exposes <c>MyLibHelp.Source</c> (the static class of the
-///     example on the page of <c>DemaConsulting.HelpCards.Loading</c>): one test asserts the cards
-///     are valid, with warnings as errors, and one proves every command example parses.
+///     example on the page of <c>DemaConsulting.HelpCards.Loading</c>) and a class <c>MyTool</c> whose method
+///     <c>Run(string[] arguments, string workingDirectory, TextWriter output)</c> is the entry point of the tool and
+///     returns its exit code: one test asserts the cards are valid, with warnings as errors, one proves every command
+///     example parses, and one runs every command example and compares the result that the example states.
 ///     <code language="csharp">
 /// using System.Collections.Generic;
+/// using System.IO;
+/// using System.Linq;
 /// using DemaConsulting.HelpCards.Catalog;
 /// using DemaConsulting.HelpCards.Testing;
 /// using Xunit;
@@ -89,6 +101,26 @@ namespace DemaConsulting.HelpCards.Testing;
 ///             Assert.True(parsed, $"{card.Id}#{example.Name}: {error}");
 ///             Assert.NotEmpty(arguments);
 ///         }
+///     }
+///
+///     [Fact]
+///     public void CommandExamples_GiveTheStatedResult()
+///     {
+///         HelpCatalog catalog = HelpCatalog.Create(builder => builder
+///             .AddSource(MyLibHelp.Source)
+///             .ToolName("mytool"));
+///
+///         // The delegate runs one command the way a user would; the runner has saved the source examples of the
+///         // card to invocation.WorkingDirectory, so the files the command names exist.
+///         HelpExampleRunReport report = HelpExampleRunner.Run(catalog, invocation =>
+///         {
+///             var output = new StringWriter();
+///             int exitCode = MyTool.Run(invocation.Arguments.ToArray(), invocation.WorkingDirectory, output);
+///             return new HelpExampleOutcome(exitCode, output.ToString());
+///         });
+///
+///         Assert.True(report.CommandsRun > 0);
+///         report.AssertSucceeded();
 ///     }
 /// }
 /// </code>

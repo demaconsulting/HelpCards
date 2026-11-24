@@ -30,8 +30,9 @@ system is organized into six subsystems that follow the life of a card from file
 - **Integration** connects the catalog to its readers: `HelpCli` gives a tool a help command for people (index, card,
   examples, example, search, and tags, in text, Markdown, and JSON), and `HelpAgentTools` gives an AI agent one
   provider-neutral knowledge tool. Neither creates the catalog or reads a resource before it is needed.
-- **Testing** gives adopters a collect-all validator and example helpers for their own test
-  suites. It has no test-framework reference.
+- **Testing** gives adopters a collect-all validator, example helpers, and a runner that runs the command examples
+  through the adopter's own delegate and compares the results the examples state, for their own test suites. It has no
+  test-framework reference and starts no process.
 
 The subsystems depend on each other in one direction for building a catalog: Composition uses
 Loading and produces the data that Catalog freezes; Presentation reads the Catalog model; Integration uses Catalog and
@@ -55,7 +56,8 @@ below) are part of the NuGet package and run in the consuming project's build, n
 The public surface consists of the types named above and their members, plus the card, example,
 link, problem, and result types they return, `HelpSearchOptions`, and the option and answer types of the helper and the
 tool; `HelpCardValidator` and helpers stand for the validator,
-`HelpValidationOptions`, `IHelpCardRule`, `HelpExamples`, `ExampleCommandLine`, and `HelpCardMarkdown`.
+`HelpValidationOptions`, `IHelpCardRule`, `HelpExamples`, `ExampleCommandLine`, `HelpExampleRunner` (with
+`HelpExampleInvocation`, `HelpExampleOutcome`, and `HelpExampleRunReport`), and `HelpCardMarkdown`.
 Everything else is `internal`. The signature closure of `HelpSource` and `HelpCatalogBuilder`
 contains only Base Class Library types.
 

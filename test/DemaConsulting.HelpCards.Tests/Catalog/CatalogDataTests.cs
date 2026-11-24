@@ -82,6 +82,24 @@ public class CatalogDataTests
     }
 
     /// <summary>
+    ///     Proves that the effective tool name is the configured name, else the name of the first source.
+    /// </summary>
+    [Fact]
+    public void CatalogData_EffectiveToolName_ConfiguredOrFirstSource_IsTheCommandName()
+    {
+        // Arrange
+        var source = CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" });
+
+        // Act
+        var plain = CatalogBuilding.Compose(source).Data!;
+        var configured = CatalogBuilding.Compose(source, builder => builder.ToolName("tool")).Data!;
+
+        // Assert
+        Assert.Equal("simple", plain.EffectiveToolName);
+        Assert.Equal("tool", configured.EffectiveToolName);
+    }
+
+    /// <summary>
     ///     Proves that the lists of the data cannot be changed through a cast.
     /// </summary>
     [Fact]

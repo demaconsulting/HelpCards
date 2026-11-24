@@ -385,10 +385,25 @@ sections:
         tags: [system]
         justification: |
           Examples are data; a product proves them by running them itself, and the library never starts a process.
+          The runner of the next requirement makes that a one-call test.
         children:
           - HelpCards-Testing-Examples
         tests:
           - HelpCards_Validation_Examples_AreEnumeratedAndCommandsParsed
+
+      - id: HelpCards-Validation-RunExamples
+        title: >-
+          A product shall be able to save the source examples of its cards to a folder, run every command example
+          through its own code, and get every difference from the exit code and the output that the example states as
+          a problem that names the example, while the library never starts a process or a shell.
+        tags: [system]
+        justification: |
+          Help that states results is true only when something runs it; the product knows how to run its own commands,
+          and the library knows what each example expects, so the two meet in one test of the product.
+        children:
+          - HelpCards-Testing-ExampleRunner
+        tests:
+          - HelpCards_Validation_RunExamples_MaterializesRunsAndReportsMismatches
 
       - id: HelpCards-Validation-Markdown
         title: >-

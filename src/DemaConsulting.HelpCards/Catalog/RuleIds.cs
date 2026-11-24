@@ -173,4 +173,15 @@ internal static class RuleIds
 
     /// <summary>An external source is absent although the caller required it.</summary>
     public const string ExternalSourceMissing = "external-source-missing";
+
+    // Errors of the example runner, which are reported in a run report and never fail catalog creation
+
+    /// <summary>A command example cannot be split into arguments, so the runner does not run it.</summary>
+    public const string ExampleParse = "example-parse";
+
+    /// <summary>A command example ended with another exit code than its <c>exit</c>.</summary>
+    public const string ExampleExitCode = "example-exit-code";
+
+    /// <summary>The output of a command example lacks a fragment of its <c>expect</c>.</summary>
+    public const string ExampleOutput = "example-output";
 }

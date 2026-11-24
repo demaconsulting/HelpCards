@@ -278,6 +278,16 @@ without an exception, validates a source with a long summary and gets one warnin
 one exception with the same error and accepts a catalog that only has a warning. The other quality warnings of
 the\nrequirement are verified by the scenarios of the Testing subsystem (`docs/verification/help-cards/testing.md`).
 
+### Validation: Running the Examples
+
+**Test**: `HelpCards_Validation_RunExamples_MaterializesRunsAndReportsMismatches`
+
+Runs every command example of the embedded `runnable` fixture through a delegate that returns the stated results and
+asserts that three commands ran in catalog order with the arguments after the tool name, that the files of the card were
+saved, and that the report succeeded (CRLF in the output accepted). Runs it again with a delegate that gives another
+exit code and other output and asserts the `example-exit-code` and `example-output` problems and the exception of
+`AssertSucceeded`.
+
 ### Validation: Examples and Command Lines
 
 **Test**: `HelpCards_Validation_Examples_AreEnumeratedAndCommandsParsed`

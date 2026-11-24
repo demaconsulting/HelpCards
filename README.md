@@ -41,7 +41,8 @@ Presentation, Integration, and Testing build on that catalog.
   `--tag`, and is independent of any argument-parsing library
 - **Agent Tool**: `HelpAgentTool` is a provider-neutral knowledge tool (index, card, example, and search) with a
   JSON schema and output budgets
-- **Testing Helpers**: `HelpCardValidator` and example helpers prove in your own tests that your cards are valid
+- **Testing Helpers**: `HelpCardValidator` and example helpers prove in your own tests that your cards are valid, and
+  `HelpExampleRunner` runs every command example through your own entry point and compares the result it states
 - **API Reference**: A generated Markdown API reference in the package's `api/` folder, organized for gradual
   disclosure so a developer or a coding agent reads one small page at a time
 - **Dependency-Free**: Built only on the .NET Base Class Library, with its own restricted front-matter parser
@@ -178,7 +179,7 @@ The public types are in these namespaces: `DemaConsulting.HelpCards.Loading` (`H
 `DemaConsulting.HelpCards.Composition` (`HelpCatalogBuilder`), `DemaConsulting.HelpCards.Catalog` (`HelpCatalog`,
 `HelpCard`, and the result types), `DemaConsulting.HelpCards.Presentation` (`HelpRenderOptions`),
 `DemaConsulting.HelpCards.Integration` (`HelpCli`, `HelpAgentTools`), and `DemaConsulting.HelpCards.Testing`
-(`HelpCardValidator` and the example and Markdown helpers).
+(`HelpCardValidator`, `HelpExampleRunner`, and the example and Markdown helpers).
 
 ## Supported front matter
 

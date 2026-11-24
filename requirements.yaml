@@ -53,6 +53,7 @@ includes:
   - docs/reqstream/help-cards/testing/help-card-validator.yaml
   - docs/reqstream/help-cards/testing/help-examples.yaml
   - docs/reqstream/help-cards/testing/example-command-line.yaml
+  - docs/reqstream/help-cards/testing/help-example-runner.yaml
   - docs/reqstream/help-cards/testing/help-card-markdown.yaml
   - docs/reqstream/ots/xunit.yaml
   - docs/reqstream/ots/reqstream.yaml

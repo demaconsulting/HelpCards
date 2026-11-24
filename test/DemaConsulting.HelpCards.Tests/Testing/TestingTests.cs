@@ -165,6 +165,44 @@ public class TestingTests
     }
 
     /// <summary>
+    ///     Proves that the example runner saves the source examples of the runnable fixture, runs its commands through a
+    ///     fake delegate in order, and reports exactly the differences from the stated results.
+    /// </summary>
+    [Fact]
+    public void Testing_ExampleRunner_RunnableFixture_RunsCommandsAndReportsMismatches()
+    {
+        // Arrange: the catalog of the runnable fixture and the commands that the tests run
+        var catalog = CatalogBuilding.Runnable();
+        var commands = new List<string>();
+        var saved = new List<bool>();
+
+        // Act: a delegate that gives the stated results, then one that breaks two of the three commands
+        var correct = HelpExampleRunner.Run(catalog, invocation =>
+        {
+            commands.Add($"{invocation.Card.Id}#{invocation.Example.Name}");
+            saved.Add(File.Exists(Path.Combine(invocation.WorkingDirectory, "notes.txt")));
+            return invocation.Example.Name switch
+            {
+                "ok" => new HelpExampleOutcome(0, "Checked 1 file\nNo problems"),
+                "missing" => new HelpExampleOutcome(2, "Cannot open absent.yaml"),
+                _ => new HelpExampleOutcome(0, "Verbose output for demo"),
+            };
+        });
+        var broken = HelpExampleRunner.Run(catalog, invocation => invocation.Example.Name == "verbose"
+            ? new HelpExampleOutcome(0, "Verbose output for demo")
+            : new HelpExampleOutcome(1, "nothing useful"));
+
+        // Assert: the run is in catalog order and saw the saved files; the broken run reports exit codes and fragments
+        correct.AssertSucceeded();
+        Assert.Equal(["check#ok", "check#missing", "check/details#verbose"], commands);
+        Assert.Equal([true, true, false], saved);
+        Assert.Equal(
+            [RuleIds.ExampleExitCode, RuleIds.ExampleOutput, RuleIds.ExampleOutput, RuleIds.ExampleExitCode, RuleIds.ExampleOutput],
+            broken.Problems.Select(problem => problem.RuleId));
+        Assert.Throws<HelpCatalogException>(broken.AssertSucceeded);
+    }
+
+    /// <summary>
     ///     Proves that the Markdown helpers read the headings, sections, and bullets of a card body from a catalog.
     /// </summary>
     [Fact]

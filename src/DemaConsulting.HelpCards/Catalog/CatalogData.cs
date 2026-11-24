@@ -94,6 +94,16 @@ internal sealed class CatalogData
     public string? ToolName { get; }
 
     /// <summary>
+    ///     Gets the tool name the commands of the examples start with: the name set on the builder, else the name of
+    ///     the first source, else <c>tool</c>.
+    /// </summary>
+    /// <remarks>
+    ///     The example runner uses it as the default tool name; the validator and the renderers derive the same name where
+    ///     they need it.
+    /// </remarks>
+    public string EffectiveToolName => ToolName ?? Sources.FirstOrDefault()?.Name ?? "tool";
+
+    /// <summary>
     ///     Gets the tool version set on the builder, or <see langword="null"/> when none was set.
     /// </summary>
     public string? ToolVersion { get; }

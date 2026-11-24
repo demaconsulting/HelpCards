@@ -42,8 +42,9 @@ software items, specifically:
   knowledge tool for AI agents, both independent of any command-line or agent framework; its units are HelpCli,
   CliArgumentParser, CliDispatcher, HelpAgentTool, AgentArgumentReader, and AgentDispatcher
 - **Testing (Subsystem)** — The helpers an adopter uses to test its own help: the validator with its options and rule
-  interface, the parser for the command line of an example, the enumeration of examples, and the readers for the
-  structure of a card body; its units are HelpCardValidator, HelpExamples, ExampleCommandLine, and HelpCardMarkdown
+  interface, the parser for the command line of an example, the enumeration of examples, the runner that runs the
+  command examples through the adopter's own delegate, and the readers for the structure of a card body; its units are
+  HelpCardValidator, HelpExamples, ExampleCommandLine, HelpExampleRunner, and HelpCardMarkdown
 
 The following OTS items are also covered:
 
