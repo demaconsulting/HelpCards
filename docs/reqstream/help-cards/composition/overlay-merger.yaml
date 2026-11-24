@@ -30,6 +30,7 @@ sections:
                   The merged text must not depend on how a file system lists files.
                 tests:
                   - OverlayMerger_Apply_OverlaysOfOneSource_ApplyInOrdinalFileOrder
+                  - OverlayMerger_Apply_OverlaysOfTwoSources_ApplyInRegistrationOrder
 
               - id: HelpCards-Composition-OverlayMerger-Targets
                 title: >-
@@ -37,13 +38,15 @@ sections:
                   imports, or in the source it names, report a target that names no card or a generated mount root as
                   overlay-target, a target source that is not registered or is registered later as extends-target,
                   and an id that two sources of one product both have as ambiguous-reference, each at the line
-                  of the extends key.
+                  of the extends key, and shall stay silent when the target card failed to load, because that
+                  defect is already reported.
                 justification: |
                   An overlay that targets nothing is a defect the author must see where it is written.
                 tests:
                   - OverlayMerger_Apply_MissingTargetAndMountRoot_ReportOverlayTarget
                   - OverlayMerger_Apply_AbsentAndLaterSource_ReportExtendsTargetUnlessOptionalAndAbsent
                   - OverlayMerger_Apply_BareTargetInSourceAndImport_IsAmbiguousUnlessQualified
+                  - OverlayMerger_Apply_TargetFailedToLoad_ReportsOnlyTheSyntaxError
                   - OverlayMerger_Apply_NullArguments_ThrowArgumentNullException
 
               - id: HelpCards-Composition-OverlayMerger-Optional

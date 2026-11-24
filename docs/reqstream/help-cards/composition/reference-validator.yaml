@@ -14,12 +14,14 @@ sections:
               - id: HelpCards-Composition-ReferenceValidator-CardLinks
                 title: >-
                   The validator shall resolve card links to global ids, accept links that point forward or backward
-                  in the tree, and report a link to a card that does not exist at the file and line of the link.
+                  in the tree, resolve and check the links of the landing text of a mount root in the mounted
+                  source, and report a link to a card that does not exist at the file and line of the link.
                 justification: |
                   Readers follow links; a dead link is a defect that must name where it is.
                 tests:
                   - ReferenceValidator_ResolveBody_UnknownCard_ReportsLinkTargetAtLine
                   - ReferenceValidator_ResolveBody_ForwardAndBackwardLinks_AreResolved
+                  - ReferenceValidator_ResolveLanding_MountRootBody_ResolvesLinksAndReportsBrokenOnes
 
               - id: HelpCards-Composition-ReferenceValidator-ExampleLinks
                 title: >-
@@ -97,3 +99,4 @@ sections:
                 tests:
                   - ReferenceValidator_ResolveBody_ImportedSource_ResolvesBareAndQualifiedLinks
                   - ReferenceValidator_ResolveSeeAlso_BareIdInTwoSources_ReportsAmbiguousReference
+                  - ReferenceValidator_ResolveBody_BareLinkInTwoSources_ReportsAmbiguousReference

@@ -24,9 +24,9 @@ reported with the documented rule, every lookup gives the documented outcome, an
   first.
 - **Imports**: a copy of a source made with a `With...` call, and a source with the same declared name, match the
   registered source; imports of imports are listed once in search order.
-- **Import checks**: an import that is not registered, one registered later, and the source itself give
-  `import-missing`, `import-order`, and `import-cycle`, one problem each, and the source is marked as having a broken
-  import.
+- **Import checks**: an import that is not registered, one registered later, one registered later whose name comes
+  only from its `_source.md`, and the source itself give `import-missing`, `import-order`, `import-order`, and
+  `import-cycle`, one problem each, and the source is marked as having a broken import.
 - **Tokens**: a source sees the tokens of every source it imports, directly or not; a token defined by a source and by
   an import is `token-redefined`; the tool token is the name of the first source unless the tool name is set.
 - **Lookup**: own card before imported card, a qualified id in its source, an id that two sources have as ambiguous, an

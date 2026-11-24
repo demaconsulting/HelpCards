@@ -79,11 +79,22 @@ sections:
                   - HelpCatalogBuilder_Compose_UnknownTag_ReportsTagUnknownAtItsLine
                   - HelpCatalogBuilder_Compose_RequiredTag_ReportsTagRequiredForCardsWithoutOne
 
+              - id: HelpCards-Composition-HelpCatalogBuilder-TagVocabularyMountRoots
+                title: >-
+                  The builder shall not apply a configured tag vocabulary or required tags to the generated root
+                  card of a mounted source.
+                justification: |
+                  A mount root is generated, has no tags, and is not authored, so the vocabulary that governs
+                  authored cards cannot apply to it.
+                tests:
+                  - HelpCatalogBuilder_Compose_MountedSource_MountRootIsExemptFromTagVocabulary
+
               - id: HelpCards-Composition-HelpCatalogBuilder-ExpectedRoots
                 title: >-
-                  The builder shall report any difference between the roots of the source and the expected roots,
-                  naming what is missing and what is unexpected, count a root that failed to load as present, and
-                  skip the check when the source itself could not be read.
+                  The builder shall report any difference between the roots of the catalog (the mount roots of
+                  mounted sources and the roots of flat sources) and the expected roots, naming what is missing and
+                  what is unexpected, count a root that failed to load as present, and skip the check when a source
+                  itself could not be read.
                 justification: |
                   A product that promises its top-level topics must notice when one disappears, without piling a
                   second problem on an already reported failure.

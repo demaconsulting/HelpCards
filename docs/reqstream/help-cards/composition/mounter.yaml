@@ -25,12 +25,13 @@ sections:
                   The unit shall let the first source in registration order keep a global id, report a later card or
                   mount that uses the same id as collision naming both sources and files, report a mount that is
                   not a valid segment as mount-invalid, and leave the later card or source out without further
-                  reports.
+                  reports, including a mounted source that has no usable name, which Loading already reported.
                 justification: |
                   Nothing may shadow another card silently, and one clash must be one problem.
                 tests:
                   - Mounter_Register_DistinctIds_ReturnsOwners
                   - Mounter_Register_ContestedIdAndMount_DropsTheLaterHolder
+                  - Mounter_Register_MountedSourceWithoutName_ExcludesSilently
 
               - id: HelpCards-Composition-Mounter-MountRoot
                 title: >-
@@ -51,3 +52,4 @@ sections:
                   A first path segment must lead to exactly one library or card.
                 tests:
                   - Mounter_CheckRootNames_NamesAndAliases_ReportCollisionsAcrossSources
+                  - Mounter_CheckRootNames_FlatAliasBeforeMountAlias_ReportsCollisionOnTheMount

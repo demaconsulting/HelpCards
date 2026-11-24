@@ -182,7 +182,7 @@ public class CompositionMultiSourceTests
         Assert.DoesNotContain(order.Errors, problem => problem.RuleId is "token-unknown" or "link-target" or "see-also-target");
         Assert.Equal([("app", "import-missing")], missing.Errors.Select(problem => (problem.SourceName, problem.RuleId)).Distinct());
         Assert.Equal([("self", "import-cycle")], cycle.Errors.Select(problem => (problem.SourceName, problem.RuleId)));
-        Assert.Contains("the source at position 2", order.Errors[0].Message, StringComparison.Ordinal);
+        Assert.Contains("the source 'lib-a', which is added after it", order.Errors[0].Message, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -333,6 +333,8 @@ public class CompositionMultiSourceTests
         Assert.Contains("Compare the graph card, and read", onlyB.Find("lib-b/chart")!.Body, StringComparison.Ordinal);
         Assert.Empty(onlyB.Find("lib-b/chart")!.SeeAlsoIds);
         Assert.Equal(["external-source-absent", "external-source-absent", "external-source-absent"], onlyB.Diagnostics.Select(problem => problem.RuleId));
+        Assert.Single(onlyB.Diagnostics, problem => problem.Message.Contains("the see-also entry is left out", StringComparison.Ordinal));
+        Assert.Equal(2, onlyB.Diagnostics.Count(problem => problem.Message.Contains("written as its display text", StringComparison.Ordinal)));
     }
 
     /// <summary>
@@ -532,6 +534,40 @@ public class CompositionMultiSourceTests
         Assert.Equal("roots-mismatch", problem.RuleId);
         Assert.Contains("missing: graph", problem.Message, StringComparison.Ordinal);
         Assert.Contains("unexpected: chart, lib-a", problem.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that a mounted source without a name is reported once, by Loading, and not again by the mount.
+    /// </summary>
+    [Fact]
+    public void Composition_Mounting_SourceWithoutName_IsReportedOnce()
+    {
+        // Arrange
+        var unnamed = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card())));
+
+        // Act
+        var result = CatalogBuilding.Compose(builder => builder.AddMountedSource(unnamed).AddMountedSource(CatalogBuilding.LibA()));
+
+        // Assert
+        Assert.Equal(["source-invalid"], result.Errors.Select(problem => problem.RuleId));
+    }
+
+    /// <summary>
+    ///     Proves that an overlay of a card that failed to load adds no problem of its own.
+    /// </summary>
+    [Fact]
+    public void Composition_Overlays_TargetFailedToLoad_ReportsOnlyTheFailure()
+    {
+        // Arrange
+        var lib = CatalogBuilding.Named("lib", ("a.md", "---\ntitle: [unterminated\n---\nBody."));
+        var app = CatalogBuilding.Named("app", ("o.md", "---\nextends: lib:a\ntitle: New\n---\nMore.")).Imports(lib);
+
+        // Act
+        var result = CatalogBuilding.Compose(builder => builder.AddMountedSource(lib).AddSource(app));
+
+        // Assert
+        var problem = Assert.Single(result.Errors);
+        Assert.Equal(("lib", "a.md", "syntax"), (problem.SourceName, problem.File, problem.RuleId));
     }
 
     /// <summary>

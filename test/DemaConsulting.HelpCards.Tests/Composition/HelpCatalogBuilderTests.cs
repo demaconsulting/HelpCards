@@ -226,6 +226,29 @@ public class HelpCatalogBuilderTests
     }
 
     /// <summary>
+    ///     Proves that the generated root card of a mounted source, which has no tags, is exempt from the tag
+    ///     vocabulary while the cards of the source are checked.
+    /// </summary>
+    [Fact]
+    public void HelpCatalogBuilder_Compose_MountedSource_MountRootIsExemptFromTagVocabulary()
+    {
+        // Arrange: the source has one card that carries the required tag; the mount root has no tags at all
+        var source = HelpSource.FromFiles(
+            SourceReading.Files(("a.md", SourceReading.Card(extraFrontMatter: "tags:\n  - good\n"))),
+            "lib");
+
+        // Act
+        var result = CatalogBuilding.Compose(builder => builder
+            .AddMountedSource(source)
+            .TagVocabulary(["good"], ["good"]));
+
+        // Assert
+        Assert.Empty(result.Errors);
+        Assert.Equal(["lib", "lib/a"], result.Data!.Cards.Select(card => card.Id));
+        Assert.Empty(result.Data.Cards[0].Tags);
+    }
+
+    /// <summary>
     ///     Proves that a card without any required tag is reported and a card with one is accepted.
     /// </summary>
     [Fact]

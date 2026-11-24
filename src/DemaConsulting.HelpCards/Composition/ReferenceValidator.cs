@@ -111,7 +111,7 @@ internal sealed class ReferenceValidator
             switch (lookup.Kind)
             {
                 case LookupKind.SourceAbsent:
-                    ReportAbsentSource(entry, reference.SourceName!, reference.File, reference.Line);
+                    ReportAbsentSource(entry, reference.SourceName!, reference.File, reference.Line, "the see-also entry is left out");
                     break;
                 case LookupKind.Found:
                     if (!ids.Contains(lookup.Build!.GlobalId, StringComparer.Ordinal))
@@ -273,7 +273,7 @@ internal sealed class ReferenceValidator
             {
                 case LookupKind.SourceAbsent:
                     // A link to a source that is not present degrades to its display text
-                    ReportAbsentSource(entry, link.SourceName!, file, link.Line);
+                    ReportAbsentSource(entry, link.SourceName!, file, link.Line, "the link is written as its display text");
                     return new ResolvedPart(link.Text, null);
                 case LookupKind.Found:
                     target = lookup.Build!.Node!;
@@ -332,14 +332,15 @@ internal sealed class ReferenceValidator
     /// <param name="sourceName">The name of the absent source.</param>
     /// <param name="file">The file the link was written in.</param>
     /// <param name="line">The line of the link.</param>
-    private void ReportAbsentSource(SourceEntry entry, string sourceName, string file, int line)
+    /// <param name="consequence">What happens to the reference, for the message.</param>
+    private void ReportAbsentSource(SourceEntry entry, string sourceName, string file, int line, string consequence)
     {
         _problems.Add(entry.Index, HelpProblem.CreateInfo(
             RuleIds.ExternalSourceAbsent,
             entry.Name,
             file,
             line,
-            $"The source '{sourceName}' is not part of this catalog; the link is written as its display text."));
+            $"The source '{sourceName}' is not part of this catalog; {consequence}."));
     }
 
     /// <summary>

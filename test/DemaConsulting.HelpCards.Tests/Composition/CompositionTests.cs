@@ -139,11 +139,13 @@ public class CompositionTests
 
         // Act
         var neutral = CatalogBuilding.Compose(source).Data!;
+        var afterNeutral = (provider.ListCount, provider.ReadCount);
         var german = CatalogBuilding.Compose(source, builder => builder.Culture(CatalogBuilding.Culture("de"))).Data!;
+        var afterGerman = (provider.ListCount, provider.ReadCount);
 
-        // Assert: two files per composition, listed once per composition
+        // Assert: each composition lists once and reads each of the two files once
         Assert.Equal(("Neutral", "German"), (neutral.Find("a")!.Title, german.Find("a")!.Title));
-        Assert.Equal(2, provider.ListCount);
-        Assert.Equal(4, provider.ReadCount);
+        Assert.Equal((1, 2), afterNeutral);
+        Assert.Equal((2, 4), afterGerman);
     }
 }

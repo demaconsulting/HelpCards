@@ -30,6 +30,7 @@ sections:
                   A parent knows best which of its cards a reader should see first.
                 tests:
                   - SiblingOrder_Order_ChildrenList_GoesFirstInListedOrder
+                  - SiblingOrder_Order_ListedCardWithOrderValue_KeepsListedPosition
 
               - id: HelpCards-Composition-SiblingOrder-ChildrenChecks
                 title: >-

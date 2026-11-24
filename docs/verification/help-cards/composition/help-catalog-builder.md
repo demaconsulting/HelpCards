@@ -26,7 +26,8 @@ composes to data, and each defect gives exactly the documented problem at the do
   source name as default tool), and the translation selected by the culture.
 - **Tree placement**: a missing parent is reported once and the cards below it are silent; the children of a file that
   failed to load are silent; a card under a card of another source is reported once as tree-foreign.
-- **Tags**: an unknown tag at the line of the tag; a card without a required tag.
+- **Tags**: an unknown tag at the line of the tag; a card without a required tag; the mount root of a mounted source is
+  exempt from the vocabulary and the required tags.
 - **Expected roots**: missing and unexpected roots are named; a matching set passes; a root that failed to load counts
   as present; an unsupported schema suppresses the check.
 - **Collect all**: three different defects in three files are reported in file order and no data is returned.

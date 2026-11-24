@@ -47,7 +47,8 @@ order of the problems or files in the input.
 - **Imports**: an application that imports a library sees its tokens and bare card ids whatever the mount of the
   library; without the import the same cards report unknown tokens and links; a tool source with a schema token uses
   the tokens and bare links of its companion library; an import that is added later, is missing, or is the source
-  itself is one problem and causes no follow-up problems; a bare id that two sources of one product have is ambiguous.
+  itself is one problem and causes no follow-up problems (a later source that only names itself in its `_source.md` is
+  still `import-order`); a bare id that two sources of one product have is ambiguous.
 - **Overlays**: the overlay of the application replaces title and summary of a library card and appends body, see-also
   entries, and examples (whose links resolve in the application's scope and whose `[[#name]]` refers to the target
   subtree); a bare overlay extends a card of the imported library; an optional overlay of an absent library is skipped
@@ -60,8 +61,10 @@ order of the problems or files in the input.
 - **Failures across sources**: problems of several sources come in registration order with no duplicates; an
   unsupported schema in one source does not hide the defects of the others; omitted and explicit schema 1 are supported.
 - **Vocabulary and roots across sources**: expected roots count mount roots and flat roots; the tag vocabulary applies
-  to the cards of every source but not to the generated roots.
+  to the cards of every source but not to the generated roots (also checked at the builder unit).
+- **Failed targets and unnamed sources**: an overlay of a card that failed to load, and a mounted source without a
+  name, each add no problem beyond the one that Loading reports.
 - **Determinism and reading**: composing the same sources twice gives equal renderings; each file is read once and
   nothing is read after the catalog is created.
-- **Reading and culture**: composing reads each file once per composition, and the culture of the builder selects the
-  translation.
+- **Reading and culture**: composing reads each file once per composition (counted after each composition), and the
+  culture of the builder selects the translation.

@@ -178,6 +178,13 @@ internal static class Mounter
         ProblemCollector problems)
     {
         var mount = entry.Mount!;
+        if (entry.Registration.Mount is null && entry.Name == CardReader.UnnamedSource)
+        {
+            // The source has no usable name and was reported as source-invalid by Loading: one defect, one problem
+            entry.Excluded = true;
+            return false;
+        }
+
         if (!CardReader.IsSegment(mount))
         {
             entry.Excluded = true;

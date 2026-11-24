@@ -21,8 +21,10 @@ card are exactly as documented.
   arguments throw.
 - **Claims**: distinct ids give owners and no problem; a flat card that holds an id, a mount that equals it, and a card
   that equals a mount give `collision` at the later source and the earlier holder is named with its file; an invalid
-  mount gives `mount-invalid` and excludes the source; a dropped card is recorded for the tree placement.
+  mount gives `mount-invalid` and excludes the source; a mounted source without a usable name is excluded without a
+  further problem (the loader already reported `source-invalid`); a dropped card is recorded for the tree placement.
 - **Mount root**: the id, name, source, title, summary, aliases, and extension keys come from `_source.md`, the card has
   no parent, tags, or examples, and its children are the roots only.
-- **Root names**: an alias of a root that another source uses as a name is `collision`; two roots of one flat source are
+- **Root names**: an alias of a root that another source uses as a name is `collision`, also when the flat alias was
+  registered before the mount alias; two roots of one flat source are
   left to the sibling check; a mount alias that repeats the mount is `name-duplicate`.
