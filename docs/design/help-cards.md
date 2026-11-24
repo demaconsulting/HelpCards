@@ -1,13 +1,15 @@
 # System Design
 
-This document provides the system-level design for the Template DotNet Library.
+This document provides the system-level design for HelpCards.
 
-![Template DotNet Library Structure](TemplateDotNetLibraryView.svg)
+![HelpCards Structure](HelpCardsView.svg)
 
 ## Architecture
 
-The Template DotNet Library is a minimal .NET library template demonstrating DEMA Consulting
-best practices. The system consists of:
+HelpCards is a .NET library for authoring help and knowledge content as Markdown cards with YAML
+front matter, embedded in assemblies and served as command-line help for people and as searchable
+knowledge for AI agents. The system currently consists of the sample unit retained from the
+repository template:
 
 - **Demo Unit**: Simple greeting functionality demonstrating library patterns
 
@@ -37,7 +39,7 @@ The system exposes the following public API to external consumers:
 
 ## Dependencies
 
-The Template DotNet Library has zero runtime NuGet dependencies — it is implemented exclusively
+HelpCards has zero runtime NuGet dependencies — it is implemented exclusively
 against the .NET Base Class Library. The following OTS items are used for building and verifying
 this system (not consumed at runtime); see *OTS Integration Design* (`docs/design/ots.md`) and
 each item's dedicated design document for details:
@@ -56,7 +58,7 @@ each item's dedicated design document for details:
 
 ## Risk Control Measures
 
-N/A - Template DotNet Library is a demonstration template with no safety-critical functionality
+N/A - HelpCards has no safety-critical functionality
 requiring risk control measures (IEC 62304 §5.3.3).
 
 ## Data Flow
@@ -78,7 +80,7 @@ requiring risk control measures (IEC 62304 §5.3.3).
 
 ## Design Constraints
 
-- **Simplicity**: Minimal functionality to serve as template
+- **Simplicity**: Minimal functionality until HelpCards specification is implemented
 - **Compliance**: All functionality must be traceable to requirements
 - **Quality**: Zero warnings, full test coverage, complete documentation
 - **Portability**: Compatible across supported .NET platforms

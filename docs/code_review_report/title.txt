@@ -1,11 +1,11 @@
 ---
-title: Template DotNet Library Review Report
-subtitle: File Review Report for the Template DotNet Library
+title: HelpCards Review Report
+subtitle: File Review Report for HelpCards
 author: DEMA Consulting
-description: File Review Report for the Template DotNet Library
+description: File Review Report for HelpCards
 lang: en-US
 keywords:
-  - Template DotNet Library
+  - HelpCards
   - Review Report
   - File Reviews
   - .NET

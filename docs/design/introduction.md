@@ -1,12 +1,13 @@
 # Introduction
 
-This document provides the detailed design for the Template DotNet Library, a .NET library
-demonstrating best practices for DEMA Consulting DotNet Libraries.
+This document provides the detailed design for HelpCards, a .NET library for authoring help and
+knowledge content as Markdown cards with YAML front matter, embedded in assemblies and served as
+command-line help for people and as searchable knowledge for AI agents.
 
 ## Purpose
 
 The purpose of this document is to serve as the design entry point and provide detailed design
-specifications for the Template DotNet Library system. This documentation enables formal code
+specifications for the HelpCards system. This documentation enables formal code
 review by providing implementation specifications, supports compliance auditing by maintaining
 clear traceability from requirements through design to code, aids maintenance by documenting
 system structure and interactions, and ensures quality assurance through detailed technical
@@ -21,10 +22,10 @@ This document is intended for:
 
 ## Scope
 
-This document covers the detailed design of the Template DotNet Library system and its constituent
+This document covers the detailed design of the HelpCards system and its constituent
 software items, specifically:
 
-- **TemplateDotNetLibrary (System)** — The complete .NET library template system
+- **HelpCards (System)** — The complete HelpCards .NET library system
 - **Demo (Unit)** — Demonstration greeting class providing example functionality
 
 The following OTS items are also covered:
@@ -41,7 +42,7 @@ The following OTS items are also covered:
 - **WeasyPrint** — HTML-to-PDF conversion tool
 - **xUnit** — unit-testing framework
 
-Version applicability: This design applies to all versions of the Template DotNet Library.
+Version applicability: This design applies to all versions of HelpCards.
 
 The following topics are explicitly excluded from this design documentation:
 
@@ -60,7 +61,7 @@ diagram or the prose below.
 
 ![Software Structure](SoftwareStructureView.svg)
 
-This template demonstrates a minimal system structure with no subsystems — it contains only the
+This repository currently has a minimal system structure with no subsystems — it contains only the
 `Demo` unit directly under the system level. In more complex implementations, subsystems would
 organize related units and provide architectural boundaries with well-defined interfaces and
 responsibilities.
@@ -78,11 +79,11 @@ The source code folder structure mirrors the software structure organization, wi
 and descriptions as follows:
 
 ```text
-src/DemaConsulting.TemplateDotNetLibrary/
-└── Demo.cs                     — Demonstration greeting class implementing template functionality
+src/DemaConsulting.HelpCards/
+└── Demo.cs                     — Sample greeting class retained from the library template
 ```
 
-This flat folder structure reflects the single-unit nature of this template system. As the system
+This flat folder structure reflects the single-unit nature of the current system. As the system
 grows with additional subsystems and units, the folder structure will expand to mirror the
 software architecture with subsystem-specific folders containing their respective units.
 
@@ -110,6 +111,6 @@ Each software item has corresponding artifacts in parallel directory trees:
 
 ## References
 
-- Template DotNet Library User Guide — the compiled User Guide document for this repository.
-- Template DotNet Library Repository — the TemplateDotNetLibrary source repository hosted on
+- HelpCards User Guide — the compiled User Guide document for this repository.
+- HelpCards Repository — the HelpCards source repository hosted on
   GitHub.

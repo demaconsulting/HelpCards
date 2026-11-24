@@ -1,11 +1,11 @@
 ---
-title: Template DotNet Library Review Plan
-subtitle: File Review Plan for the Template DotNet Library
+title: HelpCards Review Plan
+subtitle: File Review Plan for HelpCards
 author: DEMA Consulting
-description: File Review Plan for the Template DotNet Library
+description: File Review Plan for HelpCards
 lang: en-US
 keywords:
-  - Template DotNet Library
+  - HelpCards
   - Review Plan
   - File Reviews
   - .NET

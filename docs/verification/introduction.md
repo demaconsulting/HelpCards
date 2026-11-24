@@ -1,12 +1,13 @@
 # Introduction
 
-This document provides the verification design for the Template DotNet Library, a .NET library
-demonstrating best practices for DEMA Consulting DotNet Libraries.
+This document provides the verification design for HelpCards, a .NET library for authoring help
+and knowledge content as Markdown cards with YAML front matter, embedded in assemblies and served
+as command-line help for people and as searchable knowledge for AI agents.
 
 ## Purpose
 
 The purpose of this document is to serve as the verification design entry point and document how
-requirements will be tested across all software items in the Template DotNet Library system. This
+requirements will be tested across all software items in the HelpCards system. This
 documentation enables formal review by mapping every requirement to named test scenarios, supports
 compliance auditing by providing clear traceability from requirements through verification design
 to tests, and ensures test completeness can be assessed without reading implementation code.
@@ -20,10 +21,10 @@ This document is intended for:
 
 ## Scope
 
-This document covers the verification design for the Template DotNet Library system and its
+This document covers the verification design for the HelpCards system and its
 constituent software items, specifically:
 
-- **TemplateDotNetLibrary (System)** — The complete .NET library template system
+- **HelpCards (System)** — The complete HelpCards .NET library system
 - **Demo (Unit)** — Demonstration greeting class providing example functionality
 
 The following OTS items are also covered:
@@ -41,8 +42,8 @@ The following OTS items are also covered:
 
 This verification documentation covers the same software items as the design documentation.
 
-Version applicability: This verification design applies to all versions of the Template DotNet
-Library.
+Version applicability: This verification design applies to all versions of
+HelpCards.
 
 The following topics are explicitly excluded from this verification documentation:
 
@@ -69,6 +70,6 @@ Review-sets: defined in `.reviewmark.yaml`
 
 ## References
 
-- Template DotNet Library User Guide — the compiled User Guide document for this repository.
-- Template DotNet Library Repository — the TemplateDotNetLibrary source repository hosted on
+- HelpCards User Guide — the compiled User Guide document for this repository.
+- HelpCards Repository — the HelpCards source repository hosted on
   GitHub.

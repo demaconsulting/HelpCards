@@ -1,11 +1,11 @@
 ---
-title: Template DotNet Library Verification Design Document
-subtitle: A .NET Reference Implementation for Libraries
+title: HelpCards Verification Design Document
+subtitle: Markdown help and knowledge cards for .NET
 author: DEMA Consulting
-description: Verification design document for the Template DotNet Library
+description: Verification design document for HelpCards
 lang: en-US
 keywords:
-  - Template DotNet Library
+  - HelpCards
   - .NET
   - Library
   - Verification
