@@ -206,4 +206,33 @@ public class CatalogTests
         Assert.Equal(["build", "quality", "release"], catalog.TagNames);
         Assert.Equal("deploy", catalog.Find("ship")!.Id);
     }
+
+    /// <summary>
+    ///     Proves that the rendering members write what the catalog view shows: a card, the index, examples, and a
+    ///     link to a hidden card written as its title.
+    /// </summary>
+    [Fact]
+    public void Catalog_Rendering_RenderMembers_WriteDocumentsOfTheCatalogView()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var view = catalog.Without(["reference", "reference/limits"]);
+        var guide = catalog.Find("guide")!;
+
+        // Act
+        var card = view.Render(guide);
+        var index = view.RenderIndex();
+        var examples = view.RenderExamples(guide);
+        var example = view.RenderExample(guide, "settings");
+
+        // Assert: the view neither lists nor points at the hidden card, and the example content is exact
+        Assert.Equal(3, index.Split('\n').Length);
+        Assert.DoesNotContain("reference", index, StringComparison.Ordinal);
+        Assert.DoesNotContain("## See also", card, StringComparison.Ordinal);
+        Assert.Contains("The limits are described in the card `reference/limits`", catalog.Render(guide), StringComparison.Ordinal);
+        Assert.Contains("The limits are described in the limits card, and", card, StringComparison.Ordinal);
+        Assert.StartsWith("# Guide: examples", examples, StringComparison.Ordinal);
+        Assert.Equal("---\nlimit: 42\nmode: fast", example);
+        Assert.Throws<ArgumentException>(() => view.Render(catalog.Find("reference")!));
+    }
 }

@@ -40,3 +40,5 @@ see the same result.
 - **Problems**: problem records compare by value, the exception message is one sentence, and the severities are ordered.
 - **Concurrency**: one hundred workers use one catalog, make views, and read bodies; every result is the same and every
   predicate call is counted.
+- **Rendering**: a view renders and indexes only the cards it shows; a link to a hidden card is its title, the example
+  content is exact, and a hidden card cannot be rendered.

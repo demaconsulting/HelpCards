@@ -1,0 +1,50 @@
+---
+# TextWrapper Unit Requirements
+#
+# Requirements for the TextWrapper unit of the Presentation subsystem, which wraps generated text to a width.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Presentation Requirements
+        sections:
+          - title: TextWrapper Requirements
+            requirements:
+              - id: HelpCards-Presentation-TextWrapper-Wrap
+                title: >-
+                  The wrapper shall break text between words so that no line is longer than the width, count the
+                  prefix toward the width, and start every later line with the hanging indent.
+                justification: |
+                  Generated lines must fit a terminal and keep their list structure when they continue.
+                tests:
+                  - TextWrapper_Append_LongText_BreaksBetweenWordsWithinWidth
+                  - TextWrapper_Append_PrefixAndHangingIndent_CountTowardWidth
+                  - TextWrapper_AppendHanging_IndentsLaterLinesByPrefixWidth
+
+              - id: HelpCards-Presentation-TextWrapper-LongWords
+                title: >-
+                  The wrapper shall never split a word, and shall put a word that is longer than the width on a line
+                  of its own.
+                justification: |
+                  Ids, paths, and commands must stay copyable.
+                tests:
+                  - TextWrapper_Append_WordLongerThanWidth_SitsOnItsOwnLine
+
+              - id: HelpCards-Presentation-TextWrapper-Lines
+                title: >-
+                  The wrapper shall write one line for any text when the width is zero, collapse runs of spaces,
+                  write nothing for text without a word, and end every line with a line feed only.
+                justification: |
+                  Output must be byte-identical on every machine and free of stray prefixes.
+                tests:
+                  - TextWrapper_Append_WidthZero_WritesOneLine
+                  - TextWrapper_Append_SpacesAndEmptyText_AreCollapsedOrSkipped
+                  - TextWrapper_Append_Lines_EndWithLineFeedOnly
+
+              - id: HelpCards-Presentation-TextWrapper-Arguments
+                title: >-
+                  The wrapper shall reject null arguments with an argument null exception.
+                justification: |
+                  Programming mistakes must fail loudly.
+                tests:
+                  - TextWrapper_NullArguments_ThrowArgumentNullException

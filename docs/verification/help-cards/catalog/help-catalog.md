@@ -2,9 +2,10 @@
 
 #### Verification Approach
 
-The catalog is tested directly in `HelpCatalogTests.cs` and `HelpCatalogTests.Views.cs` with catalogs created from the
-embedded `simple` fixture and from small in-memory sources. The builder of the Composition subsystem is real because
-it is the only way to create a catalog. A counting file provider proves that no file is read after creation.
+The catalog is tested directly in `HelpCatalogTests.cs`, `HelpCatalogTests.Views.cs`, and `HelpCatalogTests.Render.cs`
+with catalogs created from the embedded `simple` fixture and from small in-memory sources. The builder of the
+Composition subsystem is real because it is the only way to create a catalog. A counting file provider proves that no
+file is read after creation.
 
 #### Test Environment
 
@@ -33,3 +34,6 @@ never returned, and parallel use gives consistent results with every predicate c
 - **Hidden cards**: lookups walk through them, return null for them, and examples and see-also entries of hidden cards
   are not found.
 - **Concurrency and determinism**: sixty-four workers; two creations under two different current cultures.
+- **Rendering members**: default options, the three formats, a card of another view, a hidden or null card, the index
+  depth and usage lines, examples and one example in text and JSON, search results and card lists with their filter,
+  the formatted body in each link style, and the callback called only for visible targets.

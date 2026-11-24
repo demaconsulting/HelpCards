@@ -1,0 +1,29 @@
+---
+# HelpStrings Unit Requirements
+#
+# Requirements for the HelpStrings unit of the Presentation subsystem, which holds the English chrome of a rendering.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Presentation Requirements
+        sections:
+          - title: HelpStrings Requirements
+            requirements:
+              - id: HelpCards-Presentation-HelpStrings-Chrome
+                title: >-
+                  The unit shall provide every heading, label, and hint sentence that a rendering writes around
+                  authored content in English, with the Markdown labels in bold.
+                justification: |
+                  Chrome in one place is the seam for later localization and keeps the layout consistent.
+                tests:
+                  - HelpStrings_Chrome_HeadingsAndLabels_AreEnglish
+                  - HelpStrings_Hints_NameTheCommand
+
+              - id: HelpCards-Presentation-HelpStrings-CultureIndependence
+                title: >-
+                  The unit shall write the same strings whatever the current culture of the thread is.
+                justification: |
+                  Output must be identical on every machine.
+                tests:
+                  - HelpStrings_Chrome_DoesNotDependOnCurrentCulture

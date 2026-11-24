@@ -1,0 +1,137 @@
+---
+# TextRenderer Unit Requirements
+#
+# Requirements for the TextRenderer unit of the Presentation subsystem, which renders cards, indexes, example
+# documents, search results, and card lists as text and Markdown.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Presentation Requirements
+        sections:
+          - title: TextRenderer Requirements
+            requirements:
+              - id: HelpCards-Presentation-TextRenderer-Card
+                title: >-
+                  The renderer shall write a card as its title, summary, aliases, tags, body, children, examples, and
+                  related cards in that order, leave out every empty section, leave out the tags when the options say
+                  so, and write the same document as the golden file for the guide card of the simple fixture.
+                justification: |
+                  The layout of a card is what people read; it must be exact and stable.
+                tests:
+                  - TextRenderer_RenderCard_SimpleGuide_Text_EqualsGolden
+                  - TextRenderer_RenderCard_FullCard_WritesTheSectionsInOrder
+                  - TextRenderer_RenderCard_PlainCard_OmitsEmptySections
+                  - TextRenderer_RenderCard_EmptyBody_WritesNoBodyBlock
+                  - TextRenderer_RenderCard_SeeAlsoAndTagsOption_AreRespected
+
+              - id: HelpCards-Presentation-TextRenderer-Markdown
+                title: >-
+                  The renderer shall write Markdown with the layout of the text format, bold labels, and no
+                  wrapping at any width.
+                justification: |
+                  Markdown output is pasted into documents and must not be reflowed.
+                tests:
+                  - TextRenderer_RenderCard_Markdown_WritesBoldLabelsAndDoesNotWrap
+                  - TextRenderer_RenderCard_SimpleGuide_Markdown_EqualsGolden
+
+              - id: HelpCards-Presentation-TextRenderer-Wrapping
+                title: >-
+                  The renderer shall wrap only the lines it generates, at the width of the options with a hanging
+                  indent, and never reflow the authored body.
+                justification: |
+                  Authors control their text; the library controls only the chrome around it.
+                tests:
+                  - TextRenderer_RenderCard_Width_WrapsGeneratedLinesOnly
+                  - TextRenderer_RenderCard_SimpleGuide_NarrowWidth_EqualsGolden
+
+              - id: HelpCards-Presentation-TextRenderer-LinkStyles
+                title: >-
+                  The renderer shall write bodies and lists in the command and the Markdown link styles, and in the
+                  command style add the hint that tells how to print the examples, only for a card with examples.
+                justification: |
+                  A command-line tool and a document need different links and hints from the same card.
+                tests:
+                  - TextRenderer_RenderCard_SimpleGuide_CommandStyle_EqualsGolden
+                  - TextRenderer_RenderCard_SimpleGuide_MarkdownLinkStyle_EqualsGolden
+                  - TextRenderer_RenderCard_CommandStyle_HintsOnlyWithExamples
+
+              - id: HelpCards-Presentation-TextRenderer-ExampleContent
+                title: >-
+                  The renderer shall, when asked, write the examples of a card as sections with a description and
+                  the content in a code fence that is one backtick longer than the longest run of backticks in the
+                  content, with at least three.
+                justification: |
+                  Example content must be copyable, and nothing inside it may end the fence.
+                tests:
+                  - TextRenderer_RenderCard_SimpleGuide_ExampleContent_EqualsGolden
+                  - TextRenderer_RenderCard_ExampleContentWithBackticks_UsesALongerFence
+
+              - id: HelpCards-Presentation-TextRenderer-Output
+                title: >-
+                  The renderer shall write LF line endings only, no trailing line feed, no trailing spaces, no tab
+                  characters, and no escape characters, for every card and every format.
+                justification: |
+                  Output must be byte-identical on every machine and safe to pipe anywhere.
+                tests:
+                  - TextRenderer_RenderCard_EveryCardAndFormat_UsesLfOnlyAndNoTrailingNewline
+
+              - id: HelpCards-Presentation-TextRenderer-Arguments
+                title: >-
+                  The renderer shall reject null arguments with an argument null exception.
+                justification: |
+                  Programming mistakes must fail loudly.
+                tests:
+                  - TextRenderer_RenderCard_NullArguments_ThrowArgumentNullException
+                  - TextRenderer_Lists_NullArguments_ThrowArgumentNullException
+
+              - id: HelpCards-Presentation-TextRenderer-ExamplesDocument
+                title: >-
+                  The renderer shall write the examples document of a card as its own examples in full, the hint for
+                  printing one alone in the command style only, and a list of the cards below it that have
+                  examples, with their example names and without their content, and shall say so when a card has no
+                  examples of its own.
+                justification: |
+                  A reader asks for the examples of a card, not for everything below it.
+                tests:
+                  - TextRenderer_RenderExamples_SimpleGuide_CommandStyle_EqualsGolden
+                  - TextRenderer_RenderExamples_OwnExamplesAndDescendants_WritesTheLayout
+                  - TextRenderer_RenderExamples_PlainStyle_HasNoHintAndListsIds
+                  - TextRenderer_RenderExamples_SourceExample_ShowsFileNameAndContent
+                  - TextRenderer_RenderExamples_NoOwnExamples_SaysSo
+
+              - id: HelpCards-Presentation-TextRenderer-Example
+                title: >-
+                  The renderer shall write one example as exactly its content with no header, find it in the card or
+                  the cards below ignoring case, and reject an unknown example as an argument error.
+                justification: |
+                  The content is saved to a file or run, so nothing may be added to it.
+                tests:
+                  - TextRenderer_RenderExample_TextAndMarkdown_ReturnExactlyTheContent
+                  - TextRenderer_RenderExample_UnknownName_ThrowsArgumentException
+
+              - id: HelpCards-Presentation-TextRenderer-Index
+                title: >-
+                  The renderer shall write the index as one line per visible card down to a depth, with two spaces of
+                  indent per level, labels padded to the widest, and summaries wrapped at the hanging indent, in the
+                  text, Markdown, and command forms, and shall say so when no card is visible.
+                justification: |
+                  The index is the table of contents of the help.
+                tests:
+                  - TextRenderer_RenderIndex_SimpleFixture_Text_EqualsGolden
+                  - TextRenderer_RenderIndex_SimpleFixture_Markdown_EqualsGolden
+                  - TextRenderer_RenderIndex_SimpleFixture_CommandStyle_EqualsGolden
+                  - TextRenderer_RenderIndex_Tree_PadsLabelsAndIndentsByDepth
+                  - TextRenderer_RenderIndex_MaxDepth_LimitsTheLevels
+                  - TextRenderer_RenderIndex_LongSummary_WrapsAtHangingIndent
+                  - TextRenderer_RenderIndex_NoVisibleCards_WritesTheEmptySentence
+
+              - id: HelpCards-Presentation-TextRenderer-Lists
+                title: >-
+                  The renderer shall write a list of cards and search results as one line each with the label and
+                  the summary, and a sentence that names the query when a search found nothing.
+                justification: |
+                  Tag listings and searches use the same layout as the index.
+                tests:
+                  - TextRenderer_RenderCardList_Cards_WritesOneLineEach
+                  - TextRenderer_RenderSearch_Results_WritesLabelsAndSummaries

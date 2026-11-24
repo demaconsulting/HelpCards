@@ -170,11 +170,38 @@ a null callback and a builder without a source are argument errors.
 
 ### Thread Safety and Determinism
 
-**Tests**: `HelpCards_ThreadSafety_ParallelUse_IsConsistent`,
-`HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture`
+**Tests**: `HelpCards_ThreadSafety_ParallelUse_IsConsistent`, `HelpCards_ThreadSafety_ParallelRendering_IsConsistent`,
+`HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture`,
+`HelpCards_Determinism_RenderTwice_IsEqualRegardlessOfCurrentCulture`
 
 Fifty parallel workers share one catalog, make views with a counted predicate, and read bodies; every result is equal
-and every call is counted. Two creations under the current cultures `tr-TR` and `de-DE` give equal catalogs.
+and every call is counted. Forty parallel workers render the guide card as text and JSON and with a counted link
+callback in a view; every output equals the expected one and the callback is called the same number of times by every
+worker. Two creations and two renderings under the current cultures `tr-TR` and `de-DE` give equal results.
+
+### Rendering: Text, Markdown, and JSON Golden Files
+
+**Tests**: `HelpCards_Rendering_SimpleFixtureText_EqualsGolden`,
+`HelpCards_Rendering_SimpleFixtureMarkdown_EqualsGolden`, `HelpCards_Rendering_SimpleFixtureJson_EqualsGolden`
+
+Renders the guide card and the index of the embedded `simple` fixture as text, Markdown, and JSON, and compares each
+with its golden file exactly. A golden file holds the output followed by one line feed.
+
+### Rendering: Link Styles and Examples
+
+**Tests**: `HelpCards_Rendering_LinkStyles_WriteTargetsInEachStyle`,
+`HelpCards_Rendering_Examples_ArePrintedInFullOrAlone`
+
+Formats the guide body in the plain, command, and Markdown styles and with a callback, and asserts one link of each.
+Renders the examples document of the guide card in the command style and compares it with its golden file, and prints
+one example of a card below it alone, asserting that the result is exactly its content.
+
+### JSON Contract
+
+**Test**: `HelpCards_JsonContract_Documents_AreOneAsciiLineWithoutNull`
+
+Renders the index, a card, examples, one example, search results, and a card list as JSON; parses each, asserts the
+contract version, the success flag, the kind, that the text contains no null and no character outside printable ASCII.
 
 ### No Dependencies
 

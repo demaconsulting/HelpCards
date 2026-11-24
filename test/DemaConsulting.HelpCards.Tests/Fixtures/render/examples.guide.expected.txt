@@ -1,0 +1,35 @@
+# Guide: examples
+
+## run [command]
+
+Run the tool on a file.
+
+```shell
+simple run input.txt
+```
+
+## settings [source] guide/settings.yaml
+
+A settings file with the limit.
+
+```yaml
+---
+limit: 42
+mode: fast
+```
+
+## fragment [snippet] fragment.yaml
+
+A fragment of a settings file.
+
+```yaml
+limit: 42
+mode: fast
+```
+
+Print one alone with: simple help guide --example <name>
+
+## Cards below with examples
+
+- simple help guide setup --examples
+  Examples: check

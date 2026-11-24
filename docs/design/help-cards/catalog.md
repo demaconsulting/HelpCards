@@ -34,6 +34,7 @@ The subsystem contains these units:
 | `Find`, `Resolve`, `GetChildren`, `GetSeeAlso` | Inbound | Look up cards |
 | `FindExamples`, `FindExample` | Inbound | Look up examples |
 | `Filter`, `FilterSource`, `Where`, `Without` | Inbound | Make views |
+| `Render*`, `FormatBody` | Inbound | Render the view (bodies in the Presentation subsystem) |
 | `HelpCatalogBuilder.Compose()` | Outbound (Composition) | Obtain the frozen data |
 | `HelpCard.BodyPieces`, `HelpCatalog.Scope` | Inbound (Presentation) | Render cards in several styles |
 

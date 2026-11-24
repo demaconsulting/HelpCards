@@ -232,7 +232,8 @@ sections:
 
       - id: HelpCards-ThreadSafety-SharedCatalog
         title: >-
-          One catalog and the views made from it shall be safe to use from many threads at the same time.
+          One catalog and the views made from it shall be safe to use from many threads at the same time, for
+          lookups, views, and rendering.
         tags: [system]
         justification: |
           A tool or service creates its catalog once and shares it between all requests.
@@ -240,16 +241,76 @@ sections:
           - HelpCards-Catalog-Concurrency
         tests:
           - HelpCards_ThreadSafety_ParallelUse_IsConsistent
+          - HelpCards_ThreadSafety_ParallelRendering_IsConsistent
 
       - id: HelpCards-Determinism-Output
         title: >-
-          Creating a catalog from the same source shall give the same result whatever the current culture of the
-          machine is.
+          Creating a catalog from the same source, and rendering it, shall give the same result whatever the current
+          culture of the machine is.
         tags: [system]
         justification: |
           Help text and its order must be byte-identical on every machine.
+        children:
+          - HelpCards-Presentation-Determinism
         tests:
           - HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture
+          - HelpCards_Determinism_RenderTwice_IsEqualRegardlessOfCurrentCulture
+
+      - id: HelpCards-Rendering-TextAndMarkdown
+        title: >-
+          A catalog shall render a card, the index, and a list of cards as plain text and as Markdown with a fixed
+          layout, wrapping only the lines it generates, with LF line endings and no trailing line feed.
+        tags: [system]
+        justification: |
+          People read help in a terminal and in documents; a fixed, byte-stable layout can be learned and tested.
+        children:
+          - HelpCards-Presentation-Text
+          - HelpCards-Presentation-Markdown
+          - HelpCards-Presentation-Lists
+          - HelpCards-Presentation-Wrapping
+          - HelpCards-Presentation-Options
+          - HelpCards-Catalog-Rendering
+        tests:
+          - HelpCards_Rendering_SimpleFixtureText_EqualsGolden
+          - HelpCards_Rendering_SimpleFixtureMarkdown_EqualsGolden
+
+      - id: HelpCards-Rendering-LinkStyles
+        title: >-
+          A catalog shall write the links of card bodies and lists in a plain, a command, and a Markdown style or
+          through a callback of the caller, and never point at a card that a view hides.
+        tags: [system]
+        justification: |
+          The same card is read in a terminal, in a document, and inside a tool with its own links.
+        children:
+          - HelpCards-Presentation-LinkStyles
+        tests:
+          - HelpCards_Rendering_LinkStyles_WriteTargetsInEachStyle
+
+      - id: HelpCards-Rendering-Examples
+        title: >-
+          A catalog shall print the examples of a card in full, list the cards below that have examples, and print
+          one example alone as exactly its content.
+        tags: [system]
+        justification: |
+          Examples are saved to files and run, so they must come out unchanged.
+        children:
+          - HelpCards-Presentation-Examples
+        tests:
+          - HelpCards_Rendering_Examples_ArePrintedInFullOrAlone
+
+      - id: HelpCards-JsonContract-Documents
+        title: >-
+          A catalog shall render its cards, indexes, examples, search results, and card lists as JSON documents of
+          contract version 1, each on one line of ASCII without any null, with the keys in a fixed order.
+        tags: [system]
+        justification: |
+          Tools and agents parse the JSON, so it follows a frozen, versioned contract.
+        children:
+          - HelpCards-Presentation-Json
+          - HelpCards-Presentation-JsonContract
+        tests:
+          - HelpCards_Rendering_SimpleFixtureJson_EqualsGolden
+          - HelpCards_JsonContract_Documents_AreOneAsciiLineWithoutNull
 
       - id: HelpCards-NoDependencies-FrameworkOnly
         title: >-

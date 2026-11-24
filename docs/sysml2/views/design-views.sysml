@@ -25,4 +25,8 @@ package HelpCardsDesignViews {
     view CatalogView {
         expose CatalogSubsystem;
     }
+
+    view PresentationView {
+        expose PresentationSubsystem;
+    }
 }

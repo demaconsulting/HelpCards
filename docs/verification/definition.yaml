@@ -27,6 +27,13 @@ input-files:
   - docs/verification/help-cards/catalog/catalog-scope.md
   - docs/verification/help-cards/catalog/path-resolver.md
   - docs/verification/help-cards/catalog/example-resolver.md
+  - docs/verification/help-cards/presentation.md
+  - docs/verification/help-cards/presentation/help-render-options.md
+  - docs/verification/help-cards/presentation/link-formatter.md
+  - docs/verification/help-cards/presentation/text-renderer.md
+  - docs/verification/help-cards/presentation/json-document-writer.md
+  - docs/verification/help-cards/presentation/text-wrapper.md
+  - docs/verification/help-cards/presentation/help-strings.md
   - docs/verification/ots.md
   - docs/verification/ots/buildmark.md
   - docs/verification/ots/fileassert.md

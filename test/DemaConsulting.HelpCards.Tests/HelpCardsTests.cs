@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Reflection;
 using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Loading;
+using DemaConsulting.HelpCards.Presentation;
 using DemaConsulting.HelpCards.Tests.TestSupport;
 
 namespace DemaConsulting.HelpCards.Tests;
@@ -602,5 +603,220 @@ public class HelpCardsTests
         Assert.Equal(("Welcome (culture de-DE)", "de-DE"), (catalog.Find("welcome")!.Title, catalog.Find("welcome")!.Culture));
         Assert.Equal(("Farewell (language de)", "de"), (catalog.Find("farewell")!.Title, catalog.Find("farewell")!.Culture));
         Assert.Equal(("Plain", "en"), (catalog.Find("plain")!.Title, catalog.Find("plain")!.Culture));
+    }
+
+    /// <summary>
+    ///     Proves that the guide card of the simple fixture renders as text equal to the golden file.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Rendering_SimpleFixtureText_EqualsGolden()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+
+        // Act
+        var card = catalog.Render(catalog.Find("guide")!);
+        var index = catalog.RenderIndex();
+
+        // Assert
+        GoldenFiles.AssertEqual("guide.text.expected.txt", card);
+        GoldenFiles.AssertEqual("index.text.expected.txt", index);
+    }
+
+    /// <summary>
+    ///     Proves that the guide card of the simple fixture renders as Markdown equal to the golden file.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Rendering_SimpleFixtureMarkdown_EqualsGolden()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var options = new HelpRenderOptions { Format = HelpFormat.Markdown };
+
+        // Act
+        var card = catalog.Render(catalog.Find("guide")!, options);
+        var index = catalog.RenderIndex(options);
+
+        // Assert
+        GoldenFiles.AssertEqual("guide.markdown.expected.txt", card);
+        GoldenFiles.AssertEqual("index.markdown.expected.txt", index);
+    }
+
+    /// <summary>
+    ///     Proves that the guide card of the simple fixture renders as JSON equal to the golden file.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Rendering_SimpleFixtureJson_EqualsGolden()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var options = new HelpRenderOptions { Format = HelpFormat.Json };
+
+        // Act
+        var card = catalog.Render(catalog.Find("guide")!, options);
+        var index = catalog.RenderIndex(options);
+
+        // Assert
+        GoldenFiles.AssertEqual("guide.expected.json", card);
+        GoldenFiles.AssertEqual("index.expected.json", index);
+    }
+
+    /// <summary>
+    ///     Proves that links are written in the plain, command, and Markdown styles and by a callback.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Rendering_LinkStyles_WriteTargetsInEachStyle()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var guide = catalog.Find("guide")!;
+
+        // Act
+        var plain = catalog.FormatBody(guide);
+        var command = catalog.FormatBody(guide, new HelpRenderOptions { LinkStyle = HelpLinkStyle.Command });
+        var markdown = catalog.FormatBody(guide, new HelpRenderOptions { LinkStyle = HelpLinkStyle.Markdown });
+        var custom = catalog.FormatBody(guide, new HelpRenderOptions { LinkFormatter = link => $"<{link.CardId}>" });
+
+        // Assert
+        Assert.Contains("Start with the card `guide/setup`", plain, StringComparison.Ordinal);
+        Assert.Contains("Start with `simple help guide setup`", command, StringComparison.Ordinal);
+        Assert.Contains("Start with [Setup](guide/setup)", markdown, StringComparison.Ordinal);
+        Assert.Contains("Start with <guide/setup> and then read <guide/usage>.", custom, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that a card's examples are printed in full, the cards below are only listed, and one example is
+    ///     printed alone as its exact content.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Rendering_Examples_ArePrintedInFullOrAlone()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var guide = catalog.Find("guide")!;
+        var options = new HelpRenderOptions { LinkStyle = HelpLinkStyle.Command };
+
+        // Act
+        var examples = catalog.RenderExamples(guide, options);
+        var alone = catalog.RenderExample(guide, "check");
+
+        // Assert
+        GoldenFiles.AssertEqual("examples.guide.expected.txt", examples);
+        Assert.Equal("simple --version", alone);
+    }
+
+    /// <summary>
+    ///     Proves that the JSON documents follow the contract: one line, ASCII only, version 1, and no null.
+    /// </summary>
+    [Fact]
+    public void HelpCards_JsonContract_Documents_AreOneAsciiLineWithoutNull()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var options = new HelpRenderOptions { Format = HelpFormat.Json, LinkStyle = HelpLinkStyle.Command };
+        var guide = catalog.Find("guide")!;
+        var documents = new List<string>
+        {
+            catalog.RenderIndex(options),
+            catalog.Render(guide, options),
+            catalog.RenderExamples(guide, options),
+            catalog.RenderExample(guide, "run", options),
+            catalog.RenderSearch("tool", [new("guide", "Guide", "Summary.", "simple", 7, ["title"])], options),
+            catalog.RenderCardList(catalog.Cards, options),
+        };
+
+        // Act / Assert
+        foreach (var json in documents)
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(json);
+            Assert.Equal(1, document.RootElement.GetProperty("helpSchemaVersion").GetInt32());
+            Assert.True(document.RootElement.GetProperty("ok").GetBoolean());
+            Assert.DoesNotContain("null", json, StringComparison.Ordinal);
+            Assert.All(json, character => Assert.True(character is >= ' ' and < '\u007F'));
+        }
+
+        Assert.Equal(
+            ["index", "card", "examples", "example", "search", "cards"],
+            documents.Select(json => System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("kind").GetString()));
+    }
+
+    /// <summary>
+    ///     Proves that many threads can render from one catalog at the same time with consistent results and that the
+    ///     callbacks of the caller are counted, not serialized.
+    /// </summary>
+    [Fact]
+    public void HelpCards_ThreadSafety_ParallelRendering_IsConsistent()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var guide = catalog.Find("guide")!;
+        var expectedText = catalog.Render(guide);
+        var expectedJson = catalog.Render(guide, new HelpRenderOptions { Format = HelpFormat.Json });
+        var linkCalls = 0;
+        var linkOptions = new HelpRenderOptions
+        {
+            LinkFormatter = link =>
+            {
+                Interlocked.Increment(ref linkCalls);
+                return link.CardId ?? "local";
+            },
+        };
+        var inconsistent = 0;
+
+        // Act
+        Parallel.For(0, 40, _ =>
+        {
+            var view = catalog.Where(card => card.Id != "reference");
+            var text = catalog.Render(guide);
+            var json = catalog.Render(guide, new HelpRenderOptions { Format = HelpFormat.Json });
+            var viewText = view.Render(guide, linkOptions);
+            if (text != expectedText || json != expectedJson || viewText.Length == 0 || catalog.RenderIndex().Length == 0)
+            {
+                Interlocked.Increment(ref inconsistent);
+            }
+        });
+
+        // Assert: every render by every worker called the callback for the same visible links and labels
+        Assert.Equal(0, inconsistent);
+        Assert.True(linkCalls > 0);
+        Assert.Equal(0, linkCalls % 40);
+    }
+
+    /// <summary>
+    ///     Proves that rendering twice gives equal output whatever the current culture of the machine is.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Determinism_RenderTwice_IsEqualRegardlessOfCurrentCulture()
+    {
+        // Arrange
+        var original = CultureInfo.CurrentCulture;
+        static string Describe(HelpCatalog catalog)
+        {
+            var guide = catalog.Find("guide")!;
+            return string.Join(
+                "\n=====\n",
+                catalog.Render(guide),
+                catalog.Render(guide, new HelpRenderOptions { Format = HelpFormat.Markdown, LinkStyle = HelpLinkStyle.Markdown }),
+                catalog.Render(guide, new HelpRenderOptions { Format = HelpFormat.Json }),
+                catalog.RenderIndex(),
+                catalog.RenderExamples(guide));
+        }
+
+        try
+        {
+            // Act
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+            var first = Describe(CatalogBuilding.Simple());
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+            var second = Describe(CatalogBuilding.Simple());
+
+            // Assert
+            Assert.Equal(first, second);
+            Assert.DoesNotContain('\r', first);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
     }
 }

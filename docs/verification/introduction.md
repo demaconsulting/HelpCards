@@ -34,6 +34,9 @@ constituent software items, specifically:
 - **Catalog (Subsystem)** — The frozen data, the immutable model, filtered views, path and example lookup, and the
   problem model; its units are HelpCatalog, HelpCard, HelpProblem, CatalogData, CatalogScope, PathResolver, and
   ExampleResolver
+- **Presentation (Subsystem)** — Renders cards, indexes, examples, search results, and card lists as text, Markdown,
+  and JSON with three link styles; its units are HelpRenderOptions, LinkFormatter, TextRenderer, JsonDocumentWriter,
+  TextWrapper, and HelpStrings
 
 The following OTS items are also covered:
 

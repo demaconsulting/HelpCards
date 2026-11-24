@@ -1,0 +1,11 @@
+simple help guide               How to set up and
+                                use the tool.
+  simple help guide setup       Prepare the tool
+                                before the first
+                                run.
+  simple help guide usage       Everyday use of
+                                the tool.
+simple help reference           Facts about limits
+                                and options.
+  simple help reference limits  The numbers the
+                                tool enforces.

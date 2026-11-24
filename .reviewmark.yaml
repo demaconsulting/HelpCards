@@ -346,6 +346,7 @@ reviews:
       - "docs/verification/help-cards/catalog/help-catalog.md"      # unit verification
       - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.cs"       # unit source
       - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Views.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Render.cs"  # unit source
       - "test/DemaConsulting.HelpCards.Tests/Catalog/HelpCatalogTests*.cs"  # unit tests (partial files)
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"       # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"         # test support
@@ -464,6 +465,122 @@ reviews:
       - "test/DemaConsulting.HelpCards.Tests/Catalog/ExampleResolverTests.cs"  # unit tests
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"  # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"    # test support
+
+  # HelpCards-Presentation Review (one per subsystem)
+  - id: HelpCards-Presentation
+    title: Review that HelpCards Presentation Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation.yaml"   # subsystem requirements
+      - "docs/design/help-cards/presentation.md"   # subsystem design
+      - "docs/verification/help-cards/presentation.md"   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/PresentationTests.cs"   # subsystem tests
+
+  # HelpCards-Presentation-HelpRenderOptions Review (one per unit)
+  - id: HelpCards-Presentation-HelpRenderOptions
+    title: Review that HelpCards Presentation HelpRenderOptions Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/help-render-options.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/help-render-options.md"   # unit design
+      - "docs/verification/help-cards/presentation/help-render-options.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/HelpRenderOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Presentation/HelpFormat.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Presentation/HelpLinkStyle.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Presentation/RenderContext.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/HelpRenderOptionsTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Presentation-LinkFormatter Review (one per unit)
+  - id: HelpCards-Presentation-LinkFormatter
+    title: Review that HelpCards Presentation LinkFormatter Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/link-formatter.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/link-formatter.md"   # unit design
+      - "docs/verification/help-cards/presentation/link-formatter.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/LinkFormatter.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/LinkFormatterTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Presentation-TextRenderer Review (one per unit)
+  - id: HelpCards-Presentation-TextRenderer
+    title: Review that HelpCards Presentation TextRenderer Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/text-renderer.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/text-renderer.md"   # unit design
+      - "docs/verification/help-cards/presentation/text-renderer.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/TextRenderer*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/TextRendererTests*.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+
+  # HelpCards-Presentation-JsonDocumentWriter Review (one per unit)
+  - id: HelpCards-Presentation-JsonDocumentWriter
+    title: Review that HelpCards Presentation JsonDocumentWriter Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/json-document-writer.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/json-document-writer.md"   # unit design
+      - "docs/verification/help-cards/presentation/json-document-writer.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/JsonDocumentWriter*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/JsonDocumentWriterTests*.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/RenderSources.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+
+  # HelpCards-Presentation-TextWrapper Review (one per unit)
+  - id: HelpCards-Presentation-TextWrapper
+    title: Review that HelpCards Presentation TextWrapper Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/text-wrapper.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/text-wrapper.md"   # unit design
+      - "docs/verification/help-cards/presentation/text-wrapper.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/TextWrapper.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/TextWrapperTests.cs"   # unit tests
+
+  # HelpCards-Presentation-HelpStrings Review (one per unit)
+  - id: HelpCards-Presentation-HelpStrings
+    title: Review that HelpCards Presentation HelpStrings Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/help-strings.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/help-strings.md"   # unit design
+      - "docs/verification/help-cards/presentation/help-strings.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/HelpStrings.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/HelpStringsTests.cs"   # unit tests
 
   # OTS-BuildMark Review (one per OTS item)
   - id: OTS-BuildMark

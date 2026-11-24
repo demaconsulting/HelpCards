@@ -1,0 +1,5 @@
+guide               How to set up and use the tool.
+  guide/setup       Prepare the tool before the first run.
+  guide/usage       Everyday use of the tool.
+reference           Facts about limits and options.
+  reference/limits  The numbers the tool enforces.

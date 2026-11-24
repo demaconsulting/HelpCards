@@ -1,0 +1,86 @@
+---
+# LinkFormatter Unit Requirements
+#
+# Requirements for the LinkFormatter unit of the Presentation subsystem, which writes links, card labels, and commands
+# in the plain, command, and Markdown styles or through the callback of the caller.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Presentation Requirements
+        sections:
+          - title: LinkFormatter Requirements
+            requirements:
+              - id: HelpCards-Presentation-LinkFormatter-Plain
+                title: >-
+                  The formatter shall write a link in the plain style as words that name the card or the example and
+                  its card, in the short form for an example of the containing card, and with the global id for an
+                  external card.
+                justification: |
+                  Plain text readers need a link that still says what it points at.
+                tests:
+                  - LinkFormatter_FormatLink_PlainStyle_WritesWords
+
+              - id: HelpCards-Presentation-LinkFormatter-Command
+                title: >-
+                  The formatter shall write a link in the command style as the command that prints the target,
+                  filled in from the command template with the tool and the path with spaces for slashes.
+                justification: |
+                  Command-line readers act on a link by typing it.
+                tests:
+                  - LinkFormatter_FormatLink_CommandStyle_WritesCommands
+                  - LinkFormatter_Command_Template_ReplacesToolAndPath
+
+              - id: HelpCards-Presentation-LinkFormatter-Markdown
+                title: >-
+                  The formatter shall write a link in the Markdown style as a Markdown link with the title of the
+                  card, with the display text of an external link, and with a fragment for an example.
+                justification: |
+                  Documents and web pages need working links.
+                tests:
+                  - LinkFormatter_FormatLink_MarkdownStyle_WritesMarkdownLinks
+
+              - id: HelpCards-Presentation-LinkFormatter-LocalExamples
+                title: >-
+                  The formatter shall write the short form only for an example of the card that holds the link, and
+                  the full example form, naming the card, for an example of any other card.
+                justification: |
+                  A short form that points at the wrong card would mislead the reader.
+                tests:
+                  - LinkFormatter_FormatLink_LocalExampleOfOtherCard_UsesTheExampleForm
+
+              - id: HelpCards-Presentation-LinkFormatter-Callback
+                title: >-
+                  The formatter shall let a callback of the caller write every link instead of the style, and pass it
+                  the link with its global ids, title, display text, and source.
+                justification: |
+                  Tools have link syntax of their own that no built-in style can know.
+                tests:
+                  - LinkFormatter_FormatLink_Callback_OverridesLinkStyle
+
+              - id: HelpCards-Presentation-LinkFormatter-Labels
+                title: >-
+                  The formatter shall write the label of a card in a list as its id, its command, a Markdown link, or
+                  what the callback writes.
+                justification: |
+                  Lists of cards use the same link style as bodies.
+                tests:
+                  - LinkFormatter_FormatLabel_EveryStyleAndCallback_WritesTheLabel
+
+              - id: HelpCards-Presentation-LinkFormatter-Body
+                title: >-
+                  The formatter shall write the body of a card from its parsed pieces with every visible link
+                  formatted, text copied unchanged, and the plain style equal to the body of the card.
+                justification: |
+                  Rendering from the parsed parts every time keeps all styles consistent and needs no cache.
+                tests:
+                  - LinkFormatter_FormatBody_CommandStyle_ReplacesEveryVisibleLink
+                  - LinkFormatter_FormatBody_PlainStyle_EqualsCardBody
+
+              - id: HelpCards-Presentation-LinkFormatter-Arguments
+                title: >-
+                  The formatter shall reject null arguments with an argument null exception.
+                justification: |
+                  Programming mistakes must fail loudly.
+                tests:
+                  - LinkFormatter_NullArguments_ThrowArgumentNullException

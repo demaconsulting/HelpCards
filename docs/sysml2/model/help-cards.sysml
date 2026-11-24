@@ -3,6 +3,7 @@ package HelpCards {
     public import HelpCards_LoadingSubsystem::*;
     public import HelpCards_CompositionSubsystem::*;
     public import HelpCards_CatalogSubsystem::*;
+    public import HelpCards_PresentationSubsystem::*;
 
     doc
     /*
@@ -24,5 +25,6 @@ package HelpCards {
         part loading : LoadingSubsystem;
         part composition : CompositionSubsystem;
         part catalog : CatalogSubsystem;
+        part presentation : PresentationSubsystem;
     }
 }

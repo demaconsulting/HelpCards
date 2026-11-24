@@ -131,3 +131,21 @@ sections:
               - HelpCards-Catalog-HelpCatalog-Determinism
             tests:
               - Catalog_Concurrency_ParallelUseOfOneCatalog_IsConsistent
+
+          - id: HelpCards-Catalog-Rendering
+            title: >-
+              The subsystem shall offer the rendering members of the catalog: rendering a card, the index, examples,
+              one example, search results, and a list of cards, and formatting a body, each as the catalog view it
+              is called on shows its cards, with the card of another view mapped to this view and a hidden card
+              rejected.
+            justification: |
+              One object offers lookup and rendering, and a view must render exactly what it shows.
+            children:
+              - HelpCards-Catalog-HelpCatalog-Render
+              - HelpCards-Catalog-HelpCatalog-RenderArguments
+              - HelpCards-Catalog-HelpCatalog-RenderIndex
+              - HelpCards-Catalog-HelpCatalog-RenderExamples
+              - HelpCards-Catalog-HelpCatalog-RenderLists
+              - HelpCards-Catalog-HelpCatalog-FormatBody
+            tests:
+              - Catalog_Rendering_RenderMembers_WriteDocumentsOfTheCatalogView

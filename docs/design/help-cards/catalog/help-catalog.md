@@ -20,8 +20,8 @@ helper, and agent tools hold.
 | `Diagnostics`, `Culture` | The informational problems and the configured culture, shared by all views |
 
 The class is partial: `HelpCatalog.cs` holds creation, properties, lookup, and example search; `HelpCatalog.Views.cs`
-holds the four views. The Presentation subsystem adds the `Render` members as a further partial file. All lists are
-read-only collections.
+holds the four views; `HelpCatalog.Render.cs` holds the rendering members, whose bodies live in the Presentation
+subsystem. All lists are read-only collections.
 
 #### Key Methods
 
@@ -37,6 +37,12 @@ read-only collections.
   `Filter` and `FilterSource` compare ignoring case, treat an empty include list as no restriction, and reject empty
   entries, tags outside a closed vocabulary, and unknown source names. `Where` calls the predicate once per card, in
   `Cards` order, at once. `Without` hides exactly the listed ids and rejects unknown ones.
+- **`Render`**, **`RenderIndex`**, **`RenderExamples`**, **`RenderExample`**, **`RenderSearch`**, **`RenderCardList`**,
+  and **`FormatBody`** create a `RenderContext` for the catalog view and the options, map the card to the card of this
+  view (rejecting a null card with `ArgumentNullException` and a card the view does not show with `ArgumentException`),
+  and call `TextRenderer` or, for the JSON format, `JsonDocumentWriter`. `RenderIndex` rejects a negative depth. Two
+  internal overloads add the usage lines to the JSON index and the filter to the JSON card list for later callers.
+  `RenderSearch` renders results that were found elsewhere; no search is part of the current system.
 
 #### Error Handling
 
@@ -46,9 +52,10 @@ that find nothing return `null` or an empty list. No member throws `InvalidOpera
 #### Dependencies
 
 `HelpCatalogBuilder` of the Composition subsystem; `CatalogData`, `CatalogScope`, `PathResolver`, `ExampleResolver`,
-`HelpCard`, and the problem model.
+`HelpCard`, and the problem model; and, for the `Render` members, `HelpRenderOptions`, `TextRenderer`, `LinkFormatter`,
+and `JsonDocumentWriter` of the Presentation subsystem.
 
 #### Callers
 
-Adopters, the Presentation subsystem (rendering), the Testing subsystem (validation), and later the command-line helper
-and the agent tool.
+Adopters, the Presentation subsystem (it reads the catalog it renders), the Testing subsystem (validation), and later
+the command-line helper and the agent tool.

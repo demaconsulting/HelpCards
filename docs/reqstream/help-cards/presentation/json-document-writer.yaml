@@ -1,0 +1,126 @@
+---
+# JsonDocumentWriter Unit Requirements
+#
+# Requirements for the JsonDocumentWriter unit of the Presentation subsystem, which writes the JSON documents of
+# contract version 1.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Presentation Requirements
+        sections:
+          - title: JsonDocumentWriter Requirements
+            requirements:
+              - id: HelpCards-Presentation-JsonDocumentWriter-Documents
+                title: >-
+                  The writer shall write the documents index, card, examples, example, search, cards, and error
+                  exactly as the contract shows them: with the contract version, the success flag, the kind, and the
+                  fields in the specified order.
+                justification: |
+                  Tools parse these documents; the contract is frozen and must be reproduced byte for byte.
+                tests:
+                  - JsonDocumentWriter_WriteIndex_ContractFixture_IsWrittenVerbatim
+                  - JsonDocumentWriter_WriteCard_ContractFixture_IsWrittenVerbatim
+                  - JsonDocumentWriter_WriteExamplesDocument_ContractFixture_IsWrittenVerbatim
+                  - JsonDocumentWriter_WriteExampleDocument_ContractFixture_IsWrittenVerbatim
+                  - JsonDocumentWriter_WriteSearch_ContractFixture_IsWrittenVerbatim
+                  - JsonDocumentWriter_WriteCardList_ContractFixture_IsWrittenVerbatim
+                  - JsonDocumentWriter_WriteError_ContractFixture_IsWrittenVerbatim
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-GoldenFiles
+                title: >-
+                  The writer shall write the card, the index, and the examples document of the simple fixture as the
+                  golden files.
+                justification: |
+                  Golden files pin every field of the contract for a real catalog.
+                tests:
+                  - JsonDocumentWriter_WriteCard_SimpleGuide_EqualsGolden
+                  - JsonDocumentWriter_WriteIndex_SimpleFixture_EqualsGolden
+                  - JsonDocumentWriter_WriteExamplesDocument_SimpleGuide_EqualsGolden
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-NoNull
+                title: >-
+                  The writer shall write every document as valid JSON on one line with the contract version, with
+                  no JSON null and no line break.
+                justification: |
+                  Readers must not need null handling, and one line per document is easy to stream.
+                tests:
+                  - JsonDocumentWriter_EveryDocument_HasNoNullAndIsOneValidLine
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-Ascii
+                title: >-
+                  The writer shall write every character outside printable ASCII as a four-digit Unicode escape,
+                  including surrogate pairs, and escape quotes, backslashes, and control characters as JSON
+                  requires without escaping other printable characters.
+                justification: |
+                  ASCII-only output is identical on every terminal, pipe, and code page.
+                tests:
+                  - JsonDocumentWriter_NonAsciiText_IsEscapedAsUnicodeEscapes
+                  - JsonDocumentWriter_SpecialCharacters_AreEscapedOnlyWhenJsonRequiresIt
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-KeyOrder
+                title: >-
+                  The writer shall write the keys of the card document in the order of the contract.
+                justification: |
+                  New keys are appended in later releases; keys are never reordered.
+                tests:
+                  - JsonDocumentWriter_WriteCard_Keys_FollowTheContractOrder
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-OptionalKeys
+                title: >-
+                  The writer shall leave out the command unless the link style writes commands, leave out tool,
+                  version, and usage unless they were supplied, and limit the index to the requested depth with
+                  the depth of each card.
+                justification: |
+                  Optional values are omitted instead of being null.
+                tests:
+                  - JsonDocumentWriter_OptionalKeys_AreLeftOutWhenAbsent
+                  - JsonDocumentWriter_WriteIndex_MaxDepth_LimitsCardsAndReportsDepth
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-Links
+                title: >-
+                  The writer shall list the visible link targets of the body in order with the card, example, and
+                  display text that are present, and write the culture of the file that supplied the body.
+                justification: |
+                  Agents follow links without parsing the body.
+                tests:
+                  - JsonDocumentWriter_WriteCard_Links_ListVisibleTargetsInBodyOrder
+                  - JsonDocumentWriter_WriteCard_Culture_IsTheCultureOfTheBody
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-Envelope
+                title: >-
+                  The writer shall let a callback of the caller replace the top-level object, pass it the kind and an
+                  action that writes the fields, and escape non-ASCII characters in what it returns.
+                justification: |
+                  Applications with their own result format embed the fields in their envelope.
+                tests:
+                  - JsonDocumentWriter_JsonEnvelope_ReplacesTopLevelObject
+                  - JsonDocumentWriter_JsonEnvelope_NonAsciiOutput_IsEscaped
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-Errors
+                title: >-
+                  The writer shall write error documents only for the codes usage-error, not-found, ambiguous, and
+                  catalog-error, write candidates only for not-found and ambiguous, leave out an absent hint, and
+                  reject any other code.
+                justification: |
+                  The error codes are part of the frozen contract.
+                tests:
+                  - JsonDocumentWriter_WriteError_Codes_ControlCandidatesAndHint
+                  - JsonDocumentWriter_WriteError_InvalidArguments_Throw
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-Determinism
+                title: >-
+                  The writer shall write the same documents whatever the current culture of the thread is.
+                justification: |
+                  Output must be byte-identical on every machine.
+                tests:
+                  - JsonDocumentWriter_EveryDocument_DoesNotDependOnCurrentCulture
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-Arguments
+                title: >-
+                  The writer shall reject null arguments with an argument null exception and an example that does not
+                  exist with an argument exception.
+                justification: |
+                  Programming mistakes must fail loudly.
+                tests:
+                  - JsonDocumentWriter_NullArguments_ThrowArgumentNullException

@@ -9,16 +9,18 @@ package HelpCards_HelpCatalog {
     private import HelpCards_HelpProblem::*;
 
     part def HelpCatalog {
-        doc /* The public face of the library: creates an immutable, thread-safe catalog from a configuration callback (throwing one exception with every error when a source is defective), exposes the cards, roots, sources, tags, and diagnostics, looks up cards by path and examples by name, and makes filtered views by tag, source, predicate, and id that share the frozen data. The class is partial; the Presentation subsystem adds the Render members. */
+        doc /* The public face of the library: creates an immutable, thread-safe catalog from a configuration callback (throwing one exception with every error when a source is defective), exposes the cards, roots, sources, tags, and diagnostics, looks up cards by path and examples by name, makes filtered views by tag, source, predicate, and id that share the frozen data, and renders cards, indexes, examples, search results, and card lists through the Presentation subsystem. The class is partial: creation and lookup, views, and the Render members. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (
                 "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.cs",
-                "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Views.cs"
+                "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Views.cs",
+                "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Render.cs"
             );
             testFiles = (
                 "test/DemaConsulting.HelpCards.Tests/Catalog/HelpCatalogTests.cs",
                 "test/DemaConsulting.HelpCards.Tests/Catalog/HelpCatalogTests.Views.cs",
+                "test/DemaConsulting.HelpCards.Tests/Catalog/HelpCatalogTests.Render.cs",
                 "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs",
                 "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs",
                 "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"
@@ -36,5 +38,12 @@ package HelpCards_HelpCatalog {
         dependency resolvesPaths from HelpCatalog to PathResolver;
         dependency findsExamples from HelpCatalog to ExampleResolver;
         dependency throwsProblems from HelpCatalog to HelpProblem;
+
+        // The Render members read the options and call the renderers of the Presentation subsystem; the units are
+        // named by qualified name because the Presentation units import this package.
+        dependency rendersThrough from HelpCatalog to HelpCards_TextRenderer::TextRenderer;
+        dependency rendersJsonThrough from HelpCatalog to HelpCards_JsonDocumentWriter::JsonDocumentWriter;
+        dependency formatsLinksThrough from HelpCatalog to HelpCards_LinkFormatter::LinkFormatter;
+        dependency readsOptions from HelpCatalog to HelpCards_HelpRenderOptions::HelpRenderOptions;
     }
 }

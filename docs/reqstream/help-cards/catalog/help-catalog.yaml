@@ -172,3 +172,64 @@ sections:
                   Help must be identical on every machine.
                 tests:
                   - HelpCatalog_Create_Twice_IsDeterministicAndCultureIndependent
+
+              - id: HelpCards-Catalog-HelpCatalog-Render
+                title: >-
+                  The catalog shall render a card as text, Markdown, or JSON according to the format of the options,
+                  with the defaults when no options are given, as the card is shown by the catalog view that renders
+                  it, and call the link callback only for targets that view shows.
+                justification: |
+                  A view must render exactly what it shows, whichever view the card object came from.
+                tests:
+                  - HelpCatalog_Render_DefaultOptions_WritesTextDocument
+                  - HelpCatalog_Render_Format_SelectsTextMarkdownOrJson
+                  - HelpCatalog_Render_CardOfOtherView_UsesTheRulesOfTheRenderingView
+                  - HelpCatalog_Render_LinkFormatter_IsCalledOnlyForVisibleTargets
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderArguments
+                title: >-
+                  The catalog shall reject a null card with an argument null exception and a card that the catalog
+                  view does not show with an argument exception, for every rendering member.
+                justification: |
+                  Rendering a hidden card would leak it.
+                tests:
+                  - HelpCatalog_Render_NullOrHiddenCard_ThrowsArgumentException
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderIndex
+                title: >-
+                  The catalog shall render the index down to the requested depth, reject a negative depth with an
+                  argument exception, and write the usage lines of the tool into the JSON index when they are
+                  supplied internally.
+                justification: |
+                  The command-line helper shows roots only and adds the usage lines of the tool.
+                tests:
+                  - HelpCatalog_RenderIndex_DepthAndFormats_AreHonored
+                  - HelpCatalog_RenderIndex_UsageLines_AreWrittenForJsonOnly
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderExamples
+                title: >-
+                  The catalog shall render the examples of a card and one example, in text and in JSON, find the
+                  example ignoring case, and reject an unknown example with an argument exception.
+                justification: |
+                  Examples are saved to files and run, so the right one must come out.
+                tests:
+                  - HelpCatalog_RenderExamplesAndExample_TextAndJson_AreWritten
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderLists
+                title: >-
+                  The catalog shall render search results and lists of cards in text and in JSON, with the filter of
+                  the list written into the JSON document when it is supplied internally, and reject null arguments.
+                justification: |
+                  Searches and tag listings are rendered by the callers that produced them.
+                tests:
+                  - HelpCatalog_RenderSearchAndCardList_Documents_AreWritten
+                  - HelpCatalog_RenderCardList_Filter_IsWrittenForJson
+
+              - id: HelpCards-Catalog-HelpCatalog-FormatBody
+                title: >-
+                  The catalog shall write the body of a card with its links in the link style of the options,
+                  whatever the format, with the plain style equal to the body of the card.
+                justification: |
+                  Callers that print the body themselves still need links in their own style.
+                tests:
+                  - HelpCatalog_FormatBody_LinkStyle_IsAppliedWhateverTheFormat
