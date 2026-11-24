@@ -2,7 +2,7 @@ package HelpCards_HelpFileProvider {
     private import SoftwareItemMetadata::*;
 
     part def HelpFileProvider {
-        doc /* The seam through which the loader lists and reads the files of one help source: an abstract class with three implementations (assembly resources under a prefix, a directory, and in-memory text), each listing relative paths with "/" in ordinal order and reading strict UTF-8 text without a byte order mark. Creating a provider does no I/O. Supporting types: AssemblyFileProvider, DirectoryFileProvider, and MemoryFileProvider. */
+        doc /* The seam through which the loader lists and reads the files of one help source: an abstract class with three implementations (assembly resources under a prefix, in-memory text, and an internal directory implementation that only the validator's embedded-versus-disk comparison uses), each listing relative paths with "/" in ordinal order and reading strict UTF-8 text without a byte order mark. Creating a provider does no I/O. Supporting types: AssemblyFileProvider, DirectoryFileProvider, and MemoryFileProvider. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (

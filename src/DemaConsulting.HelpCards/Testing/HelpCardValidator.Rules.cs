@@ -53,22 +53,36 @@ public static partial class HelpCardValidator
     /// <remarks>
     ///     Every file of the source is scanned, because a token is replaced in the title, summary, examples, and
     ///     body of any card and overlay. The built-in tokens are never reported. Registered sources and the
-    ///     sources of the composed catalog are matched by position.
+    ///     sources of the composed catalog are matched by position. A file that cannot be listed or read (for
+    ///     example because it is not valid UTF-8 or was removed after the catalog was composed) is reported as a
+    ///     <c>source-read</c> error with its location, as the loader reports it, and the scan continues. Because
+    ///     such a file may use any token, no token is reported as unused when a file could not be read.
     /// </remarks>
     /// <param name="sources">The sources in registration order.</param>
     /// <param name="infos">The descriptions of the composed sources, in the same order.</param>
-    /// <returns>One warning for every unused token.</returns>
-    private static IEnumerable<HelpProblem> CheckTokens(IReadOnlyList<HelpSource> sources, IReadOnlyList<HelpSourceInfo> infos)
+    /// <returns>One error for every unreadable file, or one warning for every unused token.</returns>
+    private static List<HelpProblem> CheckTokens(IReadOnlyList<HelpSource> sources, IReadOnlyList<HelpSourceInfo> infos)
     {
+        var problems = new List<HelpProblem>();
+
         // A token of a source may be used by the sources that import it, so usage is collected over all sources
         if (sources.All(source => source.Tokens.Count == 0))
         {
-            yield break;
+            return problems;
         }
 
-        var used = sources
-            .SelectMany(source => source.Provider.ListFiles().SelectMany(path => TokenResolver.FindNames(source.Provider.ReadText(path))))
-            .ToHashSet(StringComparer.Ordinal);
+        var used = new HashSet<string>(StringComparer.Ordinal);
+        for (var index = 0; index < sources.Count; index++)
+        {
+            var name = index < infos.Count ? infos[index].Name : sources[index].Name ?? string.Empty;
+            ScanTokenUse(sources[index].Provider, name, used, problems);
+        }
+
+        if (problems.Count > 0)
+        {
+            return problems;
+        }
+
         for (var index = 0; index < sources.Count && index < infos.Count; index++)
         {
             var source = sources[index];
@@ -79,14 +93,73 @@ public static partial class HelpCardValidator
 
             foreach (var name in source.Tokens.Keys.Order(StringComparer.Ordinal).Where(name => !used.Contains(name)))
             {
-                yield return Warning(
+                problems.Add(Warning(
                     RuleIds.UnusedToken,
                     infos[index].Name,
                     string.Empty,
                     0,
-                    $"The token '{name}' is defined for the source but no file uses it; remove it or write {{{{{name}}}}} where it belongs.");
+                    $"The token '{name}' is defined for the source but no file uses it; remove it or write {{{{{name}}}}} where it belongs."));
             }
         }
+
+        return problems;
+    }
+
+    /// <summary>
+    ///     Collects the token names that the files of one provider use, reporting files that cannot be read.
+    /// </summary>
+    /// <remarks>
+    ///     The failure boundary is the same as the loader's: every exception except the fatal ones becomes a
+    ///     <c>source-read</c> error and the scan goes on with the next file.
+    /// </remarks>
+    /// <param name="provider">The provider of the source.</param>
+    /// <param name="sourceName">The name of the source for the problems.</param>
+    /// <param name="used">Receives the names of the tokens that are used.</param>
+    /// <param name="problems">Receives an error for a list or a read that fails.</param>
+    private static void ScanTokenUse(HelpFileProvider provider, string sourceName, HashSet<string> used, List<HelpProblem> problems)
+    {
+        IReadOnlyList<string> paths;
+        try
+        {
+            paths = provider.ListFiles();
+        }
+        catch (Exception ex) when (IsRecoverable(ex))
+        {
+            problems.Add(HelpProblem.CreateError(
+                RuleIds.SourceRead,
+                sourceName,
+                string.Empty,
+                0,
+                $"The files of the source could not be listed ({ex.GetType().Name}: {ex.Message})."));
+            return;
+        }
+
+        foreach (var path in paths)
+        {
+            try
+            {
+                used.UnionWith(TokenResolver.FindNames(provider.ReadText(path)));
+            }
+            catch (Exception ex) when (IsRecoverable(ex))
+            {
+                problems.Add(HelpProblem.CreateError(
+                    RuleIds.SourceRead,
+                    sourceName,
+                    path,
+                    0,
+                    $"The file could not be read ({ex.GetType().Name}: {ex.Message})."));
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Determines whether an exception from a provider is a failure to read rather than a fatal error.
+    /// </summary>
+    /// <param name="ex">The exception.</param>
+    /// <returns><see langword="false"/> for exceptions that must never be swallowed.</returns>
+    private static bool IsRecoverable(Exception ex)
+    {
+        return ex is not (OutOfMemoryException or StackOverflowException or AccessViolationException or ThreadAbortException);
     }
 
     /// <summary>

@@ -8,6 +8,9 @@
 that the rest of the loader never knows whether files are embedded resources, files on disk, or text in
 memory, and so that tests can count or fail calls without touching a file system. Its implementations
 `AssemblyFileProvider`, `DirectoryFileProvider`, and `MemoryFileProvider` are supporting types of this unit.
+`DirectoryFileProvider` is internal and has no public entry point (`HelpSource` offers no directory source); its
+only product use is `HelpCardValidator.CompareToDirectory`, which lists the file names of the developer's own source
+folder at test time and never reads their content.
 
 #### Data Model
 
@@ -34,7 +37,8 @@ order.
   mark character. `MemoryFileProvider` and `AssemblyFileProvider` refuse a path that is not one of their files
   (`ArgumentException`). `DirectoryFileProvider` refuses a path that resolves outside its directory (parent-relative
   or absolute, `ArgumentException`); a path inside the directory that does not exist raises the natural
-  `FileNotFoundException`.
+  `FileNotFoundException`. The check is lexical: links are not resolved, so the directory must be a trusted folder
+  of the developer's own repository.
 
 #### Error Handling
 

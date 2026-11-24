@@ -14,11 +14,11 @@ sections:
               - id: HelpCards-Loading-HelpSource-Factories
                 title: >-
                   A source shall be creatable from the embedded resources of an assembly with an optional
-                  resource prefix, from a directory, and from a dictionary of in-memory files, and an invalid
+                  resource prefix and from a dictionary of in-memory files, and an invalid
                   argument shall be rejected with an argument exception.
                 justification: |
-                  Libraries ship cards as embedded resources, authors edit them in a directory, and tools
-                  generate them in memory. One immutable value type for all three keeps adopters independent of
+                  Libraries ship cards as embedded resources and tools generate them in memory. One immutable value
+                  type for both keeps adopters independent of
                   where cards come from, and rejecting bad arguments at the call site avoids confusing failures
                   later.
                 tests:
@@ -26,8 +26,6 @@ sections:
                   - HelpSource_FromAssembly_EmptyPrefix_ThrowsArgumentException
                   - HelpSource_FromAssembly_DefaultPrefix_ListsEmbeddedFiles
                   - HelpSource_FromAssembly_GivenPrefix_ReadsOnlyFilesBelowThatPrefix
-                  - HelpSource_FromDirectory_EmptyDirectory_ThrowsArgumentException
-                  - HelpSource_FromDirectory_ExistingDirectory_ReadsFilesOnDisk
                   - HelpSource_FromFiles_NullFiles_ThrowsArgumentNullException
                   - HelpSource_FromFiles_PathsEqualAfterSeparatorNormalization_ThrowsArgumentException
                   - HelpSource_FromFiles_NullText_ThrowsArgumentException
@@ -78,10 +76,9 @@ sections:
               - id: HelpCards-Loading-HelpSource-NoIo
                 title: >-
                   Creating a source, setting its name or tokens, and importing another source shall perform no
-                  file or assembly I/O, and a missing directory shall not fail until the source is read.
+                  file or assembly I/O.
                 justification: |
                   A library keeps its source in a static field and a tool may never need its help, so creating
                   a source must not slow the start-up of every program that loads the library.
                 tests:
                   - HelpSource_Construction_AllFactoriesAndWithMethods_PerformNoIo
-                  - HelpSource_FromDirectory_MissingDirectory_DoesNotThrowAtCreation

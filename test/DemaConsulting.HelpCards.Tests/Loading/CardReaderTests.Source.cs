@@ -277,7 +277,7 @@ public partial class CardReaderTests
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
 
         // Act
-        var source = SourceReading.Read(HelpSource.FromDirectory(directory).WithName("test"));
+        var source = SourceReading.Read(HelpSource.FromProvider(new DirectoryFileProvider(directory)).WithName("test"));
 
         // Assert
         var problem = Assert.Single(source.Problems);

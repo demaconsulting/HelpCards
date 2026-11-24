@@ -45,48 +45,6 @@ public class HelpSourceTests
     }
 
     /// <summary>
-    ///     Proves that an empty or white-space directory is rejected.
-    /// </summary>
-    [Fact]
-    public void HelpSource_FromDirectory_EmptyDirectory_ThrowsArgumentException()
-    {
-        // Arrange / Act / Assert: no directory is not a directory
-        Assert.Throws<ArgumentException>(() => HelpSource.FromDirectory(string.Empty));
-    }
-
-    /// <summary>
-    ///     Proves that a source created from a directory reads the files on disk.
-    /// </summary>
-    [Fact]
-    public void HelpSource_FromDirectory_ExistingDirectory_ReadsFilesOnDisk()
-    {
-        // Arrange: a directory with one card
-        using var directory = new TemporaryDirectory();
-        directory.Write("card.md", "text");
-
-        // Act: create the source and read through its provider
-        var source = HelpSource.FromDirectory(directory.FullPath);
-
-        // Assert: the file is listed and readable
-        Assert.Equal(["card.md"], source.Provider.ListFiles());
-        Assert.Equal("text", source.Provider.ReadText("card.md"));
-    }
-
-    /// <summary>
-    ///     Proves that creating a source from a missing directory does not fail until a catalog is built.
-    /// </summary>
-    [Fact]
-    public void HelpSource_FromDirectory_MissingDirectory_DoesNotThrowAtCreation()
-    {
-        // Arrange / Act: create a source for a directory that does not exist
-        var source = HelpSource.FromDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
-
-        // Assert: creation succeeded; the failure is deferred to reading, where it is a source-read problem
-        var problem = Assert.Single(SourceReading.Read(source.WithName("test")).Problems);
-        Assert.Equal("source-read", problem.RuleId);
-    }
-
-    /// <summary>
     ///     Proves that an empty or white-space path and an empty name are rejected.
     /// </summary>
     [Fact]

@@ -12,11 +12,11 @@ sections:
         requirements:
           - id: HelpCards-Loading-Sources
             title: >-
-              The subsystem shall read the files of a source from the embedded resources of an assembly, from
-              a directory, or from memory, in a stable order, as UTF-8 text, and shall do no I/O until the
+              The subsystem shall read the files of a source from the embedded resources of an assembly or
+              from memory, in a stable order, as UTF-8 text, and shall do no I/O until the
               source is read.
             justification: |
-              Libraries embed cards, authors edit them in a directory, and tools generate them in memory; one
+              Libraries embed cards and tools generate them in memory; one
               uniform, cheap-to-create source keeps adopters independent of where cards come from.
             children:
               - HelpCards-Loading-HelpSource-Factories

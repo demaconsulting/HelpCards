@@ -80,11 +80,14 @@ sections:
                 title: >-
                   The validator shall report an "unused-token" warning for a token that a source defines and no file
                   of the source uses, naming the source and the token, and shall not report a token that is used in
-                  any text, including a title, or a built-in token.
+                  any text, including a title, or a built-in token. A file of a source that cannot be read shall be
+                  reported as a "source-read" error with its path and shall not stop the validation.
                 justification: |
-                  A token that nothing uses is a leftover that hides the real set of values a source needs.
+                  A token that nothing uses is a leftover that hides the real set of values a source needs, and a
+                  validator must report a damaged file instead of failing on it.
                 tests:
                   - HelpCardValidator_Validate_UnusedToken_ReportsUnusedToken
+                  - HelpCardValidator_Validate_UnreadableDataFile_ReportsSourceReadInsteadOfThrowing
                   - HelpCardValidator_Validate_TokenUsedInTitle_IsNotReported
 
               - id: HelpCards-Testing-HelpCardValidator-LineLength

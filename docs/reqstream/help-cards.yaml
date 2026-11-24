@@ -36,17 +36,16 @@ sections:
 
       - id: HelpCards-Embedding-LoadSources
         title: >-
-          A help source shall be creatable from the embedded resources of an assembly, from the files of a
-          directory, or from text held in memory, and creating a source shall perform no I/O.
+          A help source shall be creatable from the embedded resources of an assembly or from text held in
+          memory, and creating a source shall perform no I/O.
         tags: [system]
         justification: |
-          Libraries embed cards, authors edit them in a directory while writing, and tools generate help at
-          run time; creating a source must be cheap because a library keeps it in a static field.
+          Libraries embed cards and tools generate help at run time; creating a source must be cheap because
+          a library keeps it in a static field.
         children:
           - HelpCards-Loading-Sources
         tests:
           - HelpCards_Sources_Assembly_ReadsEmbeddedCards
-          - HelpCards_Sources_Directory_ReadsFilesOnDisk
           - HelpCards_Sources_Memory_ReadsFiles
           - HelpCards_Sources_Construction_PerformsNoIo
 

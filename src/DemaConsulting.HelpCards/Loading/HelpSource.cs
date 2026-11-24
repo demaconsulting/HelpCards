@@ -98,22 +98,6 @@ public sealed class HelpSource
     }
 
     /// <summary>
-    ///     Creates a source from the files of a directory.
-    /// </summary>
-    /// <remarks>
-    ///     This is meant for authoring and tests: it shows edits without rebuilding. The directory is not
-    ///     touched until a catalog is built, so a missing directory is reported then.
-    /// </remarks>
-    /// <param name="directory">The directory that holds the cards. Must not be null, empty, or white space.</param>
-    /// <returns>The new source.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="directory"/> is null, empty, or white space.</exception>
-    public static HelpSource FromDirectory(string directory)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(directory);
-        return Create(new DirectoryFileProvider(directory), null);
-    }
-
-    /// <summary>
     ///     Creates a source from text held in memory.
     /// </summary>
     /// <remarks>

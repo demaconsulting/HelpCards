@@ -48,7 +48,6 @@ reading happens when `HelpCatalog.Create` runs.
 | Factory | Reads | Use |
 | --- | --- | --- |
 | `HelpSource.FromAssembly(assembly, prefix)` | Embedded resources whose names start with `prefix/` | Shipping help |
-| `HelpSource.FromDirectory(directory)` | The files below a folder on disk | Authoring and tests |
 | `HelpSource.FromFiles(files, name)` | A dictionary of path to UTF-8 text | Tests of your own code |
 
 ```csharp
@@ -59,9 +58,6 @@ HelpSource shipped = HelpSource.FromAssembly(typeof(MyLibHelp).Assembly);
 
 // A prefix that was changed in the project file
 HelpSource custom = HelpSource.FromAssembly(typeof(MyLibHelp).Assembly, "MyLib.Commands.Help");
-
-// While writing cards: edit a file and see the change without a rebuild
-HelpSource authoring = HelpSource.FromDirectory("src/MyLib/Help");
 
 // In a unit test
 HelpSource inMemory = HelpSource.FromFiles(new Dictionary<string, string>
@@ -75,8 +71,8 @@ The name of a source comes from the key `name` of `_source.md`. A source without
 There is no way to rename a source in the consumer, because that would break those links. When two libraries declare
 the same name, one of them must change its `_source.md`.
 
-`FromDirectory` is for development and tests. It reads whatever folder it is given, so never build the path from
-input of a user. Ship help with `FromAssembly`.
+Ship help with `FromAssembly`. A source cannot be created from a folder on disk; to check that the embedded files
+match the folder that holds your cards, see `HelpCardValidator.CompareToDirectory` below.
 
 ## Exposing the Source
 

@@ -56,13 +56,12 @@ with `/` separators after the loader's separator conversion.
 
 Reads one embedded card as UTF-8 text and asserts that it holds the authored content.
 
-### Sources: Assembly, Directory, and Memory
+### Sources: Assembly and Memory
 
-**Tests**: `HelpCards_Sources_Assembly_ReadsEmbeddedCards`, `HelpCards_Sources_Directory_ReadsFilesOnDisk`,
-`HelpCards_Sources_Memory_ReadsFiles`
+**Tests**: `HelpCards_Sources_Assembly_ReadsEmbeddedCards`, `HelpCards_Sources_Memory_ReadsFiles`
 
-Reads the same kind of cards from the embedded fixture of the test assembly, from a temporary directory, and from
-in-memory text, creates a catalog from each, and asserts that each yields its cards and titles; the embedded\nassembly
+Reads the same kind of cards from the embedded fixture of the test assembly and from in-memory text, creates a
+catalog from each, and asserts that each yields its cards and titles; the embedded assembly
 source also yields the source name from its description and the content of an example read from a data file.
 
 ### Sources: Construction Performs No I/O

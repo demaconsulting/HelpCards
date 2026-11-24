@@ -49,8 +49,9 @@ A library that has its own card loader can move to HelpCards one source at a tim
   assembly. HelpCards does not execute anything that a card contains; an example is data.
 - **Agent arguments are untrusted.** The agent tool treats them as text to search for and never as a path. The
   catalog performs no file input or output after it is created.
-- **`FromDirectory` is for development and tests.** It reads the folder it is given; never build that path from
-  input of a user.
+- **No public directory source.** Sources come from embedded resources or memory. The only disk access is
+  `HelpCardValidator.CompareToDirectory`, which lists the file names below the folder you give it (it never reads their
+  content); pass it the folder of your own repository and never a path from the input of a user.
 - **Example file names cannot leave the card's folder.** The names allow letters, digits, dots, hyphens, and
   underscores with `/` between folders, and forbid `..`, a leading slash, and a drive.
 - **No dependencies.** The library uses only the Base Class Library, so it adds nothing to the supply chain of an

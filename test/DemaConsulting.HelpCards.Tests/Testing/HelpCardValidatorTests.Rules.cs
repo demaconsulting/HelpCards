@@ -161,6 +161,30 @@ public partial class HelpCardValidatorTests
     }
 
     /// <summary>
+    ///     Proves that a file that is not valid UTF-8 is reported with its location instead of aborting the scan.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_UnreadableDataFile_ReportsSourceReadInsteadOfThrowing()
+    {
+        // Arrange: a valid card plus a data file that no card references and that holds invalid UTF-8
+        using var directory = new TemporaryDirectory();
+        directory.Write("a.md", SourceReading.Card(body: "Uses {{used}}."));
+        File.WriteAllBytes(Path.Combine(directory.FullPath, "data.bin"), [0x61, 0xFF, 0x62]);
+        var source = HelpSource.FromProvider(new DirectoryFileProvider(directory.FullPath))
+            .WithName("test")
+            .WithTokens(new Dictionary<string, string> { ["used"] = "1", ["spare"] = "2" });
+
+        // Act
+        var problems = HelpCardValidator.Validate(source);
+
+        // Assert: the unreadable file is reported at its path and no token is guessed to be unused
+        var problem = Assert.Single(problems, p => p.RuleId == RuleIds.SourceRead);
+        Assert.Equal(HelpSeverity.Error, problem.Severity);
+        Assert.Equal("data.bin", problem.File);
+        Assert.DoesNotContain(problems, p => p.RuleId == RuleIds.UnusedToken);
+    }
+
+    /// <summary>
     ///     Proves that a token used only in an example or a title counts as used.
     /// </summary>
     [Fact]

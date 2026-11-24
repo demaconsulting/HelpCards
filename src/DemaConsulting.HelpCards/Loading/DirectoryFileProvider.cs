@@ -1,14 +1,21 @@
 namespace DemaConsulting.HelpCards.Loading;
 
 /// <summary>
-///     Provides the files of a source from a directory on disk.
+///     Provides the files of a directory on disk to the internal checks of the library.
 /// </summary>
 /// <remarks>
-///     This provider exists for authoring and tests: it lets an author edit cards and see the result without
-///     rebuilding the assembly. The directory is resolved and enumerated only when a catalog is built, so
-///     constructing the provider does no I/O. Every listing and every read goes to the file system, so
-///     the provider reflects the current disk state. It never follows a path outside the directory because
-///     a read refuses any path that resolves outside the directory (the loader only asks for listed paths).
+///     <para>
+///         This provider is internal and has no public entry point: <c>HelpSource</c> offers no directory source.
+///         The only product use is <c>HelpCardValidator.CompareToDirectory</c>, which lists the files of the
+///         developer's own source folder at test time to compare them with the embedded resources; it never reads
+///         their content. Constructing the provider does no I/O, and every listing and read goes to the file system
+///         so that the provider reflects the current disk state.
+///     </para>
+///     <para>
+///         A read validates its path lexically: a rooted path and a path that escapes the directory with
+///         <c>..</c> are refused. Symbolic links and junctions are not resolved, so the directory must be a
+///         folder of the developer's own repository and never an untrusted folder or a path from the input of a user.
+///     </para>
 /// </remarks>
 internal sealed class DirectoryFileProvider : HelpFileProvider
 {

@@ -15,7 +15,7 @@ The subsystem contains these units:
 - **HelpSource** (public) describes where the cards of a library or tool come from. It is an immutable value
   with a declared name, token values, and imports, and creating it performs no I/O.
 - **HelpFileProvider** is the seam that lists and reads files. It has three implementations: assembly
-  resources, a directory, and in-memory text.
+  resources, in-memory text, and a directory that only the validator's embedded-versus-disk comparison uses.
 - **FrontMatterDecoder** decodes the restricted subset of YAML front matter and splits off the body.
 - **CardReader** classifies the files of a source and reads cards, overlays, translations, examples, and
   `_source.md` into definitions, using the units below.

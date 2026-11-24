@@ -65,7 +65,7 @@ public class LoadingTests
 
         // Act
         var fromMemory = SourceReading.Read(SourceReading.Files(SmallSource), name: null);
-        var fromDisk = SourceReading.Read(HelpSource.FromDirectory(directory.FullPath));
+        var fromDisk = SourceReading.Read(HelpSource.FromProvider(new DirectoryFileProvider(directory.FullPath)));
 
         // Assert: the same ids, titles, example content, and no problems
         Assert.Empty(fromMemory.Problems);

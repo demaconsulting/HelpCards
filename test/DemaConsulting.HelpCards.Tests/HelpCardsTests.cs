@@ -121,24 +121,6 @@ public class HelpCardsTests
     }
 
     /// <summary>
-    ///     Proves that cards are read from the files of a directory.
-    /// </summary>
-    [Fact]
-    public void HelpCards_Sources_Directory_ReadsFilesOnDisk()
-    {
-        // Arrange: a directory with one card
-        using var directory = new TemporaryDirectory();
-        directory.Write("note.md", SourceReading.Card(title: "On disk"));
-
-        // Act
-        var catalog = CatalogBuilding.Create(HelpSource.FromDirectory(directory.FullPath).WithName("disk"));
-
-        // Assert
-        Assert.Equal("disk", Assert.Single(catalog.Sources).Name);
-        Assert.Equal("On disk", Assert.Single(catalog.Cards).Title);
-    }
-
-    /// <summary>
     ///     Proves that cards are read from in-memory text.
     /// </summary>
     [Fact]
@@ -152,8 +134,9 @@ public class HelpCardsTests
     }
 
     /// <summary>
-    ///     Proves that creating a source performs no I/O: a source over a directory that does not exist yet can be
-    ///     created and derived from without failing, and reads the directory only when a catalog is created.
+    ///     Proves that creating a source performs no I/O: a source over a directory provider (the internal one of the
+    ///     validator) that does not exist yet can be created and derived from without failing, and reads the directory
+    ///     only when a catalog is created.
     /// </summary>
     [Fact]
     public void HelpCards_Sources_Construction_PerformsNoIo()
@@ -163,17 +146,17 @@ public class HelpCardsTests
         var path = Path.Combine(parent.FullPath, "later");
 
         // Act: create sources and derive others from them while the directory is absent
-        var source = HelpSource.FromDirectory(path)
+        var source = HelpSource.FromProvider(new DirectoryFileProvider(path))
             .WithName("lib")
             .WithTokens(new Dictionary<string, string> { ["a"] = "1" })
-            .Imports(HelpSource.FromDirectory(path).WithName("other"));
+            .Imports(HelpSource.FromProvider(new DirectoryFileProvider(path)).WithName("other"));
         var assemblySource = HelpSource.FromAssembly(typeof(HelpCardsTests).Assembly, "No.Such.Prefix");
         Directory.CreateDirectory(path);
         File.WriteAllText(Path.Combine(path, "note.md"), SourceReading.Card(title: "Created later"));
 
         // Assert: nothing was read before the catalog was created, so the card that appeared later is found
         Assert.NotNull(assemblySource);
-        Assert.Equal("Created later", Assert.Single(CatalogBuilding.Create(HelpSource.FromDirectory(path).WithName("lib")).Cards).Title);
+        Assert.Equal("Created later", Assert.Single(CatalogBuilding.Create(HelpSource.FromProvider(new DirectoryFileProvider(path)).WithName("lib")).Cards).Title);
         Assert.NotNull(source);
     }
 
@@ -418,7 +401,7 @@ public class HelpCardsTests
         using var directory = new TemporaryDirectory();
         directory.Write("a.md", SourceReading.Card());
         directory.Write("a/b.md", SourceReading.Card());
-        var catalog = CatalogBuilding.Create(HelpSource.FromDirectory(directory.FullPath).WithName("test"));
+        var catalog = CatalogBuilding.Create(HelpSource.FromProvider(new DirectoryFileProvider(directory.FullPath)).WithName("test"));
         var expected = catalog.Cards.Select(card => $"{card.Id}:{card.Title}:{card.Body}").ToList();
         Directory.Delete(directory.FullPath, recursive: true);
         Directory.CreateDirectory(directory.FullPath);
@@ -985,7 +968,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Integration.HelpCliAnswer: .ctor, ExitCode, Text",
             "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, DefaultWidth, EnableLanguageOption, Error, FallbackResolver, IndexPreamble, IndexSections, Output, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
             "DemaConsulting.HelpCards.Integration.HelpCliSection: .ctor, Heading, Lines",
-            "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromDirectory, FromFiles, Imports, WithName, WithTokens",
+            "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromFiles, Imports, WithName, WithTokens",
             "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
             "DemaConsulting.HelpCards.Presentation.HelpLinkStyle: Command, Markdown, Plain",
             "DemaConsulting.HelpCards.Presentation.HelpRenderOptions: .ctor, CommandTemplate, Format, IncludeExampleContent, IncludeTags, JsonEnvelope, LinkFormatter, LinkStyle, Width",

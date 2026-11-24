@@ -19,6 +19,10 @@ public static partial class HelpCardValidator
     ///         assembly was not rebuilt. Either way the two views of the help differ, and a test should say so.
     ///     </para>
     ///     <para>
+    ///         The directory is only listed, never read, and links are not resolved: pass the source folder of your own
+    ///         repository, never a path from the input of a user.
+    ///     </para>
+    ///     <para>
     ///         Only the presence of each file is compared, by its path below the help root (ordinal comparison, with
     ///         <c>/</c> as the separator). Every difference is a <c>resources-mismatch</c> warning.
     ///     </para>

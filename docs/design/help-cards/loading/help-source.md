@@ -25,8 +25,6 @@ and copies the other values. Instances are safe for concurrent use.
 - **`FromAssembly(assembly, prefix)`** creates a source over `AssemblyFileProvider`. The default prefix
   `{AssemblyName}.Help` is resolved when the files are listed, so creation touches nothing. Preconditions: the
   assembly is not null and a given prefix is not empty or white space.
-- **`FromDirectory(directory)`** creates a source over `DirectoryFileProvider`; the directory is not touched
-  until the source is read, so a missing directory is reported then, as a `source-read` problem.
 - **`FromFiles(files, name)`** copies the dictionary, converts `\` in paths to `/`, and rejects empty paths,
   null texts, and two paths that are equal after the conversion.
 - **`WithName(name)`** sets the declared name. The grammar of the name is checked when the source is read, so

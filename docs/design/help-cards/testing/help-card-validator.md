@@ -32,15 +32,18 @@ of the adopting product).
   imports, directly or transitively, each provider once and imports before importers (a depth-first walk of the
   imports), so a source with imports does not report `import-missing`; a callback adds exactly what it adds.
 - **Quality rules** (private, in the `Rules` part): summary length, card size (the length of
-  `HelpCatalog.Render(card)`), reserved headings (level one, and level two `Cards`, `Examples`, and `See also`),
-  fences without a language, an unclosed fence, long lines, unused tokens (every file of the source is scanned for
-  `{{name}}`), command examples (parsed with `ExampleCommandLine` for the tool name of the builder, else the name
-  of the first source), and the rules of the options.
+  `HelpCatalog.Render(card)`), reserved headings (level one, and level two `Cards`, `Examples`, and `See also`), fences
+  without a language, an unclosed fence, long lines, unused tokens (every file of the source is scanned for `{{name}}`;
+  a file that cannot be listed or read is reported as a `source-read` error with its path, the scan continues, and no
+  token is reported as unused while a file is unreadable), command examples (parsed with `ExampleCommandLine` for the
+  tool name of the builder, else the name of the first source), and the rules of the options.
 - **`Order`** sorts by severity descending, source index, file, line, and rule, with a stable sort.
 - **`AssertValid(...)`** validates and throws `HelpCatalogException` with the errors, plus the warnings when
   `WarningsAreErrors` is set.
 - **`CompareToDirectory(source, directory)`** lists the embedded files and the files of the directory and returns a
-  `resources-mismatch` warning for each path that is on one side only, in path order.
+  `resources-mismatch` warning for each path that is on one side only, in path order. It only lists file names and
+  never reads the content of a file. The directory is the developer's own source folder at test time: paths are
+  validated lexically and links are not resolved, so it must not be a path from the input of a user.
 
 #### Error Handling
 
