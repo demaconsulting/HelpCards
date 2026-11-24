@@ -869,8 +869,7 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface()
     {
-        // Arrange: the surface of the specification without the agent tool of the integration namespace, which a
-        // later stage adds
+        // Arrange: the surface of the specification, which this release implements entirely
         string[] expected =
         [
             "DemaConsulting.HelpCards.Catalog.HelpCard: Aliases, Body, ChildIds, Culture, Examples, Extensions, Id, LocalId, Name, ParentId, SeeAlsoIds, SourceName, Summary, Tags, Title",
@@ -886,6 +885,9 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Catalog.HelpSeverity: Error, Info, Warning",
             "DemaConsulting.HelpCards.Catalog.HelpSourceInfo: .ctor, Language, Mount, Name, Schema, Summary, Title",
             "DemaConsulting.HelpCards.Composition.HelpCatalogBuilder: AddMountedSource, AddSource, Culture, ExpectedRoots, TagVocabulary, ToolName, ToolVersion",
+            "DemaConsulting.HelpCards.Integration.HelpAgentTool: Description, Invoke, Name, ParametersSchema",
+            "DemaConsulting.HelpCards.Integration.HelpAgentToolOptions: .ctor, Description, IndexDepth, MaxOutputChars, MaxResults, Name, ToolName",
+            "DemaConsulting.HelpCards.Integration.HelpAgentTools: Create",
             "DemaConsulting.HelpCards.Integration.HelpCli: Create, Footer, Run, TryRun",
             "DemaConsulting.HelpCards.Integration.HelpCliAnswer: .ctor, ExitCode, Text",
             "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, DefaultWidth, EnableLanguageOption, Error, FallbackResolver, IndexPreamble, IndexSections, Output, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
@@ -1217,5 +1219,68 @@ public class HelpCardsTests
         Assert.Contains("Commands:\n  run  Run the tool\n\nHelp topics:", harness.Output.ToString(), StringComparison.Ordinal);
         Assert.EndsWith("Help of run.\n", harness.Output.ToString(), StringComparison.Ordinal);
         Assert.Equal("de-DE", harness.LastCulture!.Name);
+    }
+
+    /// <summary>
+    ///     Proves that one knowledge tool gives an agent the index, a card, an example, and search results for the whole
+    ///     catalog, with the name a host chooses.
+    /// </summary>
+    [Fact]
+    public void HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch()
+    {
+        // Arrange
+        var tool = HelpAgentTools.Create(CatalogBuilding.Simple(), new HelpAgentToolOptions { Name = "canvasnet_help" });
+
+        // Act
+        var index = tool.Invoke(null);
+        var card = tool.Invoke("{\"topic\":\"guide/setup\"}");
+        var example = tool.Invoke("{\"example\":\"check\"}");
+        var search = tool.Invoke("{\"query\":\"setup\"}");
+
+        // Assert
+        Assert.Equal("canvasnet_help", tool.Name);
+        Assert.StartsWith("Help index.", index, StringComparison.Ordinal);
+        Assert.StartsWith("# Setup\n", card, StringComparison.Ordinal);
+        Assert.Contains("simple --version", example, StringComparison.Ordinal);
+        Assert.Contains("guide/setup", search, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the schema of the tool is the text of the contract, with no unknown property allowed.
+    /// </summary>
+    [Fact]
+    public void HelpCards_AgentTool_Schema_IsTheSpecifiedText()
+    {
+        // Arrange
+        var tool = HelpAgentTools.Create(CatalogBuilding.Simple());
+
+        // Act
+        var schema = tool.ParametersSchema;
+
+        // Assert
+        Assert.Equal(
+            "{\"type\":\"object\",\"properties\":{\"topic\":{\"type\":\"string\",\"description\":\"Card id or path such as svg/framed-figure; names and aliases work, case does not matter.\"},\"example\":{\"type\":\"string\",\"description\":\"Example name, or card-id#name when several cards have an example of that name. With topic, only that card and the cards below it are searched.\"},\"query\":{\"type\":\"string\",\"description\":\"Words to search for in titles, summaries, tags, aliases, and ids.\"},\"source\":{\"type\":\"string\",\"description\":\"Restrict the index or the search to one source (library) name.\"},\"tag\":{\"type\":\"string\",\"description\":\"Restrict the index or the search to cards with this tag.\"},\"maxResults\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":20,\"description\":\"The most search results to return.\"}},\"additionalProperties\":false}",
+            schema);
+        Assert.StartsWith("Unknown argument 'x'.", tool.Invoke("{\"x\":1}"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that an answer over the output limit is cut and says so, and that bad input never makes the tool throw.
+    /// </summary>
+    [Fact]
+    public void HelpCards_AgentTool_BudgetAndBoundary_CutAnswersAndNeverThrowForBadInput()
+    {
+        // Arrange
+        var body = string.Join("\n", Enumerable.Range(1, 300).Select(number => $"Line {number} of a long card body."));
+        var catalog = CatalogBuilding.FromFiles(("long.md", SourceReading.Card(title: "Long", body: body)));
+        var tool = HelpAgentTools.Create(catalog, new HelpAgentToolOptions { MaxOutputChars = 1000 });
+
+        // Act
+        var cut = tool.Invoke("{\"topic\":\"long\"}");
+        var answers = new[] { "{", "[]", "\uD800", "{\"topic\":[]}", "{\"maxResults\":\"x\"}" }.Select(tool.Invoke).ToList();
+
+        // Assert
+        Assert.Contains("[Truncated: ", cut, StringComparison.Ordinal);
+        Assert.All(answers, answer => Assert.False(string.IsNullOrWhiteSpace(answer)));
     }
 }

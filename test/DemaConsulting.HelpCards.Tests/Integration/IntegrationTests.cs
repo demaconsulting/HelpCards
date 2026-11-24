@@ -139,6 +139,92 @@ public class IntegrationTests
     }
 
     /// <summary>
+    ///     Proves that the tool is created with the name a host chooses, with the schema of the contract, and with a
+    ///     description that lists the sources.
+    /// </summary>
+    [Fact]
+    public void Integration_Agent_Creation_NameSchemaAndDescription()
+    {
+        // Arrange / Act
+        var tool = HelpAgentTools.Create(CatalogBuilding.Simple());
+        var named = HelpAgentTools.Create(CatalogBuilding.Simple(), new HelpAgentToolOptions { Name = "canvasnet_help" });
+
+        // Assert
+        Assert.Equal("help", tool.Name);
+        Assert.Equal("canvasnet_help", named.Name);
+        Assert.StartsWith("{\"type\":\"object\",\"properties\":{\"topic\":{\"type\":\"string\"", tool.ParametersSchema, StringComparison.Ordinal);
+        Assert.EndsWith("\"additionalProperties\":false}", tool.ParametersSchema, StringComparison.Ordinal);
+        Assert.Contains("- simple: A small source that exercises every kind of card feature.", tool.Description, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that one tool answers the index, a card, an example, and a search over a catalog of several sources.
+    /// </summary>
+    [Fact]
+    public void Integration_Agent_Calls_AnswerIndexCardExampleAndSearch()
+    {
+        // Arrange
+        var simple = CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" });
+        var catalog = HelpCatalog.Create(builder => builder.AddSource(simple).AddSource(CatalogBuilding.LibB()));
+        var tool = HelpAgentTools.Create(catalog);
+
+        // Act
+        var index = tool.Invoke("{}");
+        var card = tool.Invoke("{\"topic\":\"guide\"}");
+        var example = tool.Invoke("{\"example\":\"run\"}");
+        var search = tool.Invoke("{\"query\":\"chart\",\"maxResults\":1}");
+
+        // Assert
+        Assert.Contains("## Simple fixture", index, StringComparison.Ordinal);
+        Assert.Contains("## Library B", index, StringComparison.Ordinal);
+        Assert.StartsWith("# Guide\n", card, StringComparison.Ordinal);
+        Assert.StartsWith("Example `run` of `guide` (command, shell)", example, StringComparison.Ordinal);
+        Assert.StartsWith("Cards matching 'chart':\n\nchart ", search, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that wrong arguments and misses are answered with text that says what to send, and that nothing the
+    ///     agent sends makes the tool throw.
+    /// </summary>
+    [Fact]
+    public void Integration_Agent_Arguments_AreAnsweredAsTextAndNeverThrow()
+    {
+        // Arrange
+        var tool = HelpAgentTools.Create(CatalogBuilding.Simple());
+        string[] sent = ["{", "[]", "{\"x\":1}", "{\"topic\":1}", "{\"maxResults\":99}", "{\"topic\":\"nope\"}", "{\"example\":\"nope\"}", "{\"query\":\"qqq\"}", "\uD800", "{\"source\":\"nope\"}"];
+
+        // Act
+        var answers = sent.Select(tool.Invoke).ToList();
+
+        // Assert
+        Assert.All(answers, answer => Assert.False(string.IsNullOrWhiteSpace(answer)));
+        Assert.Equal("The arguments must be a JSON object.", answers[1]);
+        Assert.StartsWith("Unknown argument 'x'.", answers[2], StringComparison.Ordinal);
+        Assert.StartsWith("No help card matches 'nope'.", answers[5], StringComparison.Ordinal);
+        Assert.StartsWith("No example named 'nope'", answers[6], StringComparison.Ordinal);
+        Assert.Equal("No cards match 'qqq'. Call with no arguments for the index.", answers[7]);
+    }
+
+    /// <summary>
+    ///     Proves that an answer over the output limit is cut at a line end with the number of omitted characters.
+    /// </summary>
+    [Fact]
+    public void Integration_Agent_Budget_CutsLongAnswersAtALineEnd()
+    {
+        // Arrange
+        var body = string.Join("\n", Enumerable.Range(1, 300).Select(number => $"Line {number} of a long card body."));
+        var catalog = CatalogBuilding.FromFiles(("long.md", SourceReading.Card(title: "Long", body: body)));
+        var tool = HelpAgentTools.Create(catalog, new HelpAgentToolOptions { MaxOutputChars = 1000 });
+
+        // Act
+        var answer = tool.Invoke("{\"topic\":\"long\"}");
+
+        // Assert
+        Assert.Matches(@"\n\n\[Truncated: \d+ characters omitted\. Ask for a narrower topic or an example\.\]$", answer);
+        Assert.True(answer.IndexOf("\n\n[Truncated", StringComparison.Ordinal) <= 1000);
+    }
+
+    /// <summary>
     ///     Reads the kind of a JSON document.
     /// </summary>
     /// <param name="json">The document.</param>
