@@ -18,5 +18,11 @@ public enum HelpFormat
     /// <summary>
     ///     One JSON document on one line, as defined by the JSON contract with <c>helpSchemaVersion</c> 1.
     /// </summary>
+    /// <remarks>
+    ///     The document kinds (<c>index</c>, <c>card</c>, <c>examples</c>, <c>example</c>, <c>search</c>, <c>cards</c>, and
+    ///     <c>error</c>) and the fields of each are listed in the table on the page of the
+    ///     <c>DemaConsulting.HelpCards.Presentation</c> namespace. Every document starts with
+    ///     <c>{"helpSchemaVersion":1,"ok":true,"kind":"..."}</c>.
+    /// </remarks>
     Json
 }

@@ -14,7 +14,8 @@ assembly it contains two MSBuild files that embed your cards; the chapter *Packa
 ## A First Card
 
 Create a `Help` folder in your project. Each Markdown file in it is one card. This example has a root card and one
-child card, and a `_source.md` file that names the source:
+child card, and a `_source.md` file that names the source (every source needs a name: the `name:` line of `_source.md`,
+or `HelpSource.WithName`; without one the catalog fails with the rule `source-invalid`):
 
 ```text
 MyLib/
@@ -104,8 +105,9 @@ Install the package first, see the card `getting-started/install`, then run the 
 choose Markdown or JSON, the link style, and the wrapping width; see the chapter *Command-Line Integration* for the
 JSON documents.
 
-If any card is defective, `HelpCatalog.Create` throws a `HelpCatalogException` that lists every problem with its file
-and line, not only the first one. See the chapter *Composing Sources* for the problem model.
+If any card is defective, `HelpCatalog.Create` throws a `HelpCatalogException` that lists the problems with their file
+and line. The checks run in stages, so fixing the listed errors can reveal more; see the chapter *Composing Sources*
+for the problem model.
 
 ## Where to Go Next
 

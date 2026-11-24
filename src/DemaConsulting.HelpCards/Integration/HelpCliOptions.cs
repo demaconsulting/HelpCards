@@ -18,6 +18,11 @@ public sealed class HelpCliOptions
     /// <summary>
     ///     Gets the name of the tool as the user types it; it appears in usage text, hints, and commands.
     /// </summary>
+    /// <remarks>
+    ///     This is the name in the printed commands (<c>tool help ...</c>). The catalog has its own tool name,
+    ///     <c>HelpCatalogBuilder.ToolName</c>, which is the value of the <c>{{tool}}</c> token in the cards; set both to
+    ///     the same value.
+    /// </remarks>
     public required string ToolName { get; init; }
 
     /// <summary>
@@ -94,6 +99,11 @@ public sealed class HelpCliOptions
     /// <summary>
     ///     Gets a value indicating whether the <c>--lang</c> option is accepted; <see langword="false"/> unless set.
     /// </summary>
+    /// <remarks>
+    ///     When it is <see langword="false"/>, <c>--lang</c> is rejected like any unknown option (usage error, exit code
+    ///     2) and the catalog factory always receives <see langword="null"/>. When it is <see langword="true"/>,
+    ///     <c>--lang de-DE</c> passes that culture to <see cref="CatalogFactory"/>.
+    /// </remarks>
     public bool EnableLanguageOption { get; init; }
 
     /// <summary>

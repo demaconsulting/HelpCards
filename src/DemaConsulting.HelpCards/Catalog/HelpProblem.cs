@@ -19,6 +19,15 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <c>WarningsAreErrors</c>, for warnings.
 ///     </para>
 ///     <para>
+///         <b>Errors are reported in stages.</b> Each file is checked on its own, so the errors of different files
+///         appear together, but the checks of one file are ordered: a <c>syntax</c> error hides every other finding of
+///         that file; a key or value error (<c>key-unknown</c>, <c>key-missing</c>, <c>value-invalid</c>) still lets
+///         <c>token-unknown</c> and <c>link-syntax</c> of its body appear, while <c>link-target</c>,
+///         <c>example-target</c> and <c>see-also-target</c> are skipped for that file (and a link to it is not
+///         reported). Warnings appear only when there is no error. Fix what is listed and run again: more problems can
+///         show up.
+///     </para>
+///     <para>
 ///         <b>What <see cref="Line"/> 0 means.</b> A line number is the one-based line in <see cref="File"/>; 0 means
 ///         that no single line applies (the finding is about the whole file, a card, or the whole source), for example
 ///         <c>parent-missing</c>, <c>summary-length</c>, <c>card-size</c>, <c>command-parse</c>,

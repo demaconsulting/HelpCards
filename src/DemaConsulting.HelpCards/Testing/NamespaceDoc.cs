@@ -14,7 +14,9 @@ namespace DemaConsulting.HelpCards.Testing;
 ///     <list type="number">
 ///         <item><description>
 ///             Assert the cards. <c>HelpCardValidator.AssertValid(MyLibHelp.Source)</c> builds a flat catalog of the
-///             source (and the sources it imports) and throws a <c>HelpCatalogException</c> that lists every defect.
+///             source (and the sources it imports) and throws a <c>HelpCatalogException</c> that lists the defects it
+///             finds. The checks run in stages (a front-matter error hides the link checks of its file), so after a
+///             fix the test can report more; see <c>HelpProblem</c>.
 ///             Pass an <c>Action&lt;HelpCatalogBuilder&gt;</c> to check exactly the composition of an application, or a
 ///             <c>HelpCatalog</c> that already exists.
 ///         </description></item>
@@ -67,7 +69,7 @@ namespace DemaConsulting.HelpCards.Testing;
 ///     [Fact]
 ///     public void Cards_AreValid()
 ///     {
-///         // Throws a HelpCatalogException that lists every defect; warnings fail the test too.
+///         // Throws a HelpCatalogException that lists the defects found; warnings fail the test too.
 ///         HelpCardValidator.AssertValid(MyLibHelp.Source, new HelpValidationOptions { WarningsAreErrors = true });
 ///     }
 ///

@@ -5,8 +5,12 @@ namespace DemaConsulting.HelpCards.Catalog;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         Catalog creation collects every defect it can find and throws this one exception afterwards, so an
-///         author sees all problems at once. <see cref="Problems"/> holds every error in the deterministic order
+///         Catalog creation collects the defects it can find and throws this one exception afterwards, so an
+///         author sees many problems at once, but not necessarily all of them: the checks run in stages, and the body
+///         checks that need a finished card (<c>link-target</c>, <c>example-target</c>, <c>see-also-target</c>) are
+///         skipped for a file whose front matter has an error, while a <c>syntax</c> error hides everything else in its
+///         file. After fixing the listed errors, more can appear; see <see cref="HelpCatalog.Create"/>.
+///         <see cref="Problems"/> holds every error that was found in the deterministic order
 ///         of the failure model; the message is the display text of the first problem followed by the number of
 ///         further ones. Bad arguments never produce this exception; they throw
 ///         <see cref="ArgumentException"/> or <see cref="ArgumentNullException"/>.

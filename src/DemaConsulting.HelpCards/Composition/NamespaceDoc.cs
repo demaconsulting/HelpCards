@@ -25,8 +25,9 @@ namespace DemaConsulting.HelpCards.Composition;
 ///             <c>ExpectedRoots</c> requires the root ids to equal a set.
 ///         </description></item>
 ///         <item><description>
-///             Handle defects. <c>HelpCatalog.Create</c> throws one <c>HelpCatalogException</c> that lists every
-///             problem; <c>Problems</c> has all of them.
+///             Handle defects. <c>HelpCatalog.Create</c> throws one <c>HelpCatalogException</c> whose <c>Problems</c>
+///             lists the errors found. The checks run in stages (a front-matter error hides the link checks of its
+///             file), so fix the listed errors and run again.
 ///         </description></item>
 ///     </list>
 ///     <para>
@@ -78,7 +79,7 @@ namespace DemaConsulting.HelpCards.Composition;
 /// }
 /// catch (HelpCatalogException ex)
 /// {
-///     // Every defect of every source is reported at once, not only the first.
+///     // The errors found in every source are listed together (in stages: see HelpCatalog.Create).
 ///     foreach (HelpProblem problem in ex.Problems)
 ///     {
 ///         Console.Error.WriteLine($"{problem.RuleId} {problem.SourceName}:{problem.File}:{problem.Line} {problem.Message}");

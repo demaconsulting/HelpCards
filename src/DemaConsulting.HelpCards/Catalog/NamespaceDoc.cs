@@ -37,7 +37,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     <para>
 ///         Key rules: the catalog and every object it returns are immutable and safe to use from several threads.
 ///         A defective source is an error at creation, never later: <c>Create</c> throws one
-///         <c>HelpCatalogException</c> whose <c>Problems</c> list holds every error, while the informational notes of a
+///         <c>HelpCatalogException</c> whose <c>Problems</c> list holds the errors found (the checks run in stages: a front-matter error hides the link checks of its file, so fix and run again), while the informational notes of a
 ///         successful build are in <c>Diagnostics</c>. After creation, lookups return <c>null</c> or a
 ///         <c>HelpPathResolution</c> instead of throwing. A lookup is strict: the local id of a mounted source does
 ///         not resolve, only the global id does. A view (<c>Filter</c>, <c>FilterSource</c>, <c>Where</c>,

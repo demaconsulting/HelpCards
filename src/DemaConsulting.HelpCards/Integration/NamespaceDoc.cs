@@ -64,7 +64,9 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         ignoring case) and otherwise returns <c>false</c> at once without building the catalog, so a normal run of
 ///         the tool pays nothing. The helper prints a card, the index, examples, search results or tagged cards and
 ///         writes usage errors to the error writer; if the catalog factory throws a <c>HelpCatalogException</c>, it
-///         prints <c>Help is unavailable</c> and exits with 70. Exit codes: 0 success, 2 wrong arguments or a name that
+///         prints <c>Help is unavailable</c> and exits with 70 (the usual cause is a card defect, for example a source
+///         without a name: every source needs a <c>name:</c> in its <c>_source.md</c>, or <c>HelpSource.WithName</c>, or the
+///         rule <c>source-invalid</c> fails the catalog). Exit codes: 0 success, 2 wrong arguments or a name that
 ///         matches nothing, 70 defective catalog. <c>HelpAgentTool.Invoke</c> never throws for bad
 ///         arguments or a defective catalog: every failure is a plain-text answer that says what to send instead, and
 ///         answers are cut to <c>MaxOutputChars</c>. An option outside its range is an <c>ArgumentException</c> when
@@ -152,7 +154,9 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     An application that uses three libraries, each with its own cards, and serves them all as one agent tool. Each
 ///     source is mounted below its own root, so the ids that the agent sees are global ids: <c>core/reports</c>, and
 ///     <c>b/reports</c> for the source that was mounted as <c>b</c>. The <c>topic</c> argument takes these global ids; a
-///     bare <c>reports</c> matches the cards of all three libraries and gets a message that lists them. (Real libraries
+///     bare <c>reports</c> matches the cards of all three libraries and gets a message that lists them. The <c>source</c>
+///     argument, in contrast, is the declared source name (<c>plot</c>, the <c>name</c> of its <c>_source.md</c>), not the
+///     mount (<c>b</c>). (Real libraries
 ///     expose a <c>HelpSource</c> made with <c>HelpSource.FromAssembly</c>; the sample builds them from text.)
 ///     <code language="csharp">
 /// using System;

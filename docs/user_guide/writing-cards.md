@@ -12,7 +12,7 @@ that folder, without the extension, is the **local id** of the card.
 | --- | --- |
 | `Help/build.md` | The card `build`, a root card |
 | `Help/build/compile.md` | The card `build/compile`, a child of `build` |
-| `Help/_source.md` | Describes the source as a whole; not a card |
+| `Help/_source.md` | Describes the source; not a card. Needs a `name:` unless `WithName` is used |
 | `Help/build/compile.de.md` | The German translation of the card `build/compile` |
 | `Help/build/sample.yaml` | A data file that an example of `build` or `build/compile` can name |
 
@@ -87,7 +87,7 @@ that is not allowed is the error `key-unknown`, and its message lists the allowe
 | `extends` | One reference | - | R | - | - |
 | `optional` | `true` or `false` | - | O | - | - |
 | `schema` | Integer, default 1 | - | - | - | O |
-| `name` | Segment | - | - | - | O |
+| `name` | Segment | - | - | - | R (or `HelpSource.WithName`) |
 | `language` | Culture name, default `en` | - | - | - | O |
 | `x-` followed by a name | One-line scalar | O | O | - | O |
 

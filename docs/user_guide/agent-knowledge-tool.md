@@ -111,7 +111,8 @@ of leading and trailing white space. A number for `maxResults` must be written a
 
 A topic is found by the global id or the path, names and aliases included. An unqualified local id of a mounted source
 also works when exactly one card has it. A card answer is plain Markdown with the `Plain` link style, so a link reads
-as the id of a card that the agent can ask for next.
+as the id of a card that the agent can ask for next. The `source` argument is the declared name of a source (the `name`
+of its `_source.md`), not the mount that the application chose for it; the ids in the answers carry the mount.
 
 ## Output Budget
 

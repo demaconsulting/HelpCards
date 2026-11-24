@@ -30,7 +30,10 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         it (<c>`tool help getting-started install`</c>, built from <see cref="HelpCliOptions.CommandTemplate"/>), and
 ///         a link to an example of the same card reads <c>`--example load`</c>, the option to add to the command of
 ///         that card. This differs from the plain style (<c>the card `id`</c>) of <c>HelpCatalog.Render</c> without options
-///         and of the agent tool. <c>--examples</c> and <c>--example name</c> need the path of a card.
+///         and of the agent tool. <c>--examples</c> and <c>--example name</c> need the path of a card. Generated text is
+///         wrapped to the width (78 by default, <c>--width</c>), and the continuation lines of a wrapped entry, such as
+///         a topic or the hint <c>Print them in full with: ...</c> at the end of the examples, are indented by two
+///         spaces; that is intended and part of the output contract, not a rendering defect.
 ///     </para>
 /// </remarks>
 /// <example>

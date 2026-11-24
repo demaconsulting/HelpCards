@@ -6,8 +6,9 @@ namespace and do not depend on a test framework.
 
 ## Validating Cards
 
-`HelpCardValidator.AssertValid` builds the catalog and throws a `HelpCatalogException` that lists every problem when
-any card is defective. A single test covers all of your cards:
+`HelpCardValidator.AssertValid` builds the catalog and throws a `HelpCatalogException` that lists the problems it finds
+when any card is defective (the checks run in stages, so fixing the listed errors can reveal more; see *Composing
+Sources*). A single test covers all of your cards:
 
 ```csharp
 using DemaConsulting.HelpCards.Testing;
@@ -32,9 +33,9 @@ The validator has three groups of overloads, each with a `Validate` method that 
 | An `Action<HelpCatalogBuilder>` | Exactly the composition that you describe, for example the one of the application |
 | A `HelpCatalog` | Nothing: the catalog already exists, and the quality rules and the external-source check run on it |
 
-`Validate` returns every problem: the errors that building the catalog produces first, and then the warnings of the
-quality rules. It never throws for a defect of a card. `AssertValid` fails on errors, and also on warnings when
-`WarningsAreErrors` is set.
+`Validate` returns the problems: the errors that building the catalog produces first (found in stages, see *Composing
+Sources*), and then the warnings of the quality rules, which appear only when there is no error. It never throws for a
+defect of a card. `AssertValid` fails on errors, and also on warnings when `WarningsAreErrors` is set.
 
 ## Options and Quality Rules
 

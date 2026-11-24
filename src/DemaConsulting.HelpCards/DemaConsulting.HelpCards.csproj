@@ -49,9 +49,34 @@
          - Generation runs once per build for the first target framework only, which is correct
            because the public surface is identical across target frameworks.
          - ApiMarkPackDocs ships the generated api/ tree inside the NuGet package.
+         - ApiMarkLibraryDescription is the landing text of api.md (before the namespace table): the
+           install line, target frameworks, a runnable hello-world and where to start. Keep the
+           hello-world compiling when the API changes.
          - ApiMarkEnforceDocs fails the build on any public API member lacking an XML doc summary,
            so the shipped reference cannot silently develop gaps. -->
     <ApiMarkPackDocs>true</ApiMarkPackDocs>
+    <ApiMarkLibraryDescription>Markdown help and knowledge cards for .NET: author help as Markdown cards, embed them in assemblies, serve them as command-line help for people and as a searchable knowledge tool for AI agents.
+
+Install: `dotnet add package DemaConsulting.HelpCards` (targets net8.0, net9.0, net10.0 and net11.0).
+
+Hello help, with one in-memory card. A real project keeps its cards in a `Help` folder with a `_source.md` whose `name:` line names the source (every source needs a name), and exposes them with `HelpSource.FromAssembly`.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using DemaConsulting.HelpCards.Catalog;
+using DemaConsulting.HelpCards.Loading;
+
+HelpSource source = HelpSource.FromFiles(new Dictionary&lt;string, string&gt;
+{
+    ["hello.md"] = "---\ntitle: Hello\nsummary: Say hello.\n---\nRun {{tool}} hello.",
+}, name: "demo");
+
+HelpCatalog catalog = HelpCatalog.Create(builder => builder.AddSource(source).ToolName("demo"));
+Console.WriteLine(catalog.Render(catalog.Find("hello")!));
+```
+
+Where to start: write cards and embed them (card format, MSBuild properties): [Loading](DemaConsulting.HelpCards.Loading.md). Add a `help` command to a tool, or expose the cards to an AI agent: [Integration](DemaConsulting.HelpCards.Integration.md). Read, search and render a catalog: [Catalog](DemaConsulting.HelpCards.Catalog.md). Combine several libraries: [Composition](DemaConsulting.HelpCards.Composition.md). Output formats and the JSON contract: [Presentation](DemaConsulting.HelpCards.Presentation.md). Test your cards: [Testing](DemaConsulting.HelpCards.Testing.md).</ApiMarkLibraryDescription>
     <ApiMarkEnforceDocs>Public</ApiMarkEnforceDocs>
     <ApiMarkEnforceDocsSeverity>Error</ApiMarkEnforceDocsSeverity>
   </PropertyGroup>

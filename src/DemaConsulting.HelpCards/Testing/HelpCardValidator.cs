@@ -10,9 +10,10 @@ namespace DemaConsulting.HelpCards.Testing;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         <see cref="Validate(HelpSource, HelpValidationOptions?)"/> and its overloads return every problem as a
+///         <see cref="Validate(HelpSource, HelpValidationOptions?)"/> and its overloads return the problems as a
 ///         list and never throw for a defect of a card: the errors that creating a catalog would raise come
-///         first, followed by the quality warnings (<c>summary-length</c>, <c>card-size</c>,
+///         first (found in stages: see <see cref="HelpProblem"/>; a front-matter error hides the link checks of its
+///         file, so repeat after fixing), followed by the quality warnings (<c>summary-length</c>, <c>card-size</c>,
 ///         <c>heading-reserved</c>, <c>fence-language</c>, <c>fence-unclosed</c>, <c>unused-token</c>,
 ///         <c>line-length</c>, and <c>command-parse</c>), the problems of the rules in
 ///         <see cref="HelpValidationOptions.Rules"/>, and, when requested, an error for each absent external

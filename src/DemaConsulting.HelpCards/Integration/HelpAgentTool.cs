@@ -98,7 +98,11 @@ public sealed class HelpAgentTool
     ///     <c>example</c> (an example name, or <c>card-id#name</c>), <c>query</c> (words to search for), <c>source</c>
     ///     and <c>tag</c> (filters for the index and the search), and the integer <c>maxResults</c> (1 to 20), with
     ///     <c>additionalProperties</c> false. Register it as the parameter schema of the tool with your agent
-    ///     framework; the text is a constant, the same for every catalog.
+    ///     framework; the text is a constant, the same for every catalog. Its descriptions are generic: the example id
+    ///     <c>svg/framed-figure</c> in the description of <c>topic</c> is a placeholder that shows the shape of an id,
+    ///     not a card of your catalog. <c>topic</c> takes the global id of a card (with the mount in front when the
+    ///     source was added with <c>AddMountedSource</c>), and <c>source</c> takes the declared name of a source (the
+    ///     <c>name</c> of its <c>_source.md</c>), not its mount.
     /// </remarks>
     public string ParametersSchema { get; } = Schema;
 
@@ -118,7 +122,10 @@ public sealed class HelpAgentTool
     ///         example (<c>topic</c>, <c>example</c>, or both), and a search (<c>query</c>). The <c>topic</c> is the
     ///         global id of a card, that is the id with the mount in front when the source was added with
     ///         <c>AddMountedSource</c> (<c>core/getting-started</c>). A bare local id (<c>getting-started</c>) also works
-    ///         when exactly one card has it; when several do, the answer lists their global ids. A card is answered in
+    ///         when exactly one card has it; when several do, the answer lists their global ids. The <c>source</c>
+    ///         argument (a filter for the index and the search) is the <em>declared name</em> of the source, the
+    ///         <c>name</c> in its <c>_source.md</c> (<c>plot</c>), and not the mount that the application chose
+    ///         (<c>b</c>); the ids in the answers carry the mount. A card is answered in
     ///         Markdown with its examples in full, links written in the plain style (<c>the card `id`</c>).
     ///     </para>
     /// </remarks>

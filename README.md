@@ -32,7 +32,7 @@ Presentation, Integration, and Testing build on that catalog.
 - **Resource Embedding**: A packaged MSBuild targets file embeds the `Help` folder of a project in its assembly
 - **Links and Tokens**: `[[card]]` links checked at build time and `{{token}}` values per library
 - **Multi-Library Composition**: Several libraries expose a `HelpSource`; an application mounts them, imports,
-  overlays, and links across them, and reports every defect at once
+  overlays, and links across them, and reports the defects it finds in every source
 - **Cultures**: Translations in culture-suffixed files with a per-file fallback chain
 - **Presentation**: Text, Markdown, and JSON output with three link styles and a versioned JSON contract
 - **Command-Line Helper**: `HelpCli` answers `help`, `help <path>`, `--examples`, `--example`, `--search`, and
@@ -61,7 +61,9 @@ project references the package.
 
 ### A library that ships cards
 
-Put the cards in a `Help` folder of the project. A `_source.md` file names the source and describes it:
+Put the cards in a `Help` folder of the project. A `_source.md` file names the source and describes it; every source
+needs a name, so its `name:` line is required (or call `HelpSource.WithName` instead), and without a name the catalog
+fails with the rule `source-invalid`:
 
 ```text
 MyLib/

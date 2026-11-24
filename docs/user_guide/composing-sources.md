@@ -161,12 +161,18 @@ of the word.
 
 ## Problems and Exceptions
 
-The loader and the composition pipeline collect every problem instead of stopping at the first one. A problem has a
-severity, a rule id, the source name, the file, the line, and a message. `HelpCatalog.Create` throws one
-`HelpCatalogException` when any error exists; its `Problems` list holds all errors in a fixed order (source
-registration order, file path, line, rule id), and its message names the first one and the number of the others. A
-syntax error ends only its own file, and errors that only follow from a broken file are not reported, so one broken
-card gives one problem.
+The loader and the composition pipeline collect the problems they find instead of stopping at the first one. A problem
+has a severity, a rule id, the source name, the file, the line, and a message. `HelpCatalog.Create` throws one
+`HelpCatalogException` when any error exists; its `Problems` list holds the errors in a fixed order (source
+registration order, file path, line, rule id), and its message names the first one and the number of the others.
+
+The checks run in stages, so the list is not always complete. Every file is checked on its own, so the errors of
+different files appear together. Within one file, a `syntax` error in the front matter hides every other finding of that
+file; a key or value error (`key-unknown`, `key-missing`, `value-invalid`) still lets `token-unknown` and `link-syntax`
+of the body appear, but the checks that need the finished card (`link-target`, `example-target`, `see-also-target`) are
+skipped for that file, and a link to such a file is not reported. Warnings of the validator appear only when there is
+no error. After you fix the listed errors, run again: more can show up. A source without a name is the error
+`source-invalid`; the other files of the catalog are still checked.
 
 The rules that `Create` reports as errors are:
 

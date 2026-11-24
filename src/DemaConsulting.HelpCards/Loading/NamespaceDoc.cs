@@ -22,7 +22,11 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     <list type="number">
 ///         <item><description>
 ///             Write the cards. Put one Markdown file per topic, with a small front-matter block, in the
-///             <c>Help</c> folder of the project; an optional <c>_source.md</c> names the source and describes it.
+///             <c>Help</c> folder of the project. <em>Every source needs a name</em>: write a <c>_source.md</c> with a
+///             <c>name:</c> line (the other keys and the body of that file are optional), or call
+///             <c>HelpSource.WithName</c> instead. Without a name <c>HelpCatalog.Create</c> fails with the rule
+///             <c>source-invalid</c>, and a command-line tool's <c>tool help</c> prints "Help is unavailable" and exits
+///             with 70.
 ///             A <c>PackageReference</c> to <c>DemaConsulting.HelpCards</c> is all the project needs: its build files
 ///             embed the folder in the assembly, so the project file needs no <c>EmbeddedResource</c> item (see
 ///             <em>Embedding in the assembly</em> below).
@@ -51,7 +55,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <listheader><term>File</term><description>Meaning</description></listheader>
 ///         <item><term><c>Help/build.md</c></term><description>The card <c>build</c>, a root card.</description></item>
 ///         <item><term><c>Help/build/compile.md</c></term><description>The card <c>build/compile</c>, a child of <c>build</c>.</description></item>
-///         <item><term><c>Help/_source.md</c></term><description>Describes the source as a whole; not a card.</description></item>
+///         <item><term><c>Help/_source.md</c></term><description>Describes the source as a whole; not a card. Its <c>name:</c> is required unless <c>HelpSource.WithName</c> supplies the name.</description></item>
 ///         <item><term><c>Help/build/compile.de.md</c></term><description>The German translation of <c>build/compile</c> (see <em>Cultures</em>).</description></item>
 ///         <item><term><c>Help/build/sample.yaml</c></term><description>A data file (any extension except <c>.md</c>) that an example can name with its <c>file</c> key.</description></item>
 ///     </list>
@@ -108,16 +112,29 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <item><term><c>examples</c></term><description>List of example items (see <em>Examples</em>). O / O / O (only <c>name</c> and <c>description</c> per item) / -.</description></item>
 ///         <item><term><c>extends</c></term><description>One reference. Overlay only (R). The card the overlay adds to; see <c>DemaConsulting.HelpCards.Composition</c>.</description></item>
 ///         <item><term><c>optional</c></term><description><c>true</c> or <c>false</c>. Overlay only (O). With <c>true</c> the overlay is skipped when its target source is absent.</description></item>
-///         <item><term><c>name</c></term><description>A segment. <c>_source.md</c> only (O). The declared name of the source: public contract, because external links use it. Required unless <c>HelpSource.WithName</c> supplies it (<c>source-invalid</c>).</description></item>
+///         <item><term><c>name</c></term><description>A segment. <c>_source.md</c> only. <em>Required for every source</em>: either this key or <c>HelpSource.WithName</c> must supply it, or <c>HelpCatalog.Create</c> fails with <c>source-invalid</c>. The declared name of the source: public contract, because external links use it.</description></item>
 ///         <item><term><c>language</c></term><description>Culture name, default <c>en</c>. <c>_source.md</c> only (O). The culture of the neutral files.</description></item>
 ///         <item><term><c>schema</c></term><description>Integer, default 1. <c>_source.md</c> only (O). A schema newer than the library supports is <c>schema-unsupported</c>.</description></item>
 ///         <item><term><c>x-</c> followed by a name</term><description>One-line text. O / O / - / O. Your own data; kept in <c>HelpCard.Extensions</c> and otherwise ignored.</description></item>
 ///     </list>
 ///     <para>
-///         <c>_source.md</c> has the same layout as a card: front matter with the keys marked in its column (it needs
-///         no <c>title</c> or <c>summary</c> but should have them; they describe the source in the index), and a body
-///         that is the landing text of the source. Its translations are <c>_source.de.md</c> and so on.
+///         <c>_source.md</c> has the same layout as a card: front matter with the keys marked in its column, and a body
+///         that is the landing text of the source. Only <c>name</c> is required (and not even that when
+///         <c>HelpSource.WithName</c> supplies the name); <c>title</c> and <c>summary</c> describe the source in the
+///         index and are good practice. Its translations are <c>_source.de.md</c> and so on.
 ///     </para>
+///     <para>
+///         <b>Order of siblings and roots.</b> Cards are listed in this order, for the children of a card and, in the
+///         same way, for the roots of one source (the <c>children</c> key of <c>_source.md</c> plays the part of the
+///         parent's <c>children</c>). The roots of a catalog are the roots of its sources, in the order in which the
+///         sources were added to the builder; each source keeps its own order inside its block.
+///     </para>
+///     <list type="table">
+///         <listheader><term>Step</term><description>Which cards, and how they sort</description></listheader>
+///         <item><term>1</term><description>The names in the <c>children</c> list, in the listed order.</description></item>
+///         <item><term>2</term><description>The other cards that have an <c>order</c>, by ascending <c>order</c>, ties by name.</description></item>
+///         <item><term>3</term><description>The cards without <c>order</c>, by name.</description></item>
+///     </list>
 ///     <para>
 ///         <b>Value syntax and multiline rules.</b> A value is a plain, a single-quoted, or a double-quoted scalar. A
 ///         single-quoted scalar writes a quote as two quotes; a double-quoted one knows only the escapes backslash and
