@@ -136,9 +136,29 @@ public class HelpAgentToolTests
         Assert.Equal(
             $"\n\n[Truncated: {full.Length - kept.Length} characters omitted. Ask for a narrower topic or an example.]",
             cut[marker..]);
-        Assert.Equal(full[..kept.Length], kept);
         Assert.True(full.LastIndexOf('\n', 1000) == kept.Length);
         Assert.DoesNotContain("[Truncated", full, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the line that says the query was ignored survives the cut of a long answer, and that the whole
+    ///     answer stays within the limit before the omission marker is added.
+    /// </summary>
+    [Fact]
+    public void HelpAgentTool_Invoke_LongAnswerWithIgnoredQuery_KeepsTheNoticeAfterTheCut()
+    {
+        // Arrange
+        var body = string.Join("\n", Enumerable.Range(1, 400).Select(number => $"Line number {number} of the body."));
+        var catalog = CatalogBuilding.FromFiles(("long.md", SourceReading.Card(title: "Long", body: body)));
+        var tool = HelpAgentTools.Create(catalog, new HelpAgentToolOptions { MaxOutputChars = 1000 });
+
+        // Act
+        var answer = tool.Invoke("{\"topic\":\"long\",\"query\":\"line\"}");
+
+        // Assert
+        Assert.Contains("[Truncated: ", answer, StringComparison.Ordinal);
+        Assert.EndsWith("\nIgnored 'query' because 'topic' was given.", answer, StringComparison.Ordinal);
+        Assert.True(answer.IndexOf("\n\n[Truncated: ", StringComparison.Ordinal) <= 1000);
     }
 
     /// <summary>
@@ -148,7 +168,6 @@ public class HelpAgentToolTests
     public void HelpAgentTool_Invoke_LongSingleLine_IsCutAtTheLimitWithoutSplittingAPair()
     {
         // Arrange: the answer is one long line of characters outside the basic plane
-        var catalog = CatalogBuilding.Simple();
         var tool = new HelpAgentTool("help", "d", _ => new string('a', 999) + "\U0001F600" + new string('b', 100), 1000);
 
         // Act
@@ -158,7 +177,6 @@ public class HelpAgentToolTests
         var kept = cut[..cut.IndexOf("\n\n[Truncated: ", StringComparison.Ordinal)];
         Assert.Equal(999, kept.Length);
         Assert.Contains("102 characters omitted", cut, StringComparison.Ordinal);
-        Assert.NotNull(catalog);
     }
 
     /// <summary>

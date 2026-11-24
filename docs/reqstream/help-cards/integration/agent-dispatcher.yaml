@@ -15,13 +15,15 @@ sections:
                 title: >-
                   The dispatcher shall answer a call without a topic, example, or query with the index in Markdown to
                   the configured depth, one block for each source when there are several, one list when a source or tag
-                  restricts it, and the valid names when a source or tag is unknown.
+                  restricts it, and the valid names when a source or tag is unknown (or a message that the help has no
+                  tags when a tag is asked for in a catalog without any).
                 justification: |
                   The index is how an agent learns what the help holds.
                 tests:
                   - AgentDispatcher_Answer_NoArguments_IsTheIndexToTheConfiguredDepth
                   - AgentDispatcher_Answer_Index_ManySourcesAreBlocksAndRestrictionsAreOneList
                   - AgentDispatcher_Answer_UnknownSourceOrTag_ListsTheValidOnes
+                  - AgentDispatcher_Answer_TagInCatalogWithoutTags_SaysThereAreNone
 
               - id: HelpCards-Integration-AgentDispatcher-Topic
                 title: >-

@@ -139,7 +139,7 @@ exits with 2; use `card#name`.
 | Option of `HelpCliOptions` | Meaning |
 | --- | --- |
 | `ToolName` | Required: the name used in commands, a word without braces |
-| `Version` | Shown in the JSON index |
+| `Version` | For information only; the version in the JSON index is the `ToolVersion` of the catalog builder |
 | `Verb` | The help verb; the default is `help` |
 | `CatalogFactory` | Required: builds the catalog, called only after the verb is seen |
 | `UsageLines` | The usage lines at the top of the index |
@@ -154,7 +154,10 @@ exits with 2; use `card#name`.
 
 A `FallbackResolver` lets a tool keep answers that are not cards. It receives the path words and returns a
 `HelpCliAnswer(text, exitCode)` or `null` to continue with the cards. A tool can print the usage of its own command
-`build` this way and let the cards document everything else.
+`build` this way and let the cards document everything else. The resolver is offered plain card commands only
+(`help build`); `help build --examples` and `help build --example x` go to the catalog, which does not know the subject
+and answers with a not-found error. The options object is kept by the helper, not copied; do not change it after you
+create a helper from it.
 
 `Run(arguments)` is the same helper without the verb check, for a tool whose own parser has already recognized the
 help command and removed the verb.

@@ -112,7 +112,7 @@ internal sealed partial class CliDispatcher
             hint.Add($"Did you mean '{resolution.Suggestion}'?");
         }
 
-        var where = parent is null ? $"{_options.ToolName} {_options.Verb}" : CommandFor(parent);
+        var where = parent is null ? CommandFor(string.Empty).Trim() : CommandFor(parent);
         if (resolution.ValidNames.Count > 0)
         {
             var label = parent is null ? "Help topics" : $"Cards under '{parent}'";

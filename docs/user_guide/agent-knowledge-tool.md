@@ -95,7 +95,8 @@ that says what to send instead.
 These rules decide the answer when several arguments appear. When `example` is present the tool answers it, and a
 `topic` only limits where it looks. Otherwise a `topic` is answered, and otherwise a `query`. A `query` that is
 ignored because of a `topic` or an `example` is reported in one last line such as `Ignored 'query' because 'topic' was
-given.` A property that is `null`, empty, or blank counts as absent.
+given.` A property that is `null`, empty, or blank counts as absent, and the text of a property that is given is trimmed
+of leading and trailing white space. A number for `maxResults` must be written as an integer: `5.0` is rejected.
 
 | Input | Answer |
 | --- | --- |
@@ -106,6 +107,7 @@ given.` A property that is `null`, empty, or blank counts as absent.
 | A topic that is not found | Up to five suggestions, or the candidate ids when an unqualified name is ambiguous |
 | An example that is not found | Up to five suggestions of example names, then card names |
 | A search without results | `No cards match 'x'. Call with no arguments for the index.` |
+| A tag in a catalog without any tag | `No cards have the tag 'x'; this help has no tags.` |
 
 A topic is found by the global id or the path, names and aliases included. An unqualified local id of a mounted source
 also works when exactly one card has it. A card answer is plain Markdown with the `Plain` link style, so a link reads
@@ -120,6 +122,7 @@ If an answer is longer than `MaxOutputChars`, the tool cuts it after the last co
 ```
 
 The agent can then ask for a child card or for one example, which is the way the tool teaches progressive disclosure.
+The line that reports an ignored `query` is appended after the cut, so a long answer never hides it.
 
 ## Failure Boundary and Security
 

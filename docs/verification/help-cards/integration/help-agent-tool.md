@@ -21,7 +21,8 @@ All tests in `HelpAgentToolTests.cs` pass; the schema equals the text of the con
 - **Name**: the default, a name chosen by a host, and the longest valid name.
 - **Creation**: every invalid name, range, description, and tool name, and the limits of the ranges.
 - **Description**: the generated text with the product and sources, and a given text.
-- **Budget**: a long card cut at a line end with the omitted count, and a long single line cut without splitting a pair.
+- **Budget**: a long card cut at a line end with the omitted count, a long single line cut without splitting a pair,
+  and the ignored-query line kept after the cut.
 - **Boundary**: each recoverable exception becomes a message with the type name only; out-of-memory and cancellation
   pass; hostile text never throws.
 - **No I/O and threads**: no listing or read after creation, and the same answers from many threads.

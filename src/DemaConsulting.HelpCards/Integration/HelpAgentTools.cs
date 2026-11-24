@@ -64,7 +64,8 @@ public static partial class HelpAgentTools
         CheckRange(options.IndexDepth, 0, MaxDepth, "IndexDepth");
 
         var description = options.Description ?? HelpAgentTool.Describe(catalog, options.ToolName);
-        return new HelpAgentTool(options.Name, description, new AgentDispatcher(catalog, options).Answer, options.MaxOutputChars);
+        var dispatcher = new AgentDispatcher(catalog, options);
+        return new HelpAgentTool(options.Name, description, dispatcher.Answer, options.MaxOutputChars, AgentDispatcher.IgnoredNotice);
     }
 
     /// <summary>

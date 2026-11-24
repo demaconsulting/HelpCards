@@ -24,7 +24,9 @@ factory. The schema is a constant of the class and is the exact one-line text of
 - **`Invoke(argumentsJson)`** reads the arguments, asks the dispatcher for the answer, and cuts it to the output limit.
   An answer over the limit is cut at the last line feed at or before the limit, or at the limit when there is none,
   without splitting a surrogate pair, and
-  `\n\n[Truncated: {n} characters omitted. Ask for a narrower topic or an example.]` is appended. A
+  `\n\n[Truncated: {n} characters omitted. Ask for a narrower topic or an example.]` is appended. The line that says the
+  query was ignored (`AgentDispatcher.IgnoredNotice`) is appended last, after the cut, and its room is taken from the
+  limit, so it is never cut away. A
   `HelpCatalogException`, `ArgumentException`, `InvalidOperationException`, `KeyNotFoundException`, `FormatException`,
   or `JsonException` becomes `The help tool could not answer ({ExceptionTypeName}).` and never the text of the
   exception.

@@ -65,12 +65,14 @@ sections:
               - HelpCards-Integration-CliDispatcher-Sources
             tests:
               - Integration_Cli_OptionTable_SelectsModesAndFormats
+              - Integration_Cli_RestrictionsAndMisses_AreAnsweredWithValidNames
 
           - id: HelpCards-Integration-CliFailures
             title: >-
               The subsystem shall exit with 0 on success, 2 for wrong arguments and names that match nothing, and 70
-              for a defective catalog, write text and Markdown errors to the error writer and JSON errors to the
-              output, write everything with line feeds only, and never create the catalog for a usage error.
+              for a defective catalog, write text and Markdown errors to the error writer and JSON errors (not found
+              and ambiguous) to the output, write everything with line feeds only, and never create the catalog for a
+              usage error.
             justification: |
               Scripts depend on exit codes and on where a message is written.
             children:
@@ -78,6 +80,7 @@ sections:
               - HelpCards-Integration-CliDispatcher-Output
             tests:
               - Integration_Cli_Failures_UseExitCodesAndChannels
+              - Integration_Cli_JsonFailures_AmbiguousAndNotFound_UseTheOutputChannel
 
           - id: HelpCards-Integration-CliExtensions
             title: >-
@@ -108,6 +111,7 @@ sections:
               - HelpCards-Integration-HelpAgentTool-Description
             tests:
               - Integration_Agent_Creation_NameSchemaAndDescription
+              - Integration_Agent_Creation_InvalidOptions_AreCheckedWhereTheToolIsCreated
 
           - id: HelpCards-Integration-AgentCalls
             title: >-
@@ -147,8 +151,7 @@ sections:
           - id: HelpCards-Integration-AgentBudget
             title: >-
               The subsystem shall cut an answer that is longer than the output limit at a line end and say how much
-              was left out, turn the recoverable exceptions into a message that names only the type of the exception,
-              let the unrecoverable ones pass, and read no file when the tool is used.
+              was left out, answer any text an agent sends without throwing, and read no file when the tool is used.
             justification: |
               Agents have a limited context, and a tool that throws ends the conversation.
             children:
@@ -157,3 +160,4 @@ sections:
               - HelpCards-Integration-HelpAgentTool-NoIo
             tests:
               - Integration_Agent_Budget_CutsLongAnswersAtALineEnd
+              - Integration_Agent_Use_ReadsNoFileAndNeverThrowsForHostileText
