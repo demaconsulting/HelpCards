@@ -81,7 +81,6 @@ internal static class CatalogBuilding
         return HelpSource.FromFiles(SourceReading.Files(files), name);
     }
 
-
     /// <summary>
     ///     Creates the catalog of the <c>simple</c> fixture with its <c>limit</c> token and tool version 2.5.
     /// </summary>
@@ -163,6 +162,7 @@ internal static class CatalogBuilding
         configure(builder);
         return builder.Compose();
     }
+
     /// <summary>
     ///     Gets the problems that make creation fail for in-memory files.
     /// </summary>

@@ -79,6 +79,18 @@ sections:
         tests:
           - HelpCards_FrontMatter_UnknownKey_ReportsKeyAndAllowedKeys
 
+      - id: HelpCards-FrontMatter-ExtensionsAndSchema
+        title: >-
+          Cards shall be able to carry extension keys that start with "x-", which the catalog keeps as extensions of the
+          card, and a source shall declare a schema that is 1 when omitted and rejected when higher than the library
+          supports.
+        tags: [system]
+        justification: |
+          Tools attach their own metadata to cards without a change of the library, and a source written for a newer
+          schema must fail clearly instead of being read wrongly.
+        tests:
+          - HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced
+
       - id: HelpCards-Tokens-Substitution
         title: >-
           Text of cards shall be able to use tokens that are replaced with the values of the source and the
@@ -186,6 +198,7 @@ sections:
           - HelpCards_MultiSource_MountedLibrariesAndApp_ComposeOneCatalog
           - HelpCards_MultiSource_AbsentSources_DegradeToDisplayTextAndSkipOptionalOverlays
           - HelpCards_MultiSource_Collisions_AreCollectedInOneException
+
       - id: HelpCards-Ordering-Siblings
         title: >-
           Cards that share a parent, and the roots, shall be ordered by the children list of their parent, then by
@@ -251,7 +264,7 @@ sections:
       - id: HelpCards-ThreadSafety-SharedCatalog
         title: >-
           One catalog and the views made from it shall be safe to use from many threads at the same time, for
-          lookups, views, and rendering.
+          lookups, views, search and suggestions, and rendering.
         tags: [system]
         justification: |
           A tool or service creates its catalog once and shares it between all requests.
@@ -291,6 +304,7 @@ sections:
         tests:
           - HelpCards_Rendering_SimpleFixtureText_EqualsGolden
           - HelpCards_Rendering_SimpleFixtureMarkdown_EqualsGolden
+          - HelpCards_Rendering_CardListsAndWrapping_WrapOnlyGeneratedLinesInText
 
       - id: HelpCards-Rendering-LinkStyles
         title: >-
@@ -415,6 +429,7 @@ sections:
           - HelpCards-Catalog-Search
         tests:
           - HelpCards_Search_BigFixture_MatchesRankingGolden
+          - HelpCards_Search_LimitsAndViews_RestrictResults
 
       - id: HelpCards-Search-Suggestions
         title: >-
@@ -454,6 +469,7 @@ sections:
           - HelpCards-Integration-CliModes
         tests:
           - HelpCards_Cli_Options_SelectModesAndFormats
+          - HelpCards_Cli_OptionRules_RejectConflictsAndFilterBySource
 
       - id: HelpCards-Cli-ExitCodes
         title: >-
@@ -491,6 +507,7 @@ sections:
           - HelpCards-Integration-AgentCalls
         tests:
           - HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch
+          - HelpCards_AgentTool_SourceAndTag_RestrictIndexAndSearch
 
       - id: HelpCards-AgentTool-Schema
         title: >-

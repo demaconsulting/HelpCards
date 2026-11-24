@@ -111,13 +111,13 @@ public class HelpCardsTests
         var source = HelpSource.FromAssembly(typeof(HelpCardsTests).Assembly, "DemaConsulting.HelpCards.Tests.Help/embedding/Help");
 
         // Act
-        var definition = SourceReading.Read(source);
+        var catalog = CatalogBuilding.Create(source);
 
         // Assert: both cards, the source name, and the example read from the embedded data file
-        Assert.Empty(definition.Problems);
-        Assert.Equal("embedding", definition.Name);
-        Assert.Equal(["guide", "guide/setup"], definition.Cards.Select(card => card.LocalId));
-        Assert.Equal("graph TD\n  A --> B", Assert.Single(definition.Cards[0].Examples).Content);
+        Assert.Empty(catalog.Diagnostics);
+        Assert.Equal("embedding", Assert.Single(catalog.Sources).Name);
+        Assert.Equal(["guide", "guide/setup"], catalog.Cards.Select(card => card.Id));
+        Assert.Equal("graph TD\n  A --> B", Assert.Single(catalog.Find("guide")!.Examples).Content);
     }
 
     /// <summary>
@@ -131,11 +131,11 @@ public class HelpCardsTests
         directory.Write("note.md", SourceReading.Card(title: "On disk"));
 
         // Act
-        var definition = SourceReading.Read(HelpSource.FromDirectory(directory.FullPath).WithName("disk"));
+        var catalog = CatalogBuilding.Create(HelpSource.FromDirectory(directory.FullPath).WithName("disk"));
 
         // Assert
-        Assert.Empty(definition.Problems);
-        Assert.Equal("On disk", Assert.Single(definition.Cards).Title);
+        Assert.Equal("disk", Assert.Single(catalog.Sources).Name);
+        Assert.Equal("On disk", Assert.Single(catalog.Cards).Title);
     }
 
     /// <summary>
@@ -145,32 +145,36 @@ public class HelpCardsTests
     public void HelpCards_Sources_Memory_ReadsFiles()
     {
         // Arrange / Act
-        var definition = SourceReading.Read(SourceReading.Files(("note.md", SourceReading.Card(title: "In memory"))));
+        var catalog = CatalogBuilding.FromFiles(("note.md", SourceReading.Card(title: "In memory")));
 
         // Assert
-        Assert.Empty(definition.Problems);
-        Assert.Equal("In memory", Assert.Single(definition.Cards).Title);
+        Assert.Equal("In memory", Assert.Single(catalog.Cards).Title);
     }
 
     /// <summary>
-    ///     Proves that creating a source performs no I/O.
+    ///     Proves that creating a source performs no I/O: a source over a directory that does not exist yet can be
+    ///     created and derived from without failing, and reads the directory only when a catalog is created.
     /// </summary>
     [Fact]
     public void HelpCards_Sources_Construction_PerformsNoIo()
     {
-        // Arrange: a provider that counts calls
-        var provider = new CountingFileProvider(SourceReading.Files(("note.md", SourceReading.Card())));
+        // Arrange: the path of a directory that does not exist yet
+        using var parent = new TemporaryDirectory();
+        var path = Path.Combine(parent.FullPath, "later");
 
-        // Act: create a source and derive others from it
-        var source = HelpSource.FromProvider(provider)
+        // Act: create sources and derive others from them while the directory is absent
+        var source = HelpSource.FromDirectory(path)
             .WithName("lib")
             .WithTokens(new Dictionary<string, string> { ["a"] = "1" })
-            .Imports(HelpSource.FromProvider(provider));
+            .Imports(HelpSource.FromDirectory(path).WithName("other"));
+        var assemblySource = HelpSource.FromAssembly(typeof(HelpCardsTests).Assembly, "No.Such.Prefix");
+        Directory.CreateDirectory(path);
+        File.WriteAllText(Path.Combine(path, "note.md"), SourceReading.Card(title: "Created later"));
 
-        // Assert
+        // Assert: nothing was read before the catalog was created, so the card that appeared later is found
+        Assert.NotNull(assemblySource);
+        Assert.Equal("Created later", Assert.Single(CatalogBuilding.Create(HelpSource.FromDirectory(path).WithName("lib")).Cards).Title);
         Assert.NotNull(source);
-        Assert.Equal(0, provider.ListCount);
-        Assert.Equal(0, provider.ReadCount);
     }
 
     /// <summary>
@@ -202,11 +206,10 @@ public class HelpCardsTests
             """;
 
         // Act
-        var definition = SourceReading.Read(SourceReading.Files(("card.md", text)));
+        var catalog = CatalogBuilding.FromFiles(("card.md", text));
 
         // Assert
-        Assert.Empty(definition.Problems);
-        var card = Assert.Single(definition.Cards);
+        var card = Assert.Single(catalog.Cards);
         Assert.Equal("It's a \"card\"", card.Title);
         Assert.Equal("Quoted \\ summary.", card.Summary);
         Assert.Equal("title: Demo\n  nested: true", Assert.Single(card.Examples).Content);
@@ -219,14 +222,12 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_FrontMatter_UnsupportedConstruct_ReportsFileAndLine()
     {
-        // Arrange: a flow sequence on line 3
-        var definition = SourceReading.Read(SourceReading.Files(("docs/card.md", "---\ntitle: A\ntags: [a, b]\n---\n")));
-
-        // Act
-        var problem = Assert.Single(definition.Problems);
+        // Arrange / Act: a flow sequence on line 3
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(("docs/card.md", "---\ntitle: A\ntags: [a, b]\n---\n")));
+        var problem = Assert.Single(exception.Problems);
 
         // Assert
-        Assert.Equal((HelpSeverity.Error, RuleIds.Syntax, "docs/card.md", 3), (problem.Severity, problem.RuleId, problem.File, problem.Line));
+        Assert.Equal((HelpSeverity.Error, "syntax", "docs/card.md", 3), (problem.Severity, problem.RuleId, problem.File, problem.Line));
     }
 
     /// <summary>
@@ -235,16 +236,39 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_FrontMatter_UnknownKey_ReportsKeyAndAllowedKeys()
     {
-        // Arrange
-        var definition = SourceReading.Read(SourceReading.Files(("card.md", SourceReading.Card(extraFrontMatter: "tag: x\n"))));
-
-        // Act
-        var problem = Assert.Single(definition.Problems);
+        // Arrange / Act
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(("card.md", SourceReading.Card(extraFrontMatter: "tag: x\n"))));
+        var problem = Assert.Single(exception.Problems);
 
         // Assert
-        Assert.Equal(RuleIds.KeyUnknown, problem.RuleId);
+        Assert.Equal("key-unknown", problem.RuleId);
         Assert.Contains("'tag'", problem.Message, StringComparison.Ordinal);
         Assert.Contains("tags", problem.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the extension keys that start with <c>x-</c> are kept as extensions of the card and that the
+    ///     schema of a source is 1 when omitted and rejected when higher.
+    /// </summary>
+    [Fact]
+    public void HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced()
+    {
+        // Arrange / Act
+        var catalog = CatalogBuilding.FromFiles(
+            ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 1\n---\n"),
+            ("card.md", SourceReading.Card(extraFrontMatter: "x-owner: docs\nx-review: 2026\n")));
+        var higher = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 2\n---\n"),
+            ("card.md", SourceReading.Card())));
+        var omitted = CatalogBuilding.FromFiles(("_source.md", "---\ntitle: Source\nsummary: A source.\n---\n"), ("card.md", SourceReading.Card()));
+
+        // Assert
+        var extensions = catalog.Find("card")!.Extensions;
+        Assert.Equal(["x-owner", "x-review"], extensions.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal("docs", extensions["x-owner"]);
+        Assert.Equal(1, catalog.Sources.Single().Schema);
+        Assert.Equal(1, omitted.Sources.Single().Schema);
+        Assert.Equal("schema-unsupported", Assert.Single(higher.Problems).RuleId);
     }
 
     /// <summary>
@@ -254,15 +278,16 @@ public class HelpCardsTests
     public void HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced()
     {
         // Arrange
-        var files = SourceReading.Files(("card.md", SourceReading.Card(title: "'{{tool}} {{maxDpi}}'", body: "Version {{version}}.")));
+        var source = CatalogBuilding.Named("test", ("card.md", SourceReading.Card(title: "'{{tool}} {{maxDpi}}'", body: "Version {{version}}.")))
+            .WithTokens(new Dictionary<string, string> { ["maxDpi"] = "600" });
 
         // Act
-        var definition = SourceReading.Read(files, tokens: new Dictionary<string, string> { ["maxDpi"] = "600" });
+        var catalog = CatalogBuilding.Create(source, builder => builder.ToolName("demo").ToolVersion("1.2"));
 
         // Assert
-        var card = Assert.Single(definition.Cards);
+        var card = Assert.Single(catalog.Cards);
         Assert.Equal("demo 600", card.Title);
-        Assert.Equal("Version 1.2.", Assert.Single(card.Body).Text);
+        Assert.Equal("Version 1.2.", card.Body);
     }
 
     /// <summary>
@@ -271,14 +296,12 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_Tokens_UnknownToken_ReportsFileAndLine()
     {
-        // Arrange: the token is on body line 2, which is file line 6
-        var definition = SourceReading.Read(SourceReading.Files(("card.md", SourceReading.Card(body: "one\n{{nope}}"))));
-
-        // Act
-        var problem = Assert.Single(definition.Problems);
+        // Arrange / Act: the token is on body line 2, which is file line 6
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(("card.md", SourceReading.Card(body: "one\n{{nope}}"))));
+        var problem = Assert.Single(exception.Problems);
 
         // Assert
-        Assert.Equal((RuleIds.TokenUnknown, "card.md", 6), (problem.RuleId, problem.File, problem.Line));
+        Assert.Equal(("token-unknown", "card.md", 6), (problem.RuleId, problem.File, problem.Line));
     }
 
     /// <summary>
@@ -288,14 +311,15 @@ public class HelpCardsTests
     public void HelpCards_Cultures_Translation_IsSelectedPerFileWithFallback()
     {
         // Arrange: a card with a German translation, a card without, and the culture de-DE
-        var files = SourceReading.Files(
+        var source = CatalogBuilding.Named(
+            "test",
             ("a.md", SourceReading.Card(title: "One")),
             ("a.de.md", "---\ntitle: Translated one\n---\nText."),
             ("b.md", SourceReading.Card(title: "Two")));
 
         // Act
-        var german = SourceReading.Read(files, culture: CultureInfo.GetCultureInfo("de-DE"));
-        var neutral = SourceReading.Read(files);
+        var german = CatalogBuilding.Create(source, builder => builder.Culture(CultureInfo.GetCultureInfo("de-DE")));
+        var neutral = CatalogBuilding.Create(source, builder => builder.Culture(CultureInfo.InvariantCulture));
 
         // Assert: the language translation is used for a, the neutral file for b, and the neutral culture ignores translations
         Assert.Equal(["Translated one", "Two"], german.Cards.Select(card => card.Title));
@@ -308,18 +332,20 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_Links_OutsideCode_AreRecognizedAndTyposReported()
     {
-        // Arrange: a local link, an external link, a link in code, and a typo
-        var body = "Local [[a/b#x]] and [[lib:c|the c card]].\n`[[no]]`\nTypo [[B]].";
-        var definition = SourceReading.Read(SourceReading.Files(("card.md", SourceReading.Card(body: body))));
+        // Arrange: a local link, a link to a source that is absent, a link in code, and a typo
+        var body = "Local [[b]] and [[lib:c|the c card]].\n`[[no]]`";
+        var typo = "Local [[b]].\n`[[no]]`\nTypo [[B]].";
 
         // Act
-        var links = Assert.Single(definition.Cards).Body.Where(part => part.Link is not null).Select(part => part.Link!).ToList();
+        var catalog = CatalogBuilding.FromFiles(("a.md", SourceReading.Card(body: body)), ("b.md", SourceReading.Card()));
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("card.md", SourceReading.Card(body: typo)),
+            ("b.md", SourceReading.Card())));
 
-        // Assert
-        Assert.Equal(2, links.Count);
-        Assert.Equal("lib", links[1].SourceName);
-        var problem = Assert.Single(definition.Problems);
-        Assert.Equal((RuleIds.LinkSyntax, 7), (problem.RuleId, problem.Line));
+        // Assert: both links are recognized, the code is left as written, and the typo is an error at its line
+        Assert.Equal("Local the card `b` and the c card.\n`[[no]]`", catalog.Find("a")!.Body);
+        var problem = Assert.Single(exception.Problems);
+        Assert.Equal(("link-syntax", 7), (problem.RuleId, problem.Line));
     }
 
     /// <summary>
@@ -328,15 +354,13 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_Diagnostics_Defects_AreReportedWithAllFields()
     {
-        // Arrange
-        var definition = SourceReading.Read(SourceReading.Files(("Bad.md", SourceReading.Card())));
-
-        // Act
-        var problem = Assert.Single(definition.Problems);
+        // Arrange / Act
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(("Bad.md", SourceReading.Card())));
+        var problem = Assert.Single(exception.Problems);
 
         // Assert: all six fields of a problem are filled
         Assert.Equal(HelpSeverity.Error, problem.Severity);
-        Assert.Equal(RuleIds.FileName, problem.RuleId);
+        Assert.Equal("file-name", problem.RuleId);
         Assert.Equal("test", problem.SourceName);
         Assert.Equal("Bad.md", problem.File);
         Assert.Equal(0, problem.Line);
@@ -349,19 +373,16 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_Diagnostics_SeveralDefectiveFiles_AreAllCollected()
     {
-        // Arrange: three different defects in three files, and one valid card
-        var definition = SourceReading.Read(SourceReading.Files(
+        // Arrange / Act: three different defects in three files, and one valid card
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
             ("a.md", "not front matter"),
             ("b.md", SourceReading.Card(extraFrontMatter: "bogus: 1\n")),
             ("c.md", SourceReading.Card(body: "{{nope}}")),
             ("d.md", SourceReading.Card())));
+        var files = exception.Problems.Select(problem => problem.File).Order(StringComparer.Ordinal).ToList();
 
-        // Act
-        var files = definition.Problems.Select(problem => problem.File).Order(StringComparer.Ordinal).ToList();
-
-        // Assert
+        // Assert: every defective file is reported and the valid file is not
         Assert.Equal(["a.md", "b.md", "c.md"], files);
-        Assert.Contains(definition.Cards, card => card.LocalId == "d");
     }
 
     /// <summary>
@@ -393,21 +414,26 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_Catalog_Create_IsImmutableAndReadsNoFilesAfterwards()
     {
-        // Arrange
-        var provider = new CountingFileProvider(SourceReading.Files(("a.md", SourceReading.Card()), ("a/b.md", SourceReading.Card())));
-        var catalog = CatalogBuilding.Create(HelpSource.FromProvider(provider, "test"));
-        var calls = (provider.ListCount, provider.ReadCount);
+        // Arrange: a directory source, so that a read after creation could be noticed by deleting the files
+        using var directory = new TemporaryDirectory();
+        directory.Write("a.md", SourceReading.Card());
+        directory.Write("a/b.md", SourceReading.Card());
+        var catalog = CatalogBuilding.Create(HelpSource.FromDirectory(directory.FullPath).WithName("test"));
+        var expected = catalog.Cards.Select(card => $"{card.Id}:{card.Title}:{card.Body}").ToList();
+        Directory.Delete(directory.FullPath, recursive: true);
+        Directory.CreateDirectory(directory.FullPath);
 
-        // Act: use every kind of member and make views
+        // Act: use every kind of member and make views, with the files gone
         _ = catalog.Cards.Select(card => card.Body).ToList();
         _ = catalog.Filter(["x"]).Without(["a"]).Where(_ => true).Find("a b");
+        var rendered = catalog.RenderIndex() + catalog.Render(catalog.Find("a")!);
         var cards = catalog.Cards.ToList();
 
-        // Assert
-        Assert.Equal((1, 2), calls);
-        Assert.Equal(calls, (provider.ListCount, provider.ReadCount));
+        // Assert: the catalog still answers, it cannot be changed, and it did not change
+        Assert.Contains("a", rendered, StringComparison.Ordinal);
         Assert.True(((ICollection<HelpCard>)catalog.Cards).IsReadOnly);
         Assert.Equal(cards, catalog.Cards);
+        Assert.Equal(expected, catalog.Cards.Select(card => $"{card.Id}:{card.Title}:{card.Body}"));
     }
 
     /// <summary>
@@ -480,28 +506,38 @@ public class HelpCardsTests
     }
 
     /// <summary>
-    ///     Proves that clashes between sources are reported together in one exception that names both sources.
+    ///     Proves that clashes between sources are reported together in one exception that names the sources that
+    ///     clash: a card id, a mount, and a source name that two sources share.
     /// </summary>
     [Fact]
     public void HelpCards_MultiSource_Collisions_AreCollectedInOneException()
     {
-        // Arrange: a shared card id, a shared mount, and a shared source name
+        // Arrange: a shared card id (flat), a shared mount, and a shared source name
         var one = CatalogBuilding.Named("one", ("a.md", SourceReading.Card()));
         var two = CatalogBuilding.Named("two", ("a.md", SourceReading.Card()));
         var three = CatalogBuilding.Named("one", ("c.md", SourceReading.Card()));
+        var four = CatalogBuilding.Named("four", ("d.md", SourceReading.Card()));
+        var five = CatalogBuilding.Named("five", ("e.md", SourceReading.Card()));
 
         // Act
         var exception = Assert.Throws<HelpCatalogException>(() => HelpCatalog.Create(builder => builder
             .AddSource(one)
             .AddSource(two)
-            .AddMountedSource(three, "x")));
+            .AddMountedSource(three, "x")
+            .AddMountedSource(four, "y")
+            .AddMountedSource(five, "y")));
 
-        // Assert
+        // Assert: every clash is one problem, and the problems that clash name both sources
         Assert.Equal(
-            [("two", "collision"), ("one", "source-name-duplicate")],
+            [("two", "collision"), ("one", "source-name-duplicate"), ("five", "collision")],
             exception.Problems.Select(problem => (problem.SourceName, problem.RuleId)));
-        Assert.Contains("(and 1 more)", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("(and 2 more)", exception.Message, StringComparison.Ordinal);
+        var cardClash = exception.Problems[0];
+        var mountClash = exception.Problems[2];
+        Assert.Contains("'one'", cardClash.Message, StringComparison.Ordinal);
+        Assert.Contains("'four'", mountClash.Message, StringComparison.Ordinal);
     }
+
     /// <summary>
     ///     Proves that forward references are valid and broken references are reported with file and line.
     /// </summary>
@@ -510,14 +546,14 @@ public class HelpCardsTests
     {
         // Arrange: a forward link, a broken card link, a broken example link, and a broken see-also entry
         var valid = CatalogBuilding.FromFiles(("a.md", SourceReading.Card(body: "Forward [[z]].")), ("z.md", SourceReading.Card()));
-        var errors = CatalogBuilding.Errors(
-            ("a.md", SourceReading.Card(extraFrontMatter: "see-also:\n  - nope\n", body: "[[missing]]\n[[a#none]]")));
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(extraFrontMatter: "see-also:\n  - nope\n", body: "[[missing]]\n[[a#none]]"))));
 
         // Act / Assert
         Assert.Equal("Forward the card `z`.", valid.Find("a")!.Body);
         Assert.Equal(
             [("see-also-target", 5), ("link-target", 7), ("example-target", 8)],
-            errors.Select(problem => (problem.RuleId, problem.Line)));
+            exception.Problems.Select(problem => (problem.RuleId, problem.Line)));
     }
 
     /// <summary>
@@ -605,6 +641,7 @@ public class HelpCardsTests
         // Arrange
         var catalog = CatalogBuilding.Simple();
         var expected = string.Join("|", catalog.Cards.Select(card => card.Body));
+        var expectedSearch = DescribeSearch(catalog);
         var calls = 0;
         var inconsistent = 0;
 
@@ -616,7 +653,10 @@ public class HelpCardsTests
                 Interlocked.Increment(ref calls);
                 return true;
             });
-            if (string.Join("|", view.Cards.Select(card => card.Body)) != expected || catalog.Find("guide setup") is null)
+            if (string.Join("|", view.Cards.Select(card => card.Body)) != expected
+                || catalog.Find("guide setup") is null
+                || DescribeSearch(catalog) != expectedSearch
+                || DescribeSearch(view) != expectedSearch)
             {
                 Interlocked.Increment(ref inconsistent);
             }
@@ -625,6 +665,19 @@ public class HelpCardsTests
         // Assert
         Assert.Equal(0, inconsistent);
         Assert.Equal(250, calls);
+        Assert.StartsWith("guide/setup", expectedSearch, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Describes the answers of a search, a suggestion, and a failed path of a catalog, for comparing the answers
+    ///     of concurrent callers.
+    /// </summary>
+    /// <param name="catalog">The catalog or view to ask.</param>
+    /// <returns>The answers as one line.</returns>
+    private static string DescribeSearch(HelpCatalog catalog)
+    {
+        var search = string.Join(",", catalog.Search("setup").Select(result => $"{result.Id}:{result.Score}"));
+        return $"{search}|{string.Join(",", catalog.Suggest("setups"))}|{catalog.Resolve("guide setups").Suggestion}";
     }
 
     /// <summary>
@@ -783,6 +836,46 @@ public class HelpCardsTests
         // Assert
         GoldenFiles.AssertEqual("examples.guide.expected.txt", examples);
         Assert.Equal("simple --version", alone);
+    }
+
+    /// <summary>
+    ///     Proves that a list of cards renders in text and in Markdown without a trailing line feed, that only the
+    ///     lines the library generates are wrapped at the width, that Markdown is never wrapped, and that authored
+    ///     bodies are never reflowed.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Rendering_CardListsAndWrapping_WrapOnlyGeneratedLinesInText()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var guide = catalog.Find("guide")!;
+        var narrow = new HelpRenderOptions { Width = 30 };
+        var markdown = new HelpRenderOptions { Format = HelpFormat.Markdown };
+
+        // Act
+        var list = catalog.RenderCardList(catalog.Cards);
+        var markdownList = catalog.RenderCardList(catalog.Cards, markdown);
+        var wrappedIndex = catalog.RenderIndex(narrow);
+        var markdownIndex = catalog.RenderIndex(new HelpRenderOptions { Format = HelpFormat.Markdown, Width = 30 });
+        var wrappedCard = catalog.Render(guide, narrow);
+
+        // Assert: the list has one aligned line per card, in both formats, with LF only and no trailing line feed
+        Assert.Equal(
+            "guide             How to set up and use the tool.\n"
+            + "guide/setup       Prepare the tool before the first run.\n"
+            + "guide/usage       Everyday use of the tool.\n"
+            + "reference         Facts about limits and options.\n"
+            + "reference/limits  The numbers the tool enforces.",
+            list);
+        Assert.Equal(list, markdownList);
+
+        // Assert: generated lines wrap at the width in text, never in Markdown
+        Assert.NotEqual(catalog.RenderIndex(), wrappedIndex);
+        Assert.All(wrappedIndex.Split('\n'), line => Assert.True(line.Length <= 30, line));
+        Assert.Equal(catalog.RenderIndex(markdown), markdownIndex);
+
+        // Assert: the lines of the authored body keep their text however narrow the width is
+        Assert.All(catalog.FormatBody(guide).Split('\n'), line => Assert.Contains(line, wrappedCard, StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -992,7 +1085,7 @@ public class HelpCardsTests
 
         // Assert
         Assert.Empty(validProblems);
-        Assert.Equal(RuleIds.LinkTarget, Assert.Single(errors).RuleId);
+        Assert.Equal("link-target", Assert.Single(errors).RuleId);
         Assert.Equal(HelpSeverity.Warning, Assert.Single(warnings).Severity);
         Assert.Equal(errors, exception.Problems);
         HelpCardValidator.AssertValid(CatalogBuilding.Create(longSummary));
@@ -1052,11 +1145,21 @@ public class HelpCardsTests
     public void HelpCards_Validation_CompareToDirectory_ReportsFilesOnOneSideOnly()
     {
         // Arrange: a directory with every embedded file of the simple source, one of them removed and one added
+        var assembly = typeof(HelpCardsTests).Assembly;
+        const string prefix = "DemaConsulting.HelpCards.Tests.Help/simple/Help/";
         var source = CatalogBuilding.Fixture("simple");
         using var directory = new TemporaryDirectory();
-        foreach (var path in source.Provider.ListFiles())
+        foreach (var resourceName in assembly.GetManifestResourceNames())
         {
-            directory.Write(path, source.Provider.ReadText(path));
+            var path = resourceName.Replace('\\', '/');
+            if (!path.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            using var stream = assembly.GetManifestResourceStream(resourceName)!;
+            using var reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+            directory.Write(path[prefix.Length..], reader.ReadToEnd());
         }
 
         File.Delete(Path.Combine(directory.FullPath, "guide.md"));
@@ -1067,7 +1170,7 @@ public class HelpCardsTests
 
         // Assert
         Assert.Equal(["added.md", "guide.md"], problems.Select(problem => problem.File));
-        Assert.All(problems, problem => Assert.Equal(RuleIds.ResourcesMismatch, problem.RuleId));
+        Assert.All(problems, problem => Assert.Equal("resources-mismatch", problem.RuleId));
     }
 
     /// <summary>
@@ -1094,6 +1197,38 @@ public class HelpCardsTests
         {
             CultureInfo.CurrentCulture = original;
         }
+    }
+
+    /// <summary>
+    ///     Proves that a search is limited by count, source, and tag, and never returns a card that a view hides.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Search_LimitsAndViews_RestrictResults()
+    {
+        // Arrange: the twelve-card catalog and a catalog of two mounted libraries
+        var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("big"));
+        var libraries = MountedLibraries();
+
+        // Act
+        var everything = catalog.Search("program", new HelpSearchOptions { MaxResults = 20 });
+        var limited = catalog.Search("program", new HelpSearchOptions { MaxResults = 2 });
+        var tagged = catalog.Search("program", new HelpSearchOptions { MaxResults = 20, Tags = ["quality"] });
+        var fromSource = libraries.Search("draw", new HelpSearchOptions { Sources = ["lib-b"] });
+        var hidden = catalog.Without(["build"]).Search("build", new HelpSearchOptions { MaxResults = 20 });
+
+        // Assert: the count limit keeps the best results, the tag limit keeps only tagged cards, and the source limit
+        // keeps only the cards of that source
+        Assert.True(everything.Count > 2);
+        Assert.Equal(everything.Take(2).Select(result => result.Id), limited.Select(result => result.Id));
+        Assert.NotEmpty(tagged);
+        Assert.All(tagged, result => Assert.Contains("quality", catalog.Find(result.Id)!.Tags));
+        Assert.Contains(everything, result => !catalog.Find(result.Id)!.Tags.Contains("quality"));
+        Assert.Equal(["lib-b/chart"], fromSource.Select(result => result.Id));
+        Assert.Contains(libraries.Search("draw"), result => result.SourceName == "lib-a");
+
+        // Assert: a card that a view hides is not found
+        Assert.DoesNotContain(hidden, result => result.Id == "build");
+        Assert.Contains(catalog.Search("build"), result => result.Id == "build");
     }
 
     /// <summary>
@@ -1146,7 +1281,7 @@ public class HelpCardsTests
 
     /// <summary>
     ///     Proves that the options of the help command select the index, a card, examples, an example, a search, and a
-    ///     tag listing, in text and JSON, as the golden files record.
+    ///     tag listing, in text, Markdown, and JSON, as the golden files record.
     /// </summary>
     [Fact]
     public void HelpCards_Cli_Options_SelectModesAndFormats()
@@ -1156,18 +1291,80 @@ public class HelpCardsTests
         var examples = new CliHarness(CatalogBuilding.Simple());
         var search = new CliHarness(CatalogBuilding.Create(CatalogBuilding.Fixture("big")));
         var tags = new CliHarness(CatalogBuilding.Create(CatalogBuilding.Fixture("big")));
+        var markdown = new CliHarness(CatalogBuilding.Simple());
+        var example = new CliHarness(CatalogBuilding.Simple());
 
         // Act
         simple.Run("--json");
         examples.Run("guide", "--examples");
         search.Run("--search", "build", "--json");
         tags.Run("--tag", "quality", "--json");
+        markdown.Run("guide", "--format", "markdown");
+        example.Run("guide", "--example", "check");
 
         // Assert
         GoldenFiles.AssertEqual("cli", "index.expected.json", simple.Output.ToString().TrimEnd('\n'));
         GoldenFiles.AssertEqual("cli", "examples.text.expected.txt", examples.Output.ToString().TrimEnd('\n'));
         GoldenFiles.AssertEqual("cli", "search.expected.json", search.Output.ToString().TrimEnd('\n'));
         GoldenFiles.AssertEqual("cli", "tags.expected.json", tags.Output.ToString().TrimEnd('\n'));
+        Assert.StartsWith("# Guide\n", markdown.Output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("**Also known as:** start\n**Tags:** tutorial, authoring", markdown.Output.ToString(), StringComparison.Ordinal);
+        Assert.Equal("simple --version", example.Output.ToString().TrimEnd('\n'));
+    }
+
+    /// <summary>
+    ///     Proves that the options that cannot be combined are usage errors that name the pair, that the options that
+    ///     may be combined are accepted, and that <c>--source</c> restricts the index, a search, and a tag listing.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_OptionRules_RejectConflictsAndFilterBySource()
+    {
+        // Arrange
+        var simple = CatalogBuilding.Simple();
+        var libraries = MountedLibraries();
+        (string[] Arguments, string Message)[] conflicts =
+        [
+            (["guide", "--examples", "--tag", "x"], "options '--examples' and '--tag' cannot be combined."),
+            (["guide", "--examples", "--all"], "options '--examples' and '--all' cannot be combined."),
+            (["guide", "--examples", "--example", "check"], "options '--examples' and '--example' cannot be combined."),
+            (["guide", "--example", "check", "--search", "x"], "options '--example' and '--search' cannot be combined."),
+            (["--search", "x", "--all"], "options '--search' and '--all' cannot be combined."),
+            (["--tag", "tutorial", "--all"], "options '--tag' and '--all' cannot be combined."),
+            (["guide", "--tag", "tutorial"], "option '--tag' cannot be used with a card path."),
+            (["guide", "--source", "test"], "option '--source' cannot be used with a card path."),
+            (["guide", "--all"], "option '--all' cannot be used with a card path."),
+        ];
+
+        // Act
+        var conflicting = conflicts.Select(conflict =>
+        {
+            var harness = new CliHarness(simple);
+            return (Code: harness.Run(conflict.Arguments), Error: harness.Error.ToString().TrimEnd('\n'), Output: harness.Output.ToString());
+        }).ToList();
+        var bySource = new CliHarness(libraries);
+        var bySourceCode = bySource.Run("--source", "lib-b");
+        var searched = new CliHarness(libraries);
+        var searchedCode = searched.Run("--search", "draw", "--source", "lib-b");
+        var tagged = new CliHarness(libraries);
+        var taggedCode = tagged.Run("--search", "draw", "--tag", "reference");
+        var unknown = new CliHarness(libraries);
+        var unknownCode = unknown.Run("--source", "nope");
+
+        // Assert: every conflict exits 2 with its message on the error output and nothing on the output
+        Assert.All(conflicting, result => Assert.Equal((2, string.Empty), (result.Code, result.Output)));
+        Assert.Equal(
+            conflicts.Select(conflict => "Error: " + conflict.Message),
+            conflicting.Select(result => result.Error));
+
+        // Assert: a search may be combined with a tag or a source, and a source restricts the index and the search
+        Assert.Equal((0, 0, 0), (bySourceCode, searchedCode, taggedCode));
+        Assert.Contains("lib-b  Chart cards", bySource.Output.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain("lib-a", bySource.Output.ToString(), StringComparison.Ordinal);
+        Assert.Equal("tool help lib-b chart  Draw a chart in the blue palette.", searched.Output.ToString().TrimEnd('\n'));
+        Assert.Contains("tool help lib-a shapes  Draw circles and rectangles.", tagged.Output.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain("chart", tagged.Output.ToString(), StringComparison.Ordinal);
+        Assert.Equal(2, unknownCode);
+        Assert.Contains("Unknown help source 'nope'.\nKnown sources: lib-a, lib-b, app.", unknown.Error.ToString(), StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -1209,16 +1406,30 @@ public class HelpCardsTests
             sections: [new HelpCliSection("Commands:", ["run  Run the tool"])],
             fallback: words => words[0] == "run" ? new HelpCliAnswer("Help of run.", 5) : null,
             width: () => 50);
+        var decorated = new CliHarness(
+            CatalogBuilding.Simple(),
+            usage: ["tool [options]"],
+            preamble: "About the tool.",
+            template: "demo help {path}");
 
         // Act
         var index = harness.Run("--lang", "de-DE", "--width", "auto");
         var answered = harness.Run("run");
+        var decoratedIndex = decorated.Run();
+        var decoratedCard = decorated.Run("guide");
 
         // Assert
         Assert.Equal((0, 5), (index, answered));
         Assert.Contains("Commands:\n  run  Run the tool\n\nHelp topics:", harness.Output.ToString(), StringComparison.Ordinal);
         Assert.EndsWith("Help of run.\n", harness.Output.ToString(), StringComparison.Ordinal);
         Assert.Equal("de-DE", harness.LastCulture!.Name);
+
+        // Assert: the usage lines and the preamble lead the index and the command template writes the commands of topics and links
+        Assert.Equal((0, 0), (decoratedIndex, decoratedCard));
+        var decoratedText = decorated.Output.ToString();
+        Assert.StartsWith("Usage:\n  tool [options]\n\nAbout the tool.\n\nHelp topics:", decoratedText, StringComparison.Ordinal);
+        Assert.Contains("demo help guide      How to set up and use the tool.", decoratedText, StringComparison.Ordinal);
+        Assert.Contains("Start with `demo help guide setup` and then read `demo help guide usage`.", decoratedText, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -1282,5 +1493,59 @@ public class HelpCardsTests
         // Assert
         Assert.Contains("[Truncated: ", cut, StringComparison.Ordinal);
         Assert.All(answers, answer => Assert.False(string.IsNullOrWhiteSpace(answer)));
+    }
+
+    /// <summary>
+    ///     Proves that the knowledge tool restricts the index and the search to a source or a tag, answers an unknown
+    ///     source or tag with the valid ones, and scopes an example to the card named with it.
+    /// </summary>
+    [Fact]
+    public void HelpCards_AgentTool_SourceAndTag_RestrictIndexAndSearch()
+    {
+        // Arrange
+        var tool = HelpAgentTools.Create(MountedLibraries());
+
+        // Act
+        var bySource = tool.Invoke("{\"source\":\"lib-b\"}");
+        var byTag = tool.Invoke("{\"tag\":\"reference\"}");
+        var searchSource = tool.Invoke("{\"query\":\"draw\",\"source\":\"lib-b\"}");
+        var searchTag = tool.Invoke("{\"query\":\"draw\",\"tag\":\"reference\"}");
+        var unknownSource = tool.Invoke("{\"query\":\"draw\",\"source\":\"nope\"}");
+        var unknownTag = tool.Invoke("{\"query\":\"draw\",\"tag\":\"nope\"}");
+        var scoped = tool.Invoke("{\"topic\":\"lib-a\",\"example\":\"render\"}");
+
+        // Assert: the index lists only the cards of the source or with the tag
+        Assert.Contains("lib-b/chart/axis", bySource, StringComparison.Ordinal);
+        Assert.DoesNotContain("lib-a", bySource, StringComparison.Ordinal);
+        Assert.Contains("lib-a/shapes", byTag, StringComparison.Ordinal);
+        Assert.Contains("lib-b/chart/axis", byTag, StringComparison.Ordinal);
+        Assert.DoesNotContain("lib-a/graph", byTag, StringComparison.Ordinal);
+
+        // Assert: a search finds only the cards of the source or with the tag
+        Assert.Contains("lib-b/chart  Draw a chart", searchSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("lib-a", searchSource, StringComparison.Ordinal);
+        Assert.Contains("lib-a/shapes  Draw circles and rectangles.", searchTag, StringComparison.Ordinal);
+        Assert.DoesNotContain("lib-b", searchTag, StringComparison.Ordinal);
+
+        // Assert: an unknown restriction names the valid values, and a topic scopes the example it is searched in
+        Assert.Equal("Unknown source 'nope'. Valid sources: lib-a, lib-b, app.", unknownSource);
+        Assert.Equal("Unknown tag 'nope'. Valid tags: authoring, reference.", unknownTag);
+        Assert.Contains("Example `render` of `lib-a/graph`", scoped, StringComparison.Ordinal);
+        Assert.Contains("demo render graph.json", scoped, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Creates the catalog of the two fixture libraries, mounted under their names, with the application that
+    ///     imports the first one.
+    /// </summary>
+    /// <returns>The catalog with the sources <c>lib-a</c>, <c>lib-b</c>, and <c>app</c>.</returns>
+    private static HelpCatalog MountedLibraries()
+    {
+        var libA = CatalogBuilding.LibA();
+        return HelpCatalog.Create(builder => builder
+            .ToolName("demo")
+            .AddMountedSource(libA)
+            .AddMountedSource(CatalogBuilding.LibB())
+            .AddSource(CatalogBuilding.App(libA)));
     }
 }

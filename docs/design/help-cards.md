@@ -85,6 +85,7 @@ each item's dedicated design document for details:
 - **ReviewMark** — enforces file review coverage and currency; see *ReviewMark Design*
 - **SarifMark** — converts CodeQL SARIF results to markdown; see *SarifMark Design*
 - **SonarMark** — generates SonarCloud quality reports; see *SonarMark Design*
+- **SysML2Tools** — lints the SysML2 architecture model and renders its views; see *SysML2Tools Design*
 - **VersionMark** — captures and publishes tool-version information; see *VersionMark Design*
 - **WeasyPrint** — converts HTML documentation to PDF; see *WeasyPrint Design*
 - **xUnit** — executes unit and integration tests; see *xUnit Design*
@@ -121,8 +122,9 @@ not reported):
 8. **Check uniqueness**: example names, expected roots, and sibling and root names and aliases.
 9. **Freeze**: build the immutable catalog data. Warnings are produced only by the validator.
 
-Rendering is a pure function of the immutable catalog and the render options; no rendered output is
-cached. A catalog never reads files after `Create` returns.
+Rendering is a pure function of the immutable catalog and the render options; no rendered output is cached (only the
+plain-style body of a card is computed lazily, once, and kept with the card). A catalog never reads files after `Create`
+returns.
 
 ## Design Constraints
 

@@ -33,7 +33,7 @@ with no network calls or platform services. System tests call the public API dir
 with controlled inputs and verify returned values and thrown exceptions. File system access is
 limited to temporary directories created by the tests themselves.
 
-## System-Level Test Scenarios
+## Test Scenarios
 
 ### Embedding: Default Directory Uses the Assembly Name Prefix
 
@@ -61,15 +61,17 @@ Reads one embedded card as UTF-8 text and asserts that it holds the authored con
 **Tests**: `HelpCards_Sources_Assembly_ReadsEmbeddedCards`, `HelpCards_Sources_Directory_ReadsFilesOnDisk`,
 `HelpCards_Sources_Memory_ReadsFiles`
 
-Reads the same kind of cards from the embedded fixture of the test assembly, from a temporary directory, and
-from in-memory text, and asserts that each yields its cards, titles, and example content without problems.
+Reads the same kind of cards from the embedded fixture of the test assembly, from a temporary directory, and from
+in-memory text, creates a catalog from each, and asserts that each yields its cards and titles; the embedded\nassembly
+source also yields the source name from its description and the content of an example read from a data file.
 
 ### Sources: Construction Performs No I/O
 
 **Test**: `HelpCards_Sources_Construction_PerformsNoIo`
 
-Creates a source over a counting provider and derives other sources from it with a name, tokens, and an
-import, then asserts that the provider was never asked to list or read a file.
+Creates sources over a directory that does not exist yet, and over an assembly prefix that matches nothing, and derives
+other sources from them with a name, tokens, and an import. Then it creates the directory with a card and asserts that
+a catalog created afterwards finds the card, which proves that creating and deriving sources read nothing.
 
 ### Front Matter: Valid Subset
 
@@ -86,6 +88,14 @@ block for example content, and an extension key, and asserts every value.
 Reads a card with a flow sequence and a card with a misspelled key, and asserts that the problems carry the
 rule, the file, and the line, and that the key problem names the key and the allowed keys.
 
+### Front Matter: Extension Keys and Schema
+
+**Test**: `HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced`
+
+Creates a catalog whose card has two extension keys and a source description with schema 1, and asserts the extensions
+of the card and the schema of the source. Creates a catalog from a source description that omits the schema and asserts
+that the schema is 1, and one with schema 2 and asserts the single `schema-unsupported` problem.
+
 ### Tokens: Replacement and Unknown Tokens
 
 **Tests**: `HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced`, `HelpCards_Tokens_UnknownToken_ReportsFileAndLine`
@@ -97,24 +107,25 @@ second body line; asserts the replaced text and the exact file and line of the p
 
 **Test**: `HelpCards_Cultures_Translation_IsSelectedPerFileWithFallback`
 
-Reads a source for `de-DE` and for the neutral culture and asserts that the language translation is used for
+Creates catalogs for `de-DE` and for the neutral culture and asserts that the language translation is used for
 the translated card only and that the neutral culture ignores translations.
 
 ### Links: Recognition and Typos
 
 **Test**: `HelpCards_Links_OutsideCode_AreRecognizedAndTyposReported`
 
-Reads a body with a local link, an external link, a link in a code span, and a typo, and asserts the links and
-the line of the problem.
+Creates a catalog from a body with a local link, a link to a source that is absent, and a link in a code span, and
+asserts the text of the body; creates a catalog from a body with a typo and asserts the rule and the line of the
+problem.
 
 ### Diagnostics: Fields and Collection of All Defects
 
 **Tests**: `HelpCards_Diagnostics_Defects_AreReportedWithAllFields`,
 `HelpCards_Diagnostics_SeveralDefectiveFiles_AreAllCollected`
 
-Reads a source with a bad file name and asserts all six fields of the problem; reads a source with three
-different defects in three files and one valid card and asserts that all defects are reported and the valid
-card is read.
+Creates a catalog from a source with a bad file name and asserts all six fields of the problem in the exception;
+creates a catalog from a source with three different defects in three files and one valid card and asserts that all
+defects are reported and the valid file is not.
 
 ### Catalog: Tree, Aliases, Tags, Examples, and Links
 
@@ -123,8 +134,9 @@ card is read.
 
 Creates a catalog from the embedded `simple` fixture and asserts the cards in depth-first order, the children, the tags,
 the see-also cards, the example kinds, and a body with plain-style links, a link to an absent library written as text,
-and a code span that is not a link. A second test creates a catalog over a counting provider and proves that one listing
-and one read per file happen during creation and none afterwards, even after views and bodies are used.
+and a code span that is not a link. A second test creates a catalog over a directory, deletes the files of the
+directory, and proves that the catalog still answers with the same cards, bodies, views, and renderings, and cannot be
+changed.
 
 ### Ordering: Children List, Order, and Name
 
@@ -137,8 +149,9 @@ children list, the order values, and the names give.
 
 **Test**: `HelpCards_References_BrokenAndForwardReferences_AreHandled`
 
-Creates a catalog whose first card links forward, and composes a source with a broken see-also entry, card link, and
-example link; asserts the plain text of the forward link and the rule and line of each broken reference.
+Creates a catalog whose first card links forward, and tries to create a catalog from a source with a broken see-also
+entry, card link, and example link; asserts the plain text of the forward link and the rule and line of each broken
+reference.
 
 ### Multiple Sources: Mounts, Imports, Overlays, and Links
 
@@ -151,7 +164,8 @@ flat after them, which imports `lib-a`. Asserts the roots and sources in registr
 of the application, the overlay that changes a library card, and the links between the libraries. A second test
 creates a catalog from a source with a link, a see-also entry, and an optional overlay for a source that is not
 present, and asserts the display text, the empty see-also list, and the informational problems. A third test asserts
-that a shared card id, a shared mount, and a shared source name are reported together in one exception.
+that a shared card id, a shared mount, and a shared source name are reported together in one exception, and that the
+problem of a clash names the source it clashes with.
 
 ### Lookup: Paths and Examples
 
@@ -187,10 +201,11 @@ a null callback and a builder without a source are argument errors.
 `HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture`,
 `HelpCards_Determinism_RenderTwice_IsEqualRegardlessOfCurrentCulture`
 
-Fifty parallel workers share one catalog, make views with a counted predicate, and read bodies; every result is equal
-and every call is counted. Forty parallel workers render the guide card as text and JSON and with a counted link
-callback in a view; every output equals the expected one and the callback is called the same number of times by every
-worker. Two creations and two renderings under the current cultures `tr-TR` and `de-DE` give equal results.
+Fifty parallel workers share one catalog, make views with a counted predicate, read bodies, search, ask for suggestions,
+and resolve a failed path; every result is equal and every call is counted. Forty parallel workers render the guide card
+as text and JSON and with a counted link callback in a view; every output equals the expected one and the callback is
+called the same number of times by every worker. Two creations and two renderings under the current cultures `tr-TR` and
+`de-DE` give equal results.
 
 ### Rendering: Text, Markdown, and JSON Golden Files
 
@@ -208,6 +223,14 @@ with its golden file exactly. A golden file holds the output followed by one lin
 Formats the guide body in the plain, command, and Markdown styles and with a callback, and asserts one link of each.
 Renders the examples document of the guide card in the command style and compares it with its golden file, and prints
 one example of a card below it alone, asserting that the result is exactly its content.
+
+### Rendering: Card Lists and Wrapping
+
+**Test**: `HelpCards_Rendering_CardListsAndWrapping_WrapOnlyGeneratedLinesInText`
+
+Renders the list of all cards as text and as Markdown and asserts one aligned line per card, equal in both formats and
+without a trailing line feed. Renders the index at width 30 and asserts that text lines are wrapped to the width, that
+Markdown is not wrapped, and that every line of an authored body appears unchanged in the narrow card.
 
 ### JSON Contract
 
@@ -242,8 +265,9 @@ region translation, a language translation, and a card without translation.
 **Test**: `HelpCards_Validation_SourcesAndCatalogs_ReportProblemsAndAssert`
 
 Validates the embedded `simple` fixture and gets no problem, validates a source with a broken link and gets the error
-without an exception, validates a source with a long summary and gets one warning, and asserts that `AssertValid`
-throws one exception with the same error and accepts a catalog that only has a warning.
+without an exception, validates a source with a long summary and gets one warning, and asserts that `AssertValid` throws
+one exception with the same error and accepts a catalog that only has a warning. The other quality warnings of
+the\nrequirement are verified by the scenarios of the Testing subsystem (`docs/verification/help-cards/testing.md`).
 
 ### Validation: Examples and Command Lines
 
@@ -268,19 +292,26 @@ are reported, in path order, with the rule `resources-mismatch`.
 
 ### Search: Ranking and Suggestions
 
-**Tests**: `HelpCards_Search_BigFixture_MatchesRankingGolden`, `HelpCards_Suggestions_UnknownNames_SuggestClosest`
+**Tests**: `HelpCards_Search_BigFixture_MatchesRankingGolden`, `HelpCards_Search_LimitsAndViews_RestrictResults`,
+`HelpCards_Suggestions_UnknownNames_SuggestClosest`
 
 Ranks ten queries over the twelve-card `big` fixture under the Turkish culture and compares the scores and matched
-fields with the golden report. Asks for suggestions for a misspelled name, alias, and id, and for the closest segment
+fields with the golden report. A second test limits a search by count, tag, and source and asserts that a card hidden
+by a view is not found. Asks for suggestions for a misspelled name, alias, and id, and for the closest segment
 of a failed path.
 
 ### Command Line: Help Verb and Options
 
-**Tests**: `HelpCards_Cli_HelpVerb_RunsHelpAndLeavesOtherCommandsAlone`, `HelpCards_Cli_Options_SelectModesAndFormats`
+**Tests**: `HelpCards_Cli_HelpVerb_RunsHelpAndLeavesOtherCommandsAlone`, `HelpCards_Cli_Options_SelectModesAndFormats`,
+`HelpCards_Cli_OptionRules_RejectConflictsAndFilterBySource`
 
 Passes commands that are not help to a helper whose factory throws and asserts that none is answered and the catalog is
 never created; runs the help verb with a card path and compares the card with its golden file; runs the index, the
-examples, a search, and a tag listing and compares each with its golden file.
+examples, a search, and a tag listing and compares each with its golden file; runs a card in Markdown and one example
+alone and asserts the Markdown layout and the exact content. The option-rules test runs nine combinations that cannot be
+combined and asserts exit code 2, the message that names the pair, and an empty output; runs a search with a tag and
+with a source and an index with a source over two mounted libraries and asserts that the results are restricted; and
+asserts the error of an unknown source.
 
 ### Command Line: Exit Codes and Extensions
 
@@ -288,16 +319,21 @@ examples, a search, and a tag listing and compares each with its golden file.
 
 Runs an unknown card in text and JSON and a defective catalog, and asserts the exit codes 2 and 70, the channel, and the
 golden files. Runs a helper with index sections, a fallback resolver, a console width, and the language option, and
-asserts the sections, the answer and exit code of the resolver, and the culture the factory received.
+asserts the sections, the answer and exit code of the resolver, and the culture the factory received. Runs a helper with
+usage lines, a preamble, and a command template and asserts the layout of the index and the commands in the topics and
+the links.
 
 ### Agent Tool: Calls, Schema, and Resilience
 
-**Tests**: `HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch`, `HelpCards_AgentTool_Schema_IsTheSpecifiedText`,
+**Tests**: `HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch`,
+`HelpCards_AgentTool_SourceAndTag_RestrictIndexAndSearch`, `HelpCards_AgentTool_Schema_IsTheSpecifiedText`,
 `HelpCards_AgentTool_BudgetAndBoundary_CutAnswersAndNeverThrowForBadInput`
 
 Creates the tool under the name `canvasnet_help` and asks for the index, a card, an example, and a search; compares the
 schema with the text of the contract; cuts a long card at the output limit and sends text that is not JSON, JSON that is
-not an object, and values of the wrong type, asserting that every call is answered with text.
+not an object, and values of the wrong type, asserting that every call is answered with text. Asks over two mounted
+libraries for the index and a search restricted by\nsource and by tag, for an unknown source and tag, and for an example
+scoped by a topic, and asserts the cards that appear\nand the valid values that the answers name.
 
 ### Platforms
 
