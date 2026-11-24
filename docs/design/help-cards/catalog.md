@@ -24,6 +24,8 @@ The subsystem contains these units:
   The name differs from the SysML2 view `CatalogView` on purpose.
 - **PathResolver** (internal) resolves a path of names and aliases; `PathMatch` is its result.
 - **ExampleResolver** (internal) finds examples by name.
+- **SearchIndex** (internal) ranks the visible cards for a query and finds the names closest to a word that was not
+  found. With it goes the public `HelpSearchOptions`.
 
 ### Interfaces
 
@@ -33,14 +35,16 @@ The subsystem contains these units:
 | `Cards`, `Roots`, `Sources`, `Diagnostics`, `TagNames` | Inbound | Read the catalog |
 | `Find`, `Resolve`, `GetChildren`, `GetSeeAlso` | Inbound | Look up cards |
 | `FindExamples`, `FindExample` | Inbound | Look up examples |
+| `Search`, `Suggest` | Inbound | Rank cards for a query, and suggest names close to a word |
 | `Filter`, `FilterSource`, `Where`, `Without` | Inbound | Make views |
 | `Render*`, `FormatBody` | Inbound | Render the view (bodies in the Presentation subsystem) |
 | `HelpCatalogBuilder.Compose()` | Outbound (Composition) | Obtain the frozen data |
 | `HelpCard.BodyPieces`, `HelpCatalog.Scope` | Inbound (Presentation) | Render cards in several styles |
 
-The Catalog subsystem and the Composition subsystem depend on each other in one direction per use: the catalog calls
-the builder to create its data, and the builder fills the data types of the catalog. Search and suggestions are not
-part of the current system; `HelpPathResolution.Suggestion` is always empty and `HelpSearchResult` is data only.
+The Catalog subsystem and the Composition subsystem depend on each other in one direction per use: the catalog calls the
+builder to create its data, and the builder fills the data types of the catalog. The search index is the one place where
+the ranking and the suggestion rules live; `HelpCatalog`, `PathResolver`, the command-line helper, and the agent tool
+all use it.
 
 ### Design
 
@@ -63,6 +67,10 @@ same `BodyPieces` in other styles.
 **Lookup.** A path is split on `/` and white space; the first segment matches a root name or alias, each later
 segment a child name or alias, ignoring case, after NFC normalization. Examples are found depth first, a card's own
 examples before those of its children.
+
+**Search and suggestions.** The search index is built from the frozen data on first search, with a thread-safe `Lazy`,
+and is shared by every view. A view only decides which cards the search may return, so it cannot change a ranking, and
+a hidden card is never found or suggested. Source and tag restrictions of the options are applied as views.
 
 **Failure model.** Defective sources throw `HelpCatalogException` with every error; argument errors throw
 `ArgumentException` or `ArgumentNullException`; unknown tags (only for a closed vocabulary), sources, and ids in a

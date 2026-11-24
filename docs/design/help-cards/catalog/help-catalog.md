@@ -20,7 +20,8 @@ helper, and agent tools hold.
 | `Diagnostics`, `Culture` | The informational problems and the configured culture, shared by all views |
 
 The class is partial: `HelpCatalog.cs` holds creation, properties, lookup, and example search; `HelpCatalog.Views.cs`
-holds the four views; `HelpCatalog.Render.cs` holds the rendering members, whose bodies live in the Presentation
+holds the four views; `HelpCatalog.Search.cs` holds search and suggestions, whose work is done by `SearchIndex`;
+`HelpCatalog.Render.cs` holds the rendering members, whose bodies live in the Presentation
 subsystem. All lists are read-only collections.
 
 #### Key Methods
@@ -30,7 +31,7 @@ subsystem. All lists are read-only collections.
 - **`FromData(data)`** (internal) returns a catalog that shows everything of data that was composed beforehand; the
   validator composes first so that it can report errors without an exception.
 - **`Find(path)`**, **`Resolve(path)`** use `PathResolver`; `Resolve` returns a `HelpPathResolution` with the failing
-  parent, segment, and valid names and no suggestion.
+  parent, segment, and valid names, and the closest name or alias as the suggestion.
 - **`GetChildren(card)`**, **`GetSeeAlso(card)`** match the card by id and map its visible child and see-also ids to
   the cards of this view.
 - **`FindExamples(name, scopeCardId)`**, **`FindExample(card, name)`** use `ExampleResolver`; an unknown or hidden card
@@ -39,12 +40,16 @@ subsystem. All lists are read-only collections.
   `Filter` and `FilterSource` compare ignoring case, treat an empty include list as no restriction, and reject empty
   entries, tags outside a closed vocabulary, and unknown source names. `Where` calls the predicate once per card, in
   `Cards` order, at once. `Without` hides exactly the listed ids and rejects unknown ones.
+- **`Search(query, options)`** applies the source and tag restrictions of the options as views (so an unknown source or
+  a tag outside a closed vocabulary is an argument error), asks the shared index to score the cards of that view, and
+  returns the first `MaxResults` results; a maximum below one is rejected.
+- **`Suggest(word, maxCount)`** gives the names, aliases, and ids of the visible cards to `SearchIndex.Suggest`.
 - **`Render`**, **`RenderIndex`**, **`RenderExamples`**, **`RenderExample`**, **`RenderSearch`**, **`RenderCardList`**,
   and **`FormatBody`** create a `RenderContext` for the catalog view and the options, map the card to the card of this
   view (rejecting a null card with `ArgumentNullException` and a card the view does not show with `ArgumentException`),
   and call `TextRenderer` or, for the JSON format, `JsonDocumentWriter`. `RenderIndex` rejects a negative depth. Two
   internal overloads add the usage lines to the JSON index and the filter to the JSON card list for later callers.
-  `RenderSearch` renders results that were found elsewhere; no search is part of the current system.
+  `RenderSearch` renders results, usually those of `Search`.
 
 #### Error Handling
 
@@ -54,10 +59,10 @@ that find nothing return `null` or an empty list. No member throws `InvalidOpera
 #### Dependencies
 
 `HelpCatalogBuilder` of the Composition subsystem; `CatalogData`, `CatalogScope`, `PathResolver`, `ExampleResolver`,
-`HelpCard`, and the problem model; and, for the `Render` members, `HelpRenderOptions`, `TextRenderer`, `LinkFormatter`,
-and `JsonDocumentWriter` of the Presentation subsystem.
+`HelpCard`, `SearchIndex`, and the problem model; and, for the `Render` members, `HelpRenderOptions`, `TextRenderer`,
+`LinkFormatter`, and `JsonDocumentWriter` of the Presentation subsystem.
 
 #### Callers
 
 Adopters, the Presentation subsystem (it reads the catalog it renders), the Testing subsystem (validation), and later
-the command-line helper and the agent tool.
+the command-line helper and the agent tool, which also use `Search` and `Suggest`.

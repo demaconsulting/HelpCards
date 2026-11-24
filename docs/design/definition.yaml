@@ -33,6 +33,7 @@ input-files:
   - docs/design/help-cards/catalog/catalog-scope.md
   - docs/design/help-cards/catalog/path-resolver.md
   - docs/design/help-cards/catalog/example-resolver.md
+  - docs/design/help-cards/catalog/search-index.md
   - docs/design/help-cards/presentation.md
   - docs/design/help-cards/presentation/help-render-options.md
   - docs/design/help-cards/presentation/link-formatter.md
@@ -40,6 +41,13 @@ input-files:
   - docs/design/help-cards/presentation/json-document-writer.md
   - docs/design/help-cards/presentation/text-wrapper.md
   - docs/design/help-cards/presentation/help-strings.md
+  - docs/design/help-cards/integration.md
+  - docs/design/help-cards/integration/help-cli.md
+  - docs/design/help-cards/integration/cli-argument-parser.md
+  - docs/design/help-cards/integration/cli-dispatcher.md
+  - docs/design/help-cards/integration/help-agent-tool.md
+  - docs/design/help-cards/integration/agent-argument-reader.md
+  - docs/design/help-cards/integration/agent-dispatcher.md
   - docs/design/help-cards/testing.md
   - docs/design/help-cards/testing/help-card-validator.md
   - docs/design/help-cards/testing/help-examples.md

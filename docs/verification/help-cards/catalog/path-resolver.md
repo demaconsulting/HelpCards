@@ -17,6 +17,8 @@ All tests in `PathResolverTests.cs` pass.
 
 - **Path forms**: slashes, spaces, tabs, repeated and leading separators, names and aliases, and mixed case.
 - **Failures**: an unknown segment names its parent and the valid names; an empty path lists the roots.
+- **Suggestions**: a misspelled segment gets the closest name at its level; a far segment, an empty path, and a
+  resolved path get none.
 - **Hidden cards**: a hidden target is reported like an unknown segment with the visible names at its level; a hidden
   parent is walked through; a hidden nested target names its real parent.
 - **Normalization**: an alias written with a combining accent is found with the composed and the decomposed form.

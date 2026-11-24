@@ -243,3 +243,38 @@ sections:
                   must inspect the cards through the model that adopters see.
                 tests:
                   - HelpCatalog_FromData_ComposedData_ShowsTheCardsOfCreate
+
+              - id: HelpCards-Catalog-HelpCatalog-Search
+                title: >-
+                  The catalog shall search its visible cards for a query and return at most the requested number of
+                  results, best first, each with the card data, the score, and the fields that matched, and never
+                  return a card that the view hides.
+                justification: |
+                  Search is how a reader finds a card without knowing where it is.
+                tests:
+                  - HelpCatalog_Search_MaxResults_LimitsTheBestResults
+                  - HelpCatalog_Search_Result_CarriesCardDataAndMatchedFields
+                  - HelpCatalog_Search_View_ReturnsVisibleCardsOnly
+
+              - id: HelpCards-Catalog-HelpCatalog-SearchOptions
+                title: >-
+                  The catalog shall restrict a search to the sources and tags of the options, and reject a null
+                  query, a maximum below one, an unknown source, and a tag outside a closed vocabulary.
+                justification: |
+                  Callers restrict searches to the libraries and topics they care about, and mistakes must be loud.
+                tests:
+                  - HelpCatalog_Search_SourcesAndTags_RestrictTheCardsSearched
+                  - HelpCatalog_Search_InvalidArguments_Throw
+
+              - id: HelpCards-Catalog-HelpCatalog-Suggest
+                title: >-
+                  The catalog shall suggest the names, aliases, and ids of its visible cards that are close to a word,
+                  never a hidden card, limit them to the requested count, and reject a null word and a count below
+                  one.
+                justification: |
+                  Suggestions must not reveal a card that a view hides.
+                tests:
+                  - HelpCatalog_Suggest_NamesAliasesAndIds_AreCandidates
+                  - HelpCatalog_Suggest_View_NeverSuggestsHiddenCards
+                  - HelpCatalog_Suggest_InvalidArguments_Throw
+                  - HelpCatalog_Resolve_UnknownSegment_SuggestsClosestNameOrAlias

@@ -14,7 +14,7 @@ adopting tool or library stays dependency-free.
 A *card* is a Markdown file with restricted-subset front matter. A *source* is the set of cards of
 one library or tool, found as embedded resources of an assembly, as files of a directory, or as
 in-memory text. A *catalog* is the immutable, thread-safe tree of cards built from a source. The
-system is organized into five subsystems that follow the life of a card from file to output:
+system is organized into six subsystems that follow the life of a card from file to output:
 
 - **Loading** finds the files of a source, decodes the front matter, reads cards, overlays,
   translations, and the source description, substitutes tokens, selects the culture variant, and
@@ -23,15 +23,19 @@ system is organized into five subsystems that follow the life of a card from fil
   validates every reference, and collects all problems. Its public face is `HelpCatalogBuilder`.
 - **Catalog** holds the frozen data, the immutable model (`HelpCard`, `HelpExample`, and the
   result types), filtered views, path and example lookup, and the problem model. Its public face
-  is `HelpCatalog`, a partial class to which Presentation adds the `Render` members.
+  is `HelpCatalog`, a partial class to which Presentation adds the `Render` members; it also ranks cards for a
+  query (`Search`) and suggests close names (`Suggest`).
 - **Presentation** renders cards, indexes, examples, search results, and card lists as text,
   Markdown, or JSON with three link styles. Its public face is `HelpRenderOptions`.
+- **Integration** connects the catalog to its readers: `HelpCli` gives a tool a help command for people (index, card,
+  examples, example, search, and tags, in text, Markdown, and JSON), and `HelpAgentTools` gives an AI agent one
+  provider-neutral knowledge tool. Neither creates the catalog or reads a resource before it is needed.
 - **Testing** gives adopters a collect-all validator and example helpers for their own test
   suites. It has no test-framework reference.
 
 The subsystems depend on each other in one direction for building a catalog: Composition uses
-Loading and produces the data that Catalog freezes; Presentation reads the Catalog model; Testing
-uses all of them through their public faces. Packaged MSBuild files (see *Resource Embedding*
+Loading and produces the data that Catalog freezes; Presentation reads the Catalog model; Integration uses Catalog and
+Presentation; Testing uses all of them through their public faces. Packaged MSBuild files (see *Resource Embedding*
 below) are part of the NuGet package and run in the consuming project's build, not at run time.
 
 ## External Interfaces
@@ -41,12 +45,16 @@ below) are part of the NuGet package and run in the consuming project's build, n
 | `HelpSource` factories | Inbound | Resource names, directory, or dictionary | UTF-8 text; creation does no I/O |
 | `HelpCatalog.Create(configure)` | Inbound | Builder callback | Throws `HelpCatalogException` for defects |
 | `HelpCatalog` lookup, views, `Render*` | Outbound | Immutable model and strings | Thread-safe; LF only |
+| `HelpCatalog.Search`, `Suggest` | Outbound | Ranked results and names | Thread-safe; ordinal order |
 | `HelpRenderOptions` | Inbound | Options object | `Width` 0 or 20 to 500 |
+| `HelpCli` | Inbound | Command-line arguments | Factory called only for the help verb; exit codes 0, 2, 70 |
+| `HelpAgentTools`, `HelpAgentTool` | Inbound | JSON arguments, text answers | Exact schema; never throws for input |
 | `HelpCardValidator` and helpers | Outbound | Problem lists and values | No test-framework reference |
 | Packaged props and targets | Inbound | MSBuild properties | `HelpCardsEnabled`, `HelpCardsDirectory` |
 
 The public surface consists of the types named above and their members, plus the card, example,
-link, problem, and result types they return; `HelpCardValidator` and helpers stand for the validator,
+link, problem, and result types they return, `HelpSearchOptions`, and the option and answer types of the helper and the
+tool; `HelpCardValidator` and helpers stand for the validator,
 `HelpValidationOptions`, `IHelpCardRule`, `HelpExamples`, `ExampleCommandLine`, and `HelpCardMarkdown`.
 Everything else is `internal`. The signature closure of `HelpSource` and `HelpCatalogBuilder`
 contains only Base Class Library types.
@@ -128,8 +136,10 @@ cached. A catalog never reads files after `Create` returns.
   throw `ArgumentException` or `ArgumentNullException`; the library never throws
   `InvalidOperationException` directly.
 - **Several sources**: a catalog composes any number of sources in registration order, flat or mounted;
-  a source can import only sources that were added before it. Search, suggestions, the command-line
-  helper, and the agent tool are not part of the current system.
+  a source can import only sources that were added before it. The command-line helper and the agent tool serve a
+  catalog as a whole; per-source agent tools are not part of the current system.
+- **Deferred catalog**: a tool creates the help helper without a catalog; the catalog factory is called only after the
+  help verb was recognized, never for another command, for the footer, or for a usage error.
 - **Compliance**: All functionality must be traceable to requirements.
 - **Quality**: Zero warnings, complete documentation of every member, and tests for every requirement.
 

@@ -4,6 +4,7 @@ package HelpCards {
     public import HelpCards_CompositionSubsystem::*;
     public import HelpCards_CatalogSubsystem::*;
     public import HelpCards_PresentationSubsystem::*;
+    public import HelpCards_IntegrationSubsystem::*;
     public import HelpCards_TestingSubsystem::*;
 
     doc
@@ -27,6 +28,7 @@ package HelpCards {
         part composition : CompositionSubsystem;
         part catalog : CatalogSubsystem;
         part presentation : PresentationSubsystem;
+        part integration : IntegrationSubsystem;
         part testing : TestingSubsystem;
     }
 }

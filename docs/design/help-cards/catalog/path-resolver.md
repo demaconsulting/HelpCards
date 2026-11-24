@@ -10,16 +10,18 @@ place where the rules of path lookup live: segments, names, aliases, case, and h
 #### Data Model
 
 The class is static and stateless. Its result `PathMatch` is a record with the card (or null), the global id of the
-parent whose children were searched, the segment that matched nothing, and the visible names of the level that failed.
+parent whose children were searched, the segment that matched nothing, the visible names of the level that failed, and
+the closest name or alias at that level.
 
 #### Key Methods
 
-- **`Resolve(scope, path)`** splits the path on `/` and white space, drops empty segments, and walks the real tree:
-  the first segment is matched against the names and aliases of the roots, each later one against those of the children
-  of the card found so far, with `OrdinalIgnoreCase` after NFC normalization of the segment (text that is not valid
-  Unicode is used as it is). The walk goes through hidden cards. A segment that matches nothing, or a final card that
-  is hidden, fails with the parent, the segment, and the names of the visible cards at that level. An empty path names
-  nothing and lists the roots.
+- **`Resolve(scope, path)`** splits the path on `/` and white space, drops empty segments, and walks the real tree: the
+  first segment is matched against the names and aliases of the roots, each later one against those of the children of
+  the card found so far, with `OrdinalIgnoreCase` after NFC normalization of the segment (text that is not valid Unicode
+  is used as it is). The walk goes through hidden cards. A segment that matches nothing, or a final card that is hidden,
+  fails with the parent, the segment, and the names of the visible cards at that level. The closest name or alias of the
+  visible cards at that level is chosen with `SearchIndex.Suggest`. An empty path names nothing, lists the roots, and
+  has no suggestion.
 - **`Find(scope, path)`** returns only the card of `Resolve`.
 
 #### Error Handling
@@ -28,7 +30,7 @@ Null arguments throw `ArgumentNullException`. A path that names nothing is a nor
 
 #### Dependencies
 
-`CatalogScope`, `CatalogData`, and `CardNode`.
+`CatalogScope`, `CatalogData`, `CardNode`, and `SearchIndex` for the suggestion.
 
 #### Callers
 

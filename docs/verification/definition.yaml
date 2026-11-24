@@ -30,6 +30,7 @@ input-files:
   - docs/verification/help-cards/catalog/catalog-scope.md
   - docs/verification/help-cards/catalog/path-resolver.md
   - docs/verification/help-cards/catalog/example-resolver.md
+  - docs/verification/help-cards/catalog/search-index.md
   - docs/verification/help-cards/presentation.md
   - docs/verification/help-cards/presentation/help-render-options.md
   - docs/verification/help-cards/presentation/link-formatter.md
@@ -37,6 +38,13 @@ input-files:
   - docs/verification/help-cards/presentation/json-document-writer.md
   - docs/verification/help-cards/presentation/text-wrapper.md
   - docs/verification/help-cards/presentation/help-strings.md
+  - docs/verification/help-cards/integration.md
+  - docs/verification/help-cards/integration/help-cli.md
+  - docs/verification/help-cards/integration/cli-argument-parser.md
+  - docs/verification/help-cards/integration/cli-dispatcher.md
+  - docs/verification/help-cards/integration/help-agent-tool.md
+  - docs/verification/help-cards/integration/agent-argument-reader.md
+  - docs/verification/help-cards/integration/agent-dispatcher.md
   - docs/verification/help-cards/testing.md
   - docs/verification/help-cards/testing/help-card-validator.md
   - docs/verification/help-cards/testing/help-examples.md

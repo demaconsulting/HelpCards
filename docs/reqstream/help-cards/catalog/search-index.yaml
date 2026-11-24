@@ -1,0 +1,89 @@
+---
+# SearchIndex Unit Requirements
+#
+# Requirements for the SearchIndex unit of the Catalog subsystem, which scores cards for a query and finds the names
+# that are closest to a word that was not found.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: SearchIndex Requirements
+            requirements:
+              - id: HelpCards-Catalog-SearchIndex-Fields
+                title: >-
+                  The index shall split a query into lower-case words of letters and digits and score each word by the
+                  best field of a card that matches: exactly as a whole word for the aliases, the local id, the example
+                  names, the title, the tags, and the summary with falling weights, or as the start of a word of at
+                  least three letters for every field except the tags, with a lower weight, never using the mount
+                  prefix of an id.
+                justification: |
+                  The weights decide which card a reader sees first, so they must be exact and the same everywhere.
+                tests:
+                  - SearchIndex_Search_ExactMatchPerField_ScoresTheWeightOfTheField
+                  - SearchIndex_Search_Prefixes_ScoreLessNeedThreeLettersAndSkipTags
+                  - SearchIndex_Search_MountedSource_DoesNotBoostChildrenByTheMountName
+
+              - id: HelpCards-Catalog-SearchIndex-Bonuses
+                title: >-
+                  The index shall add 50 to the score of a card for which every word matched and 100 when the whole
+                  query, with runs of spaces and slashes read as one slash, equals the global id, the local id, the
+                  name, or an alias of the card, and shall report the matched fields in the fixed order alias, id,
+                  example, title, tag, summary.
+                justification: |
+                  Cards that answer the whole question, or are named by it, must rank above cards that share one word.
+                tests:
+                  - SearchIndex_Search_BigFixtureQueries_MatchRankingGolden
+                  - SearchIndex_Search_ExactMatchPerField_ScoresTheWeightOfTheField
+
+              - id: HelpCards-Catalog-SearchIndex-Ranking
+                title: >-
+                  The index shall leave out cards with a score of zero and order the others by score descending, then
+                  by depth of the local id ascending, then by global id in ordinal order.
+                justification: |
+                  A complete order makes the results the same on every machine and in every run.
+                tests:
+                  - SearchIndex_Search_EqualScores_OrderByDepthThenId
+                  - SearchIndex_Search_BigFixtureQueries_MatchRankingGolden
+
+              - id: HelpCards-Catalog-SearchIndex-Plurals
+                title: >-
+                  The index shall remove a final s from words of more than three letters, in the query and in the cards,
+                  when the culture of the catalog is English or neutral, and shall leave words alone for any other
+                  culture and shorter words in every culture.
+                justification: |
+                  Readers write the plural of a word the card has in the singular, but only in English.
+                tests:
+                  - SearchIndex_Search_Plurals_AreStemmedOnlyForEnglishAndNeutralCatalogs
+                  - SearchIndex_Search_ShortWordEndingInS_IsNotStemmed
+
+              - id: HelpCards-Catalog-SearchIndex-Normalization
+                title: >-
+                  The index shall count a repeated word once, ignore case and punctuation, return nothing for a query
+                  without a word, and reject null arguments.
+                justification: |
+                  Sloppy queries must give the same results as tidy ones.
+                tests:
+                  - SearchIndex_Search_RepeatedWordsCaseAndPunctuation_AreNormalized
+                  - SearchIndex_Search_QueryWithoutWord_GivesNothingAndNullThrows
+
+              - id: HelpCards-Catalog-SearchIndex-Suggest
+                title: >-
+                  The index shall suggest the candidates whose case-insensitive Levenshtein distance from a word is at
+                  most the larger of two and a third of the length of the word, ordered by distance and then in ordinal
+                  order, without repeats, up to the requested count.
+                justification: |
+                  Suggestions must be few, close, and in a stable order.
+                tests:
+                  - SearchIndex_Suggest_Candidates_AreFilteredByDistanceAndOrdered
+                  - SearchIndex_Suggest_LongWords_AcceptAThirdOfTheLength
+
+              - id: HelpCards-Catalog-SearchIndex-Arguments
+                title: >-
+                  The index shall reject a null word or candidate list with an argument null exception and a count
+                  below one with an argument out of range exception.
+                justification: |
+                  Programming mistakes must fail loudly.
+                tests:
+                  - SearchIndex_Suggest_InvalidArguments_Throw

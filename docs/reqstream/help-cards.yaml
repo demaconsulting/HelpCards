@@ -402,3 +402,117 @@ sections:
           Every adopting library and tool stays free of transitive dependencies.
         tests:
           - HelpCards_NoDependencies_ReferencedAssemblies_AreFrameworkOnly
+
+      - id: HelpCards-Search-Ranking
+        title: >-
+          A catalog shall search its visible cards for the words of a query and return the best cards first, ranked
+          by where and how well the words match, limited by count, source, and tag, and never return a card that a view
+          hides.
+        tags: [system]
+        justification: |
+          Readers and agents find help by the words they know, not by the path of a card.
+        children:
+          - HelpCards-Catalog-Search
+        tests:
+          - HelpCards_Search_BigFixture_MatchesRankingGolden
+
+      - id: HelpCards-Search-Suggestions
+        title: >-
+          A catalog shall suggest the visible names, aliases, and ids that are close to a word that was not found,
+          and a failed path shall name the closest name at the level where it failed.
+        tags: [system]
+        justification: |
+          A misspelled name should lead to the right card instead of to a dead end.
+        children:
+          - HelpCards-Catalog-Suggestions
+        tests:
+          - HelpCards_Suggestions_UnknownNames_SuggestClosest
+
+      - id: HelpCards-Cli-HelpVerb
+        title: >-
+          A tool shall be able to add help to its command line with one call before its own parser: the call answers a
+          help command and leaves every other command alone, without creating the catalog or reading a resource for
+          those, and offers a constant footer sentence for the usage text of the tool.
+        tags: [system]
+        justification: |
+          Help must cost nothing for the commands that are not help, and must work with any command-line library.
+        children:
+          - HelpCards-Integration-CliGate
+        tests:
+          - HelpCards_Cli_HelpVerb_RunsHelpAndLeavesOtherCommandsAlone
+
+      - id: HelpCards-Cli-Options
+        title: >-
+          The help command shall show the index, a card, the examples of a card, one example, search results, and the
+          cards that have a tag, in text, Markdown, and JSON, with the options and conflict rules of the command-line
+          grammar.
+        tags: [system]
+        justification: |
+          People and scripts navigate help by the same few questions, and the grammar must be learnable and exact.
+        children:
+          - HelpCards-Integration-CliOptions
+          - HelpCards-Integration-CliModes
+        tests:
+          - HelpCards_Cli_Options_SelectModesAndFormats
+
+      - id: HelpCards-Cli-ExitCodes
+        title: >-
+          The help command shall exit with 0 on success, 2 for wrong arguments and unknown names, and 70 for a defective
+          catalog, and write an error to the error output as text, or to the output as a JSON error document.
+        tags: [system]
+        justification: |
+          Scripts depend on exit codes and on where a message is written.
+        children:
+          - HelpCards-Integration-CliFailures
+        tests:
+          - HelpCards_Cli_Failures_UseExitCodes
+
+      - id: HelpCards-Cli-Extensibility
+        title: >-
+          A tool shall be able to add usage lines, a preamble, and sections to the index, answer help subjects of its
+          own, choose the width and command template, and select the culture of its catalog.
+        tags: [system]
+        justification: |
+          Help for the commands of a tool lives beside the help cards, and each tool has its own conventions.
+        children:
+          - HelpCards-Integration-CliExtensions
+        tests:
+          - HelpCards_Cli_Extensions_FallbackSectionsWidthAndLanguage
+
+      - id: HelpCards-AgentTool-Knowledge
+        title: >-
+          A catalog shall be available to an AI agent as one provider-neutral tool that answers the index, a card with
+          the content of its examples, one example, and search results, restricted by source and tag, under a name that
+          the host chooses.
+        tags: [system]
+        justification: |
+          Agents need the same knowledge as people, in as few calls as possible, in any agent framework.
+        children:
+          - HelpCards-Integration-AgentCalls
+        tests:
+          - HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch
+
+      - id: HelpCards-AgentTool-Schema
+        title: >-
+          The knowledge tool shall describe itself with a name, a description, and a JSON schema of its arguments that
+          has an exact, documented text.
+        tags: [system]
+        justification: |
+          A host registers these with its agent framework, and the schema must not drift between releases.
+        children:
+          - HelpCards-Integration-AgentTool
+        tests:
+          - HelpCards_AgentTool_Schema_IsTheSpecifiedText
+
+      - id: HelpCards-AgentTool-Resilience
+        title: >-
+          The knowledge tool shall answer wrong arguments with text that says what to send instead, cut answers that
+          are too long at a line end, and never throw for bad input or a defective catalog.
+        tags: [system]
+        justification: |
+          An agent corrects itself from the text, has a limited context, and cannot continue after an exception.
+        children:
+          - HelpCards-Integration-AgentArguments
+          - HelpCards-Integration-AgentBudget
+        tests:
+          - HelpCards_AgentTool_BudgetAndBoundary_CutAnswersAndNeverThrowForBadInput

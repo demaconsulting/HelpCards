@@ -30,6 +30,10 @@ package HelpCardsDesignViews {
         expose PresentationSubsystem;
     }
 
+    view IntegrationView {
+        expose IntegrationSubsystem;
+    }
+
     view TestingView {
         expose TestingSubsystem;
     }

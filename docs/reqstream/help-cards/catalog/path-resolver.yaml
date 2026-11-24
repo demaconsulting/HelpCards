@@ -49,3 +49,12 @@ sections:
                   The same word can be written in two Unicode forms and must find the same card.
                 tests:
                   - PathResolver_Find_TranslationAliasInDecomposedForm_MatchesNormalizedAlias
+
+              - id: HelpCards-Catalog-PathResolver-Suggestion
+                title: >-
+                  The resolver shall offer, for a path that fails, the closest name or alias of the visible cards at
+                  the level that failed, and none when the path resolved, is empty, or nothing is close.
+                justification: |
+                  A misspelled segment is the most common reason for a failed path.
+                tests:
+                  - PathResolver_Resolve_UnknownSegment_SuggestsClosestNameAtThatLevel

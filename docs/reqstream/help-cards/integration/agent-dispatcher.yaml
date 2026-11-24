@@ -1,0 +1,79 @@
+---
+# AgentDispatcher Unit Requirements
+#
+# Requirements for the AgentDispatcher unit of the Integration subsystem, which answers one call of the knowledge tool
+# from checked arguments.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Integration Requirements
+        sections:
+          - title: AgentDispatcher Requirements
+            requirements:
+              - id: HelpCards-Integration-AgentDispatcher-Index
+                title: >-
+                  The dispatcher shall answer a call without a topic, example, or query with the index in Markdown to
+                  the configured depth, one block for each source when there are several, one list when a source or tag
+                  restricts it, and the valid names when a source or tag is unknown.
+                justification: |
+                  The index is how an agent learns what the help holds.
+                tests:
+                  - AgentDispatcher_Answer_NoArguments_IsTheIndexToTheConfiguredDepth
+                  - AgentDispatcher_Answer_Index_ManySourcesAreBlocksAndRestrictionsAreOneList
+                  - AgentDispatcher_Answer_UnknownSourceOrTag_ListsTheValidOnes
+
+              - id: HelpCards-Integration-AgentDispatcher-Topic
+                title: >-
+                  The dispatcher shall answer a topic with the card in Markdown with plain links and the content of its
+                  examples, resolve a path, an alias, any case, and an unambiguous unqualified local id, list the
+                  global ids of an ambiguous local id, and suggest up to five names for an unknown topic.
+                justification: |
+                  An agent may know a card by a name that is not its global id.
+                tests:
+                  - AgentDispatcher_Answer_Topic_IsTheMarkdownCardWithExampleContent
+                  - AgentDispatcher_Answer_TopicForms_ResolveTheSameCard
+                  - AgentDispatcher_Answer_LocalId_IsFoundWhenUnambiguousAndListedWhenNot
+                  - AgentDispatcher_Answer_UnknownTopic_SuggestsAndPointsToTheIndex
+
+              - id: HelpCards-Integration-AgentDispatcher-Example
+                title: >-
+                  The dispatcher shall answer an example with its description line and its content in a fence that is
+                  longer than any run of backticks in the content, limit the search to the topic and the cards below it,
+                  list the qualified names when several examples match, and suggest the closest example names when
+                  none does.
+                justification: |
+                  Examples are copied, so the content must be exact and unambiguous.
+                tests:
+                  - AgentDispatcher_Answer_Example_IsTheDescriptionAndAFencedBlock
+                  - AgentDispatcher_Answer_ExampleWithTopic_SearchesTheSubtreeOnly
+                  - AgentDispatcher_Answer_MissingExample_SuggestsClosestNames
+                  - AgentDispatcher_Answer_ExampleInSeveralCards_ListsTheChoices
+
+              - id: HelpCards-Integration-AgentDispatcher-Query
+                title: >-
+                  The dispatcher shall answer a query with the best cards up to the limit of the call or of the options,
+                  restricted by source and tag, and with a sentence that points to the index when nothing matches.
+                justification: |
+                  Search is how an agent finds a card it cannot name.
+                tests:
+                  - AgentDispatcher_Answer_Query_ListsTheBestCardsUpToTheLimit
+                  - AgentDispatcher_Answer_QueryWithSourceAndTag_IsRestricted
+
+              - id: HelpCards-Integration-AgentDispatcher-Conflicts
+                title: >-
+                  The dispatcher shall answer an example before a topic and a topic before a query, and end the answer
+                  with one line that names the query as ignored, with the argument that took its place.
+                justification: |
+                  The agent must know that part of its call was not used.
+                tests:
+                  - AgentDispatcher_Answer_Conflicts_NameTheIgnoredQuery
+
+              - id: HelpCards-Integration-AgentDispatcher-Errors
+                title: >-
+                  The dispatcher shall answer wrong arguments, unknown names, and empty results through the tool as
+                  plain text that says what to send instead.
+                justification: |
+                  The agent recovers from the text; an exception would end the conversation.
+                tests:
+                  - AgentDispatcher_Answer_ArgumentErrors_AreAnsweredAsText

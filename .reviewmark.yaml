@@ -405,6 +405,8 @@ reviews:
       - "docs/verification/help-cards/catalog/help-catalog.md"      # unit verification
       - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.cs"       # unit source
       - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Views.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Search.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpSearchOptions.cs"  # unit source
       - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Render.cs"  # unit source
       - "test/DemaConsulting.HelpCards.Tests/Catalog/HelpCatalogTests*.cs"  # unit tests (partial files)
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"       # test support
@@ -525,6 +527,25 @@ reviews:
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"  # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"    # test support
 
+  # HelpCards-Catalog-SearchIndex Review (one per unit)
+  - id: HelpCards-Catalog-SearchIndex
+    title: Review that HelpCards Catalog SearchIndex Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/search-index.yaml"   # unit requirements
+      - "docs/design/help-cards/catalog/search-index.md"   # unit design
+      - "docs/verification/help-cards/catalog/search-index.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/SearchIndex*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/SearchIndexTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/RankingReport.cs"   # test support
+
   # HelpCards-Presentation Review (one per subsystem)
   - id: HelpCards-Presentation
     title: Review that HelpCards Presentation Satisfies Subsystem Requirements
@@ -640,6 +661,132 @@ reviews:
       - "docs/verification/help-cards/presentation/help-strings.md"   # unit verification
       - "src/DemaConsulting.HelpCards/Presentation/HelpStrings.cs"   # unit source
       - "test/DemaConsulting.HelpCards.Tests/Presentation/HelpStringsTests.cs"   # unit tests
+
+  # HelpCards-Integration Review (one per subsystem)
+  - id: HelpCards-Integration
+    title: Review that HelpCards Integration Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration.yaml"   # subsystem requirements
+      - "docs/design/help-cards/integration.md"   # subsystem design
+      - "docs/verification/help-cards/integration.md"   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Integration/IntegrationTests.cs"   # subsystem tests
+
+  # HelpCards-Integration-HelpCli Review (one per unit)
+  - id: HelpCards-Integration-HelpCli
+    title: Review that HelpCards Integration HelpCli Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/help-cli.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/help-cli.md"   # unit design
+      - "docs/verification/help-cards/integration/help-cli.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/HelpCli.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliSection.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliAnswer.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/HelpCliTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CliHarness.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Integration-CliArgumentParser Review (one per unit)
+  - id: HelpCards-Integration-CliArgumentParser
+    title: Review that HelpCards Integration CliArgumentParser Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/cli-argument-parser.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/cli-argument-parser.md"   # unit design
+      - "docs/verification/help-cards/integration/cli-argument-parser.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/CliArgumentParser.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliMode.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliRequest.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliParseResult.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/CliArgumentParserTests.cs"   # unit tests
+
+  # HelpCards-Integration-CliDispatcher Review (one per unit)
+  - id: HelpCards-Integration-CliDispatcher
+    title: Review that HelpCards Integration CliDispatcher Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/cli-dispatcher.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/cli-dispatcher.md"   # unit design
+      - "docs/verification/help-cards/integration/cli-dispatcher.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/CliDispatcher*.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliOutcome.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliFailure.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/CliDispatcherTests*.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CliHarness.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Integration-HelpAgentTool Review (one per unit)
+  - id: HelpCards-Integration-HelpAgentTool
+    title: Review that HelpCards Integration HelpAgentTool Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/help-agent-tool.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/help-agent-tool.md"   # unit design
+      - "docs/verification/help-cards/integration/help-agent-tool.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/HelpAgentTool.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpAgentToolOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpAgentTools.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/HelpAgentToolTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Integration-AgentArgumentReader Review (one per unit)
+  - id: HelpCards-Integration-AgentArgumentReader
+    title: Review that HelpCards Integration AgentArgumentReader Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/agent-argument-reader.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/agent-argument-reader.md"   # unit design
+      - "docs/verification/help-cards/integration/agent-argument-reader.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/AgentArgumentReader.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/AgentArguments.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/AgentReadResult.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/AgentArgumentReaderTests.cs"   # unit tests
+
+  # HelpCards-Integration-AgentDispatcher Review (one per unit)
+  - id: HelpCards-Integration-AgentDispatcher
+    title: Review that HelpCards Integration AgentDispatcher Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/agent-dispatcher.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/agent-dispatcher.md"   # unit design
+      - "docs/verification/help-cards/integration/agent-dispatcher.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/AgentDispatcher*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/AgentDispatcherTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
 
   # HelpCards-Testing Review (one per subsystem)
   - id: HelpCards-Testing

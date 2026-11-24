@@ -38,6 +38,10 @@ see the same result.
 - **Failures**: a defective source throws the catalog exception with every error and a message that counts the rest;
   a null callback, an unknown id, an unknown source, and a null path are argument errors.
 - **Problems**: problem records compare by value, the exception message is one sentence, and the severities are ordered.
+- **Search**: the twelve-card fixture is ranked, limited by count, restricted by tag, and searched through a view that
+  hides a card.
+- **Suggestions**: a misspelled alias and a misspelled path segment get the closest visible name, and a hidden card is
+  never suggested.
 - **Concurrency**: one hundred workers use one catalog, make views, and read bodies; every result is the same and every
   predicate call is counted.
 - **Rendering**: a view renders and indexes only the cards it shows; a link to a hidden card is its title, the example

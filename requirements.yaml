@@ -34,6 +34,7 @@ includes:
   - docs/reqstream/help-cards/catalog/catalog-scope.yaml
   - docs/reqstream/help-cards/catalog/path-resolver.yaml
   - docs/reqstream/help-cards/catalog/example-resolver.yaml
+  - docs/reqstream/help-cards/catalog/search-index.yaml
   - docs/reqstream/help-cards/presentation.yaml
   - docs/reqstream/help-cards/presentation/help-render-options.yaml
   - docs/reqstream/help-cards/presentation/link-formatter.yaml
@@ -41,6 +42,13 @@ includes:
   - docs/reqstream/help-cards/presentation/json-document-writer.yaml
   - docs/reqstream/help-cards/presentation/text-wrapper.yaml
   - docs/reqstream/help-cards/presentation/help-strings.yaml
+  - docs/reqstream/help-cards/integration.yaml
+  - docs/reqstream/help-cards/integration/help-cli.yaml
+  - docs/reqstream/help-cards/integration/cli-argument-parser.yaml
+  - docs/reqstream/help-cards/integration/cli-dispatcher.yaml
+  - docs/reqstream/help-cards/integration/help-agent-tool.yaml
+  - docs/reqstream/help-cards/integration/agent-argument-reader.yaml
+  - docs/reqstream/help-cards/integration/agent-dispatcher.yaml
   - docs/reqstream/help-cards/testing.yaml
   - docs/reqstream/help-cards/testing/help-card-validator.yaml
   - docs/reqstream/help-cards/testing/help-examples.yaml

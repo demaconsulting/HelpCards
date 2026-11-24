@@ -33,11 +33,14 @@ software items, specifically:
   composition pipeline, orders siblings, validates every reference and name, and collects all problems; its units are
   HelpCatalogBuilder, SourceRegistry, Mounter, OverlayMerger, ReferenceValidator, SiblingOrder, and ProblemCollector
 - **Catalog (Subsystem)** — The frozen data, the immutable model, filtered views, path and example lookup, and the
-  problem model; its units are HelpCatalog, HelpCard, HelpProblem, CatalogData, CatalogScope, PathResolver, and
-  ExampleResolver
+  problem model, plus search and suggestions; its units are HelpCatalog, HelpCard, HelpProblem, CatalogData,
+  CatalogScope, PathResolver, ExampleResolver, and SearchIndex
 - **Presentation (Subsystem)** — Renders cards, indexes, examples, search results, and card lists as text, Markdown,
   and JSON with three link styles; its units are HelpRenderOptions, LinkFormatter, TextRenderer, JsonDocumentWriter,
   TextWrapper, and HelpStrings
+- **Integration (Subsystem)** — Connects the catalog to its readers: the command-line help helper for people and the
+  knowledge tool for AI agents, both independent of any command-line or agent framework; its units are HelpCli,
+  CliArgumentParser, CliDispatcher, HelpAgentTool, AgentArgumentReader, and AgentDispatcher
 - **Testing (Subsystem)** — The helpers an adopter uses to test its own help: the validator with its options and rule
   interface, the parser for the command line of an example, the enumeration of examples, and the readers for the
   structure of a card body; its units are HelpCardValidator, HelpExamples, ExampleCommandLine, and HelpCardMarkdown
@@ -76,7 +79,7 @@ diagram or the prose below.
 ![Software Structure](SoftwareStructureView.svg)
 
 This repository organizes the software into subsystems that each own a folder of units. The system
-contains the Loading, Composition, Catalog, Presentation, and Testing subsystems; each unit is a
+contains the Loading, Composition, Catalog, Presentation, Integration, and Testing subsystems; each unit is a
 behavior-bearing class, or a tightly coupled set of classes, and pure data types are documented as
 supporting types in the unit that owns them. Subsystem and unit boundaries follow the folder and
 namespace structure of the source code.
@@ -99,6 +102,7 @@ src/DemaConsulting.HelpCards/
 ├── Composition/                — Composition subsystem units
 ├── Catalog/                    — Catalog subsystem units
 ├── Presentation/               — Presentation subsystem units
+├── Integration/                — Integration subsystem units
 └── Testing/                    — Testing subsystem units
 ```
 

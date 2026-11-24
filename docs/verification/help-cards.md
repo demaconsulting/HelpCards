@@ -227,7 +227,7 @@ Reads the assemblies that the library assembly references and asserts that each 
 **Test**: `HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface`
 
 Lists every exported type of the library assembly with the names of its public members, without the members that the
-compiler writes, and compares the list exactly with the part of the documented surface that this release implements.
+compiler writes, and compares the list exactly with the documented surface of this release.
 A type or member that becomes public by accident, or one that is missing, fails the test.
 
 ### Cultures: Catalog
@@ -265,6 +265,39 @@ with a line that looks like a heading, and asserts that the fenced line is ignor
 
 Copies the embedded `simple` source to a temporary directory, removes one file and adds one, and asserts that both
 are reported, in path order, with the rule `resources-mismatch`.
+
+### Search: Ranking and Suggestions
+
+**Tests**: `HelpCards_Search_BigFixture_MatchesRankingGolden`, `HelpCards_Suggestions_UnknownNames_SuggestClosest`
+
+Ranks ten queries over the twelve-card `big` fixture under the Turkish culture and compares the scores and matched
+fields with the golden report. Asks for suggestions for a misspelled name, alias, and id, and for the closest segment
+of a failed path.
+
+### Command Line: Help Verb and Options
+
+**Tests**: `HelpCards_Cli_HelpVerb_RunsHelpAndLeavesOtherCommandsAlone`, `HelpCards_Cli_Options_SelectModesAndFormats`
+
+Passes commands that are not help to a helper whose factory throws and asserts that none is answered and the catalog is
+never created; runs the help verb with a card path and compares the card with its golden file; runs the index, the
+examples, a search, and a tag listing and compares each with its golden file.
+
+### Command Line: Exit Codes and Extensions
+
+**Tests**: `HelpCards_Cli_Failures_UseExitCodes`, `HelpCards_Cli_Extensions_FallbackSectionsWidthAndLanguage`
+
+Runs an unknown card in text and JSON and a defective catalog, and asserts the exit codes 2 and 70, the channel, and the
+golden files. Runs a helper with index sections, a fallback resolver, a console width, and the language option, and
+asserts the sections, the answer and exit code of the resolver, and the culture the factory received.
+
+### Agent Tool: Calls, Schema, and Resilience
+
+**Tests**: `HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch`, `HelpCards_AgentTool_Schema_IsTheSpecifiedText`,
+`HelpCards_AgentTool_BudgetAndBoundary_CutAnswersAndNeverThrowForBadInput`
+
+Creates the tool under the name `canvasnet_help` and asks for the index, a card, an example, and a search; compares the
+schema with the text of the contract; cuts a long card at the output limit and sends text that is not JSON, JSON that is
+not an object, and values of the wrong type, asserting that every call is answered with text.
 
 ### Platforms
 

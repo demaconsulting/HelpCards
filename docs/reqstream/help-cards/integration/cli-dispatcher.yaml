@@ -1,0 +1,156 @@
+---
+# CliDispatcher Unit Requirements
+#
+# Requirements for the CliDispatcher unit of the Integration subsystem, which runs one help command: it reads the
+# arguments, creates the catalog when it is needed, selects the answer, and writes it with the exit code of the
+# contract.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Integration Requirements
+        sections:
+          - title: CliDispatcher Requirements
+            requirements:
+              - id: HelpCards-Integration-CliDispatcher-Index
+                title: >-
+                  The dispatcher shall answer a command without a path or mode with the usage lines, the preamble,
+                  the sections of the tool, the roots as the help topics, and the footer in text, with the whole tree
+                  when all is asked, and as the JSON index with the usage lines.
+                justification: |
+                  The index is the entry point of help.
+                tests:
+                  - CliDispatcher_Run_Index_WritesUsagePreambleSectionsTopicsAndFooter
+                  - CliDispatcher_Run_IndexWithoutExtras_IsTopicsAndFooter
+                  - CliDispatcher_Run_IndexAll_ListsTheWholeTree
+                  - CliDispatcher_Run_IndexInJson_CarriesUsageLinesAndMatchesGolden
+
+              - id: HelpCards-Integration-CliDispatcher-Card
+                title: >-
+                  The dispatcher shall answer a path with the card, written with commands for its links, whether the
+                  path is written as words, with slashes, by alias, or in another case.
+                justification: |
+                  A reader follows a link by typing the command it shows.
+                tests:
+                  - CliDispatcher_Run_Card_WritesTheCardWithCommandLinks
+                  - CliDispatcher_Run_CardPath_AcceptsWordsSlashesAliasesAndCase
+
+              - id: HelpCards-Integration-CliDispatcher-Examples
+                title: >-
+                  The dispatcher shall print the examples of a card in full and only list the cards below it that have
+                  examples, print one example as exactly its content, also by the qualified name, report an example
+                  that does not exist with the examples that do, and report a name that matches several examples with
+                  the qualified names to choose from.
+                justification: |
+                  Examples are saved to files and run, so they must come out unchanged, and a miss must lead to a hit.
+                tests:
+                  - CliDispatcher_Run_Examples_PrintsOwnExamplesAndListsDescendants
+                  - CliDispatcher_Run_Example_PrintsExactlyTheContent
+                  - CliDispatcher_Run_ExampleNotFound_ListsTheExamplesOfTheCardAndBelow
+                  - CliDispatcher_Run_ExampleNameInTwoRootsBelowAMount_IsAmbiguous
+
+              - id: HelpCards-Integration-CliDispatcher-NotFound
+                title: >-
+                  The dispatcher shall report a card that does not exist with the closest name, the names at the level
+                  that failed, and the command for their summaries, and shall list the topics for a first word that
+                  matches nothing.
+                justification: |
+                  A misspelled word must lead to the right card.
+                tests:
+                  - CliDispatcher_Run_UnknownCard_SuggestsAndListsTheNamesAtThatLevel
+                  - CliDispatcher_Run_UnknownCard_TopLevelFarNameAndLeafParent
+
+              - id: HelpCards-Integration-CliDispatcher-Search
+                title: >-
+                  The dispatcher shall answer a search with the ranked cards as commands with summaries, restricted by
+                  tags and sources, and with a sentence and exit code 0 when nothing matches.
+                justification: |
+                  Search is how a reader finds a card without knowing its path.
+                tests:
+                  - CliDispatcher_Run_Search_ListsRankedCards
+                  - CliDispatcher_Run_SearchWithTagsAndSources_RestrictsTheCards
+
+              - id: HelpCards-Integration-CliDispatcher-Tags
+                title: >-
+                  The dispatcher shall list the cards that have any of the given tags, report an unknown tag with the
+                  known tags, and list nothing for a catalog without tags.
+                justification: |
+                  Tags group cards that the tree keeps apart.
+                tests:
+                  - CliDispatcher_Run_Tags_ListsCardsWithAnyTag
+                  - CliDispatcher_Run_TagsInACatalogWithoutTags_FindNothing
+
+              - id: HelpCards-Integration-CliDispatcher-Sources
+                title: >-
+                  The dispatcher shall restrict the index, a search, and a tag listing to the given sources ignoring
+                  case, report an unknown source with the known sources, and write the filter into the JSON tag
+                  listing.
+                justification: |
+                  A catalog that combines several libraries must be read one library at a time.
+                tests:
+                  - CliDispatcher_Run_Source_RestrictsTheIndexAndReportsUnknownNames
+                  - CliDispatcher_Run_TagsWithSource_WritesTheFilterToTheDocument
+
+              - id: HelpCards-Integration-CliDispatcher-Failures
+                title: >-
+                  The dispatcher shall report a usage error with exit code 2 without creating the catalog, as text on
+                  the error writer with the hint on a second line or as the error document on the output when JSON
+                  was asked for, and shall report a catalog that is defective or not created with exit code 70 and
+                  the first problem.
+                justification: |
+                  Scripts depend on exit codes and on where a message is written.
+                tests:
+                  - CliDispatcher_Run_UsageError_WritesErrorAndHintWithoutCreatingTheCatalog
+                  - CliDispatcher_Run_UsageErrorInJson_WritesTheErrorDocumentToOutput
+                  - CliDispatcher_Run_DefectiveCatalog_ExitsWith70
+                  - CliDispatcher_Run_FactoryReturnsNull_ExitsWith70
+
+              - id: HelpCards-Integration-CliDispatcher-Output
+                title: >-
+                  The dispatcher shall write every document and error with one line feed at the end and line feeds
+                  only inside, whatever the line ending of the writer is.
+                justification: |
+                  Output must be byte-identical on every machine.
+                tests:
+                  - CliDispatcher_Run_Output_UsesLineFeedsOnly
+
+              - id: HelpCards-Integration-CliDispatcher-Fallback
+                title: >-
+                  The dispatcher shall offer the words of a card command to the fallback resolver of the tool before
+                  the catalog is created, write its answer as given with its exit code, and let the catalog answer
+                  when the resolver has none, never offering other modes.
+                justification: |
+                  A tool owns some subjects, such as the help of one command, that no card describes.
+                tests:
+                  - CliDispatcher_Run_FallbackAnswer_IsWrittenAsGivenBeforeTheCatalogIsCreated
+                  - CliDispatcher_Run_FallbackWithoutAnswer_LetsTheCatalogAnswerAndIsNotOfferedOtherModes
+
+              - id: HelpCards-Integration-CliDispatcher-Language
+                title: >-
+                  The dispatcher shall pass the culture of the language option to the catalog factory, and no culture
+                  when the option is absent.
+                justification: |
+                  The catalog is created for one culture.
+                tests:
+                  - CliDispatcher_Run_Language_PassesTheCultureToTheFactory
+
+              - id: HelpCards-Integration-CliDispatcher-Width
+                title: >-
+                  The dispatcher shall wrap generated lines at the width of the command, else at the default width of
+                  the options, use the console width between 40 and 120 or 78 for auto, and ignore the width for JSON.
+                justification: |
+                  Output must fit the terminal of the reader.
+                tests:
+                  - CliDispatcher_Run_Width_WrapsGeneratedLines
+                  - CliDispatcher_Run_DefaultWidth_AppliesWithoutTheOption
+                  - CliDispatcher_Run_AutoWidth_ClampsTheConsoleWidth
+                  - CliDispatcher_Run_AutoWidthWithoutProvider_Is78ForAnyWriter
+
+              - id: HelpCards-Integration-CliDispatcher-Template
+                title: >-
+                  The dispatcher shall write the commands of links from the command template of the options, or from
+                  the tool name, the verb, and the path.
+                justification: |
+                  A command must be one the reader can type into the tool.
+                tests:
+                  - CliDispatcher_Run_CommandTemplate_BuildsTheCommands

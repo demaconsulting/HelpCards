@@ -151,3 +151,34 @@ sections:
               - HelpCards-Catalog-HelpCatalog-FormatBody
             tests:
               - Catalog_Rendering_RenderMembers_WriteDocumentsOfTheCatalogView
+
+          - id: HelpCards-Catalog-Search
+            title: >-
+              The subsystem shall search the visible cards of a catalog view for a query, rank them by score, then by
+              depth within the source, then by id, and limit the results by count, source, and tag.
+            justification: |
+              Readers and agents find a card by the words they know, and a view must never find what it hides.
+            children:
+              - HelpCards-Catalog-SearchIndex-Fields
+              - HelpCards-Catalog-SearchIndex-Bonuses
+              - HelpCards-Catalog-SearchIndex-Ranking
+              - HelpCards-Catalog-SearchIndex-Plurals
+              - HelpCards-Catalog-SearchIndex-Normalization
+              - HelpCards-Catalog-HelpCatalog-Search
+              - HelpCards-Catalog-HelpCatalog-SearchOptions
+            tests:
+              - Catalog_Search_BigFixture_RanksAndRestrictsVisibleCards
+
+          - id: HelpCards-Catalog-Suggestions
+            title: >-
+              The subsystem shall suggest the visible names, aliases, and ids that are close to a word that was not
+              found, closest first, and offer the closest name at the level where a path failed.
+            justification: |
+              A misspelled name should lead to the right card instead of to a dead end.
+            children:
+              - HelpCards-Catalog-SearchIndex-Suggest
+              - HelpCards-Catalog-SearchIndex-Arguments
+              - HelpCards-Catalog-HelpCatalog-Suggest
+              - HelpCards-Catalog-PathResolver-Suggestion
+            tests:
+              - Catalog_Suggestions_UnknownNames_AreTheClosestVisibleNames
