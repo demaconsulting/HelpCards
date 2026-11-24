@@ -1,0 +1,41 @@
+---
+# CatalogScope Unit Requirements
+#
+# Requirements for the CatalogScope unit of the Catalog subsystem: the set of cards a view shows and the tree those
+# cards form when hidden cards are lifted out.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: CatalogScope Requirements
+            requirements:
+              - id: HelpCards-Catalog-CatalogScope-Visibility
+                title: >-
+                  The scope of an unfiltered catalog shall show every card with its real tree, and reject a null
+                  argument.
+                justification: |
+                  An unfiltered catalog must show exactly what was composed.
+                tests:
+                  - CatalogScope_All_ShowsEveryCardWithRealTree
+                  - CatalogScope_NullArguments_ThrowArgumentNullException
+
+              - id: HelpCards-Catalog-CatalogScope-Lifting
+                title: >-
+                  The scope shall lift the visible children of a hidden card to the nearest visible ancestor, or to
+                  the roots, keeping their order.
+                justification: |
+                  Hiding a card must not make the cards below it unreachable.
+                tests:
+                  - CatalogScope_Restrict_HiddenParent_LiftsChildrenToRoots
+
+              - id: HelpCards-Catalog-CatalogScope-Restriction
+                title: >-
+                  The scope shall give a new scope on restriction that shows the intersection, leave the earlier
+                  scopes unchanged, and call the restriction once for each visible card in depth-first order.
+                justification: |
+                  Views compose by intersection and are evaluated at once on the calling thread.
+                tests:
+                  - CatalogScope_Restrict_Twice_IsIntersectionAndImmutable
+                  - CatalogScope_Restrict_Predicate_RunsOncePerVisibleCardInOrder

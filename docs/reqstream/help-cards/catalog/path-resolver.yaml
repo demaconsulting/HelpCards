@@ -1,0 +1,51 @@
+---
+# PathResolver Unit Requirements
+#
+# Requirements for the PathResolver unit of the Catalog subsystem, which resolves a path of names and aliases to a card.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: PathResolver Requirements
+            requirements:
+              - id: HelpCards-Catalog-PathResolver-Find
+                title: >-
+                  The resolver shall match each segment of a path, separated by slashes or white space, against the
+                  names and aliases of the roots and then of the children, ignoring case.
+                justification: |
+                  People type paths in several forms and cases.
+                tests:
+                  - PathResolver_Find_Forms_ReturnsCard
+
+              - id: HelpCards-Catalog-PathResolver-Failures
+                title: >-
+                  The resolver shall report, for a path that fails, the parent that was searched, the segment that
+                  matched nothing, and the visible names at that level, list the roots for an empty path, and
+                  reject null arguments.
+                justification: |
+                  A failed lookup must say what would have worked.
+                tests:
+                  - PathResolver_Resolve_UnknownSegment_ReportsParentSegmentAndNames
+                  - PathResolver_Resolve_EmptyPath_ListsRoots
+                  - PathResolver_NullArguments_ThrowArgumentNullException
+
+              - id: HelpCards-Catalog-PathResolver-HiddenCards
+                title: >-
+                  The resolver shall walk through hidden cards and report a hidden target like an unknown segment,
+                  naming its real parent.
+                justification: |
+                  A view must not reveal a card that it hides.
+                tests:
+                  - PathResolver_Resolve_HiddenTarget_IsReportedAsUnknownAndHiddenParentIsWalkedThrough
+                  - PathResolver_Resolve_HiddenNestedTarget_ReportsRealParent
+
+              - id: HelpCards-Catalog-PathResolver-Aliases
+                title: >-
+                  The resolver shall match a path segment against aliases in their normalized form, whichever
+                  Unicode form the segment is written in.
+                justification: |
+                  The same word can be written in two Unicode forms and must find the same card.
+                tests:
+                  - PathResolver_Find_TranslationAliasInDecomposedForm_MatchesNormalizedAlias

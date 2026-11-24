@@ -11,12 +11,13 @@ package HelpCards_HelpProblem {
     }
 
     part def HelpProblem {
-        doc /* The immutable value with which every part of the library reports a finding about a help source: its severity, the rule that was broken, and where it was found (source, file, and line), with a message. Supporting types: HelpSeverity and the internal RuleIds constants. */
+        doc /* The immutable value with which every part of the library reports a finding about a help source: its severity, the rule that was broken, and where it was found (source, file, and line), with a message. The catalog exception carries every error of a failed catalog creation. Supporting types: HelpSeverity, HelpCatalogException, and the internal RuleIds constants. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (
                 "src/DemaConsulting.HelpCards/Catalog/HelpProblem.cs",
                 "src/DemaConsulting.HelpCards/Catalog/HelpSeverity.cs",
+                "src/DemaConsulting.HelpCards/Catalog/HelpCatalogException.cs",
                 "src/DemaConsulting.HelpCards/Catalog/RuleIds.cs"
             );
             testFiles = ("test/DemaConsulting.HelpCards.Tests/Catalog/HelpProblemTests.cs");

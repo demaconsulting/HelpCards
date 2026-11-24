@@ -1,0 +1,133 @@
+---
+# Catalog Subsystem Requirements
+#
+# Requirements for the Catalog subsystem: the immutable model of cards, examples, links, and results, the frozen
+# catalog data, filtered views, path and example lookup, and the problem model. Each requirement decomposes a system
+# requirement and is decomposed further by the requirements of the units of the subsystem.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        requirements:
+          - id: HelpCards-Catalog-Model
+            title: >-
+              The subsystem shall expose the cards of a catalog as an immutable tree with roots, children, aliases,
+              tags, examples, extensions, sources, and tag names, shall write each card body with its links in the
+              plain style, and shall read no file after the catalog was created.
+            justification: |
+              Help is read by many threads and rendered many times; an immutable model that never touches the file
+              system makes both safe and cheap.
+            children:
+              - HelpCards-Catalog-HelpCatalog-Properties
+              - HelpCards-Catalog-HelpCatalog-NoIo
+              - HelpCards-Catalog-HelpCatalog-Immutability
+              - HelpCards-Catalog-HelpCard-Properties
+              - HelpCards-Catalog-HelpCard-Examples
+              - HelpCards-Catalog-HelpCard-Body
+              - HelpCards-Catalog-HelpCard-BodyPieces
+              - HelpCards-Catalog-HelpCard-ModelTypes
+              - HelpCards-Catalog-CatalogData-Content
+              - HelpCards-Catalog-CatalogData-Tags
+              - HelpCards-Catalog-CatalogData-Settings
+              - HelpCards-Catalog-CatalogData-Immutability
+            tests:
+              - Catalog_Model_SimpleFixture_ExposesImmutableTreeSourcesAndTags
+              - Catalog_Model_BigFixture_HasTwelveCardsInThreeGroups
+
+          - id: HelpCards-Catalog-Cultures
+            title: >-
+              The subsystem shall expose, for the culture of the catalog, the translated title, summary, aliases,
+              and example descriptions of each card and the culture of the file that supplied its body.
+            justification: |
+              Readers and tools need to know which language a card is shown in.
+            tests:
+              - Catalog_Cultures_I18nFixture_SelectsTranslationPerCardWithFallback
+
+          - id: HelpCards-Catalog-Lookup
+            title: >-
+              The subsystem shall find a visible card by a path of names and aliases, report where and why a path
+              fails together with the valid names, and find examples by name in a card, in a subtree, or in the
+              whole catalog.
+            justification: |
+              Command lines and tools address cards by path and examples by name; a failed lookup must tell the
+              caller what would have worked.
+            children:
+              - HelpCards-Catalog-HelpCatalog-Find
+              - HelpCards-Catalog-HelpCatalog-Resolve
+              - HelpCards-Catalog-HelpCatalog-Relations
+              - HelpCards-Catalog-HelpCatalog-Examples
+              - HelpCards-Catalog-PathResolver-Find
+              - HelpCards-Catalog-PathResolver-Failures
+              - HelpCards-Catalog-PathResolver-HiddenCards
+              - HelpCards-Catalog-PathResolver-Aliases
+              - HelpCards-Catalog-ExampleResolver-Subtree
+              - HelpCards-Catalog-ExampleResolver-Search
+            tests:
+              - Catalog_Lookup_PathsAliasesAndExamples_FindCardsAndReportFailures
+
+          - id: HelpCards-Catalog-Views
+            title: >-
+              The subsystem shall create views of a catalog that show cards by tag, by source, by predicate, and by
+              id, compose by intersection without changing the catalog they come from, lift the visible children of
+              a hidden card, walk through hidden cards without returning them, and never point at a hidden card from
+              a see-also list, a link, or an example search.
+            justification: |
+              Products show different subsets of their help to different readers, and a hidden card must neither
+              appear nor leak through its neighbors.
+            children:
+              - HelpCards-Catalog-HelpCatalog-TagFilter
+              - HelpCards-Catalog-HelpCatalog-SourceFilter
+              - HelpCards-Catalog-HelpCatalog-Predicate
+              - HelpCards-Catalog-HelpCatalog-Without
+              - HelpCards-Catalog-HelpCatalog-HiddenCards
+              - HelpCards-Catalog-HelpCatalog-ViewComposition
+              - HelpCards-Catalog-HelpCard-HiddenLinks
+              - HelpCards-Catalog-CatalogScope-Visibility
+              - HelpCards-Catalog-CatalogScope-Lifting
+              - HelpCards-Catalog-CatalogScope-Restriction
+            tests:
+              - Catalog_Views_FilterSourceWhereWithout_ComposeAndLiftHiddenParents
+              - Catalog_Views_HiddenTargets_AreWrittenAsTextAndDroppedFromSeeAlso
+
+          - id: HelpCards-Catalog-Failures
+            title: >-
+              The subsystem shall throw one catalog exception that carries every error when a source is defective,
+              and an argument exception or argument null exception, never the catalog exception, when an argument
+              is invalid.
+            justification: |
+              Callers need to tell a defective help source from a programming mistake without parsing messages.
+            children:
+              - HelpCards-Catalog-HelpCatalog-Creation
+              - HelpCards-Catalog-HelpProblem-Exception
+            tests:
+              - Catalog_Failures_DefectsAndMisuse_ThrowTheDocumentedExceptions
+
+          - id: HelpCards-Catalog-Problems
+            title: >-
+              The subsystem shall describe every finding as an immutable problem with severity, rule, source,
+              file, line, and message, order severities from informational through warning to error, name every
+              rule of the failure model with a stable identifier, and be able to print a problem as one sentence.
+            justification: |
+              Problems are collected, compared, filtered, and shown to authors; a plain value with stable names makes
+              all of that straightforward.
+            children:
+              - HelpCards-Catalog-HelpProblem-Fields
+              - HelpCards-Catalog-HelpProblem-Severity
+              - HelpCards-Catalog-HelpProblem-RuleIds
+              - HelpCards-Catalog-HelpProblem-InfoFactory
+              - HelpCards-Catalog-HelpProblem-DisplayText
+            tests:
+              - Catalog_Problems_Records_CompareByValueAndPrintOneSentence
+
+          - id: HelpCards-Catalog-Concurrency
+            title: >-
+              The subsystem shall let any number of threads use one catalog and its views at the same time with
+              consistent, deterministic results that do not depend on the culture of the machine.
+            justification: |
+              A catalog is created once and shared by every request of a tool or a service.
+            children:
+              - HelpCards-Catalog-HelpCatalog-Concurrency
+              - HelpCards-Catalog-HelpCatalog-Determinism
+            tests:
+              - Catalog_Concurrency_ParallelUseOfOneCatalog_IsConsistent

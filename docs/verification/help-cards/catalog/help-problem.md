@@ -17,7 +17,11 @@ All tests in `HelpProblemTests.cs` pass.
 #### Test Scenarios
 
 - **Fields**: all six fields read back; equal fields give equal records and hash codes; one different field
-  gives unequal records; the error factory sets severity `Error`.
+  gives unequal records; the error factory sets severity `Error`; the informational factory sets severity `Info`.
 - **Severity**: the numeric order is informational, warning, error.
 - **Rule identifiers**: every identifier is a distinct lower-case dashed name and every error rule of the
   failure model has a constant.
+- **Display text**: file, source, and line are named; the line is left out for 0; a problem without a file names only
+  the source; the closing period is added once.
+- **Exception**: the problems are exposed, the message names the first problem and counts the others, the type is an
+  invalid operation exception, and an empty or null list is refused.

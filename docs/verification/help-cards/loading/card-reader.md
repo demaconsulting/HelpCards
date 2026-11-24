@@ -38,7 +38,8 @@ and no scenario depends on the machine's culture.
 - **Links**: parsed links and a typo with the right line; an empty body.
 - **Cultures**: invariant ignores translations and the UI culture; translation applied; example descriptions;
   region falls back to language; specific preferred; no translation uses neutral; title fallback; empty
-  translation body; per-file selection; source language; overlay and source translations.
+  translation body; per-file selection; source language; overlay and source translations; the file that supplied the
+  body is recorded.
 - **Translation validation**: structural keys, a syntax error of an unused culture, example keys, alias normalization,
   orphans (including the source file), aliases of overlay translations, every translation read.
 - **Source file**: every key, defaults, name precedence, missing or invalid names, unsupported schema (no

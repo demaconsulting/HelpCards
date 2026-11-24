@@ -23,7 +23,7 @@ system is organized into five subsystems that follow the life of a card from fil
   validates every reference, and collects all problems. Its public face is `HelpCatalogBuilder`.
 - **Catalog** holds the frozen data, the immutable model (`HelpCard`, `HelpExample`, and the
   result types), filtered views, path and example lookup, and the problem model. Its public face
-  is `HelpCatalog`.
+  is `HelpCatalog`, a partial class to which Presentation adds the `Render` members.
 - **Presentation** renders cards, indexes, examples, search results, and card lists as text,
   Markdown, or JSON with three link styles. Its public face is `HelpRenderOptions`.
 - **Testing** gives adopters a collect-all validator and example helpers for their own test

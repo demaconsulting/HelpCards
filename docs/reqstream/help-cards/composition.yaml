@@ -1,0 +1,117 @@
+---
+# Composition Subsystem Requirements
+#
+# Requirements for the Composition subsystem: registering the source of a catalog, running the one composition
+# pipeline over it, ordering siblings, validating every reference and name, and collecting all problems. Each
+# requirement decomposes a system requirement and is decomposed further by the requirements of the units of the
+# subsystem.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        requirements:
+          - id: HelpCards-Composition-Tree
+            title: >-
+              The subsystem shall compose the single source of a catalog into one frozen tree: read the source,
+              place every card below its parent, resolve every reference over the final tree, and freeze the
+              result, applying the configured culture and the built-in tokens.
+            justification: |
+              One pipeline with fixed steps gives every catalog the same, predictable result, and resolving
+              references only over the final tree makes forward references as valid as backward ones.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-Pipeline
+              - HelpCards-Composition-HelpCatalogBuilder-TreePlacement
+              - HelpCards-Composition-HelpCatalogBuilder-Configuration
+            tests:
+              - Composition_Pipeline_SimpleFixture_ProducesFrozenTreeWithResolvedReferences
+              - Composition_Reading_EachFileOnce_AndCultureSelectsTranslation
+
+          - id: HelpCards-Composition-SingleSource
+            title: >-
+              The subsystem shall compose exactly one source without imports, reject a second source and a source
+              with imports with an argument exception, read overlays without applying them, and reject composing
+              with no source.
+            justification: |
+              This release composes one source; stating the limit as a checked behavior keeps later releases from
+              changing it silently and tells adopters at once when they ask for more.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-SingleSource
+              - HelpCards-Composition-HelpCatalogBuilder-Overlays
+            tests:
+              - Composition_SingleSource_SecondSourceImportsAndOverlays_AreHandledAsDocumented
+
+          - id: HelpCards-Composition-Ordering
+            title: >-
+              The subsystem shall order the cards that share a parent, and the roots of a source, first by the
+              children list in the order listed, then by ascending order value, then by name in ordinal order, and
+              shall report repeated and unknown children entries.
+            justification: |
+              Help is read in the order its authors intend; one comparator makes that order identical in every
+              rendering and on every machine.
+            children:
+              - HelpCards-Composition-SiblingOrder-OrderValues
+              - HelpCards-Composition-SiblingOrder-ChildrenList
+              - HelpCards-Composition-SiblingOrder-ChildrenChecks
+              - HelpCards-Composition-SiblingOrder-Names
+            tests:
+              - Composition_Ordering_OrderFixture_FollowsChildrenListThenOrderThenName
+
+          - id: HelpCards-Composition-References
+            title: >-
+              The subsystem shall resolve card links, example links, external links, and see-also entries over the
+              final tree, report each unresolved one with its file and line, let a link to a source that is not
+              present degrade to its display text, and not report references to files that failed to load.
+            justification: |
+              Cards refer to each other; a broken reference is a defect the author must see, while a link to an
+              optional library must not make the help unusable.
+            children:
+              - HelpCards-Composition-ReferenceValidator-CardLinks
+              - HelpCards-Composition-ReferenceValidator-ExampleLinks
+              - HelpCards-Composition-ReferenceValidator-ExternalLinks
+              - HelpCards-Composition-ReferenceValidator-SeeAlso
+              - HelpCards-Composition-ReferenceValidator-Suppression
+              - HelpCards-Composition-HelpCatalogBuilder-Diagnostics
+            tests:
+              - Composition_References_ForwardExampleExternalAndSeeAlso_AreResolved
+
+          - id: HelpCards-Composition-Uniqueness
+            title: >-
+              The subsystem shall report example names that are used twice in one scope and names and aliases that
+              are used twice among siblings or roots, ignoring case.
+            justification: |
+              A name must lead to exactly one card or example, otherwise a reader cannot reach the other one.
+            children:
+              - HelpCards-Composition-ReferenceValidator-ExampleNames
+              - HelpCards-Composition-ReferenceValidator-SiblingNames
+            tests:
+              - Composition_Uniqueness_NamesAliasesExamplesAndRoots_AreChecked
+
+          - id: HelpCards-Composition-Vocabulary
+            title: >-
+              The subsystem shall enforce an optional closed tag vocabulary with a set of required tags, and an
+              optional set of expected roots, and shall report each difference at its file and line.
+            justification: |
+              A product that fixes its tag set and its top-level cards needs a build failure when a card strays.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-TagVocabulary
+              - HelpCards-Composition-HelpCatalogBuilder-ExpectedRoots
+            tests:
+              - Composition_Uniqueness_NamesAliasesExamplesAndRoots_AreChecked
+              - Composition_Failures_SeveralDefects_AreCollectedOnceAndInOrder
+
+          - id: HelpCards-Composition-Failures
+            title: >-
+              The subsystem shall collect every problem of a composition, report each defect once, in the order
+              source, file, line, and rule, and return data only when no error exists.
+            justification: |
+              Authors fix all defects in one pass, and a stable order makes problem lists comparable in tests and
+              reviews.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-CollectAll
+              - HelpCards-Composition-ProblemCollector-Ordering
+              - HelpCards-Composition-ProblemCollector-Duplicates
+              - HelpCards-Composition-ProblemCollector-Severity
+              - HelpCards-Composition-ProblemCollector-Arguments
+            tests:
+              - Composition_Failures_SeveralDefects_AreCollectedOnceAndInOrder

@@ -127,4 +127,72 @@ public class HelpProblemTests
         // Assert: every specified rule has a constant
         Assert.All(expected, rule => Assert.Contains(rule, defined));
     }
+
+    /// <summary>
+    ///     Proves that the informational factory creates an informational problem with the given fields.
+    /// </summary>
+    [Fact]
+    public void HelpProblem_CreateInfo_GivenFields_CreatesInfoProblem()
+    {
+        // Arrange / Act
+        var problem = HelpProblem.CreateInfo(RuleIds.ExternalSourceAbsent, "demo", "c.md", 4, "Absent.");
+
+        // Assert
+        Assert.Equal(new HelpProblem(HelpSeverity.Info, "external-source-absent", "demo", "c.md", 4, "Absent."), problem);
+    }
+
+    /// <summary>
+    ///     Proves that the display text names file, source, and line, and omits the line when it is 0.
+    /// </summary>
+    [Fact]
+    public void HelpProblem_ToDisplayText_Fields_WritesOneSentence()
+    {
+        // Arrange
+        (string File, int Line, string Message, string Expected)[] cases =
+        [
+            ("a/b.md", 7, "Bad value.", "Help card 'a/b.md' of source 'demo', line 7: Bad value."),
+            ("a/b.md", 0, "Bad value.", "Help card 'a/b.md' of source 'demo': Bad value."),
+            ("a/b.md", 3, "No period", "Help card 'a/b.md' of source 'demo', line 3: No period."),
+            ("a/b.md", 3, "Ask why?", "Help card 'a/b.md' of source 'demo', line 3: Ask why?"),
+            (string.Empty, 0, "No file.", "Help source 'demo': No file.")
+        ];
+
+        // Act / Assert
+        foreach (var (file, line, message, expected) in cases)
+        {
+            Assert.Equal(expected, HelpProblem.CreateError(RuleIds.Syntax, "demo", file, line, message).ToDisplayText());
+        }
+    }
+
+    /// <summary>
+    ///     Proves that the exception carries every problem and a message with the first problem and the rest counted.
+    /// </summary>
+    [Fact]
+    public void HelpCatalogException_Constructor_Problems_ExposesThemAndWritesMessage()
+    {
+        // Arrange
+        var first = HelpProblem.CreateError(RuleIds.Syntax, "demo", "a.md", 2, "First.");
+        var second = HelpProblem.CreateError(RuleIds.LinkTarget, "demo", "b.md", 3, "Second.");
+
+        // Act
+        var single = new HelpCatalogException([first]);
+        var several = new HelpCatalogException([first, second, second]);
+
+        // Assert
+        Assert.Equal("Help card 'a.md' of source 'demo', line 2: First.", single.Message);
+        Assert.Equal("Help card 'a.md' of source 'demo', line 2: First. (and 2 more)", several.Message);
+        Assert.Equal([first, second, second], several.Problems);
+        Assert.IsAssignableFrom<InvalidOperationException>(several);
+    }
+
+    /// <summary>
+    ///     Proves that the exception cannot be created without a problem.
+    /// </summary>
+    [Fact]
+    public void HelpCatalogException_Constructor_NoProblems_ThrowsArgumentException()
+    {
+        // Act / Assert
+        Assert.Throws<ArgumentException>(() => new HelpCatalogException([]));
+        Assert.Throws<ArgumentNullException>(() => new HelpCatalogException(null!));
+    }
 }

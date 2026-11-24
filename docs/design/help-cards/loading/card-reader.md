@@ -16,9 +16,10 @@ All definitions are immutable records:
 - `SourceDefinition`: name, source file, title, summary, language, schema, aliases, children, extensions,
   landing body, cards, overlays, failed ids, and problems.
 - `CardDefinition`: source name, local id, file, title, summary, aliases, tags, order, children, see-also,
-  examples, extensions, culture, and body parts.
+  examples, extensions, culture, body parts, and the file that supplied the body (a translation file when one was
+  selected), so a problem in a link can name the right file.
 - `OverlayDefinition`: the extended reference, the optional flag, optional title and summary, see-also,
-  examples, extensions, culture, and body parts.
+  examples, extensions, culture, body parts, and the file that supplied the body.
 - `TranslationDefinition`: culture suffix, optional title and summary, extra aliases, example descriptions,
   and body parts.
 - `ExampleDefinition`: name, kind, language, file name, description, normalized content, and where it was

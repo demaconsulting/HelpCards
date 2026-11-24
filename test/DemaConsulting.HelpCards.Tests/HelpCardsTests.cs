@@ -360,4 +360,247 @@ public class HelpCardsTests
         Assert.Equal(["a.md", "b.md", "c.md"], files);
         Assert.Contains(definition.Cards, card => card.LocalId == "d");
     }
+
+    /// <summary>
+    ///     Proves that a catalog exposes the tree, aliases, tags, see-also entries, examples, and links of a source.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Catalog_SimpleFixture_ExposesTreeAliasesTagsExamplesAndLinks()
+    {
+        // Arrange / Act: the embedded simple fixture, loaded the way an adopter loads embedded cards
+        var catalog = CatalogBuilding.Simple();
+        var guide = catalog.Find("start")!;
+
+        // Assert: tree and aliases
+        Assert.Equal(["guide", "guide/setup", "guide/usage", "reference", "reference/limits"], catalog.Cards.Select(card => card.Id));
+        Assert.Equal(["guide/setup", "guide/usage"], guide.ChildIds);
+        Assert.Equal(["tutorial", "authoring"], guide.Tags);
+
+        // Assert: see-also, examples, and links (the link to another library is plain text)
+        Assert.Equal(["reference/limits"], catalog.GetSeeAlso(guide).Select(card => card.Id));
+        Assert.Equal([HelpExample.CommandKind, HelpExample.SourceKind, HelpExample.SnippetKind], guide.Examples.Select(example => example.Kind));
+        Assert.Contains("the card `guide/setup`", guide.Body, StringComparison.Ordinal);
+        Assert.Contains("the thing lives in another library", guide.Body, StringComparison.Ordinal);
+        Assert.Contains("A code span such as `[[x]]` is not a link.", guide.Body, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that a created catalog never changes and never reads a file again.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Catalog_Create_IsImmutableAndReadsNoFilesAfterwards()
+    {
+        // Arrange
+        var provider = new CountingFileProvider(SourceReading.Files(("a.md", SourceReading.Card()), ("a/b.md", SourceReading.Card())));
+        var catalog = CatalogBuilding.Create(HelpSource.FromProvider(provider, "test"));
+        var calls = (provider.ListCount, provider.ReadCount);
+
+        // Act: use every kind of member and make views
+        _ = catalog.Cards.Select(card => card.Body).ToList();
+        _ = catalog.Filter(["x"]).Without(["a"]).Where(_ => true).Find("a b");
+        var cards = catalog.Cards.ToList();
+
+        // Assert
+        Assert.Equal((1, 2), calls);
+        Assert.Equal(calls, (provider.ListCount, provider.ReadCount));
+        Assert.True(((ICollection<HelpCard>)catalog.Cards).IsReadOnly);
+        Assert.Equal(cards, catalog.Cards);
+    }
+
+    /// <summary>
+    ///     Proves that siblings are ordered by the children list, then by order value, then by name.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Ordering_OrderFixture_FollowsChildrenOrderThenName()
+    {
+        // Arrange / Act
+        var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("order"));
+
+        // Assert
+        Assert.Equal(["zeta", "alpha", "beta", "delta", "eta", "gamma"], catalog.Roots.Select(card => card.Id));
+        Assert.Equal(["alpha/three", "alpha/two", "alpha/one", "alpha/four"], catalog.Find("alpha")!.ChildIds);
+    }
+
+    /// <summary>
+    ///     Proves that forward references are valid and broken references are reported with file and line.
+    /// </summary>
+    [Fact]
+    public void HelpCards_References_BrokenAndForwardReferences_AreHandled()
+    {
+        // Arrange: a forward link, a broken card link, a broken example link, and a broken see-also entry
+        var valid = CatalogBuilding.FromFiles(("a.md", SourceReading.Card(body: "Forward [[z]].")), ("z.md", SourceReading.Card()));
+        var errors = CatalogBuilding.Errors(
+            ("a.md", SourceReading.Card(extraFrontMatter: "see-also:\n  - nope\n", body: "[[missing]]\n[[a#none]]")));
+
+        // Act / Assert
+        Assert.Equal("Forward the card `z`.", valid.Find("a")!.Body);
+        Assert.Equal(
+            [("see-also-target", 5), ("link-target", 7), ("example-target", 8)],
+            errors.Select(problem => (problem.RuleId, problem.Line)));
+    }
+
+    /// <summary>
+    ///     Proves that paths, aliases, and example names find cards and examples and failures say what was valid.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Lookup_PathsAndExamples_FindCardsAndExamples()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+
+        // Act / Assert
+        Assert.Equal("reference/limits", catalog.Find("ref limits")?.Id);
+        Assert.Null(catalog.Find("limits"));
+        Assert.Equal(["setup", "usage"], catalog.Resolve("guide x").ValidNames);
+        Assert.Equal(["guide"], catalog.FindExamples("run").Select(reference => reference.CardId));
+        Assert.Equal(["guide/setup"], catalog.FindExamples("guide#check").Select(reference => reference.CardId));
+        Assert.Equal("check", catalog.FindExample(catalog.Find("guide")!, "check")?.Example.Name);
+    }
+
+    /// <summary>
+    ///     Proves that views show subsets, compose, lift children of hidden cards, and hide targets in bodies.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Views_FilterSourceWhereWithout_ShowSubsetsAndHideTargets()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+
+        // Act
+        var view = catalog.Filter(["tutorial"]).Without(["guide"]);
+
+        // Assert
+        Assert.Equal(["guide/setup", "guide/usage"], view.Roots.Select(card => card.Id));
+        Assert.Equal(["guide", "reference"], catalog.Roots.Select(card => card.Id));
+        Assert.Contains("Look at Guide for", catalog.Without(["guide"]).Find("reference")!.Body, StringComparison.Ordinal);
+        Assert.Throws<ArgumentException>(() => catalog.Without(["nothing"]));
+    }
+
+    /// <summary>
+    ///     Proves that a tag vocabulary and expected roots are enforced.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Tags_VocabularyAndExpectedRoots_AreEnforced()
+    {
+        // Arrange
+        var source = CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" });
+
+        // Act
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.Create(
+            source,
+            builder => builder.TagVocabulary(["tutorial"], ["tutorial"]).ExpectedRoots(["guide", "other"])));
+
+        // Assert: the roots mismatch, then per file the unknown tags and the missing required tag
+        Assert.Equal(
+            ["roots-mismatch", "tag-unknown", "tag-required", "tag-unknown", "tag-required", "tag-unknown"],
+            exception.Problems.Select(problem => problem.RuleId));
+    }
+
+    /// <summary>
+    ///     Proves that defects throw the catalog exception with all problems and misuse throws argument exceptions.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Diagnostics_CreateFailure_ThrowsCatalogExceptionForDefectsAndArgumentExceptionForMisuse()
+    {
+        // Arrange
+        var defective = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(body: "[[x]]")), ("b.md", "no front matter")), "test");
+
+        // Act
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.Create(defective));
+
+        // Assert
+        Assert.Equal(["link-target", "syntax"], exception.Problems.Select(problem => problem.RuleId));
+        Assert.All(exception.Problems, problem => Assert.Equal(HelpSeverity.Error, problem.Severity));
+        Assert.Throws<ArgumentNullException>(() => HelpCatalog.Create(null!));
+        Assert.Throws<ArgumentException>(() => HelpCatalog.Create(_ => { }));
+    }
+
+    /// <summary>
+    ///     Proves that many threads can use one catalog at the same time with consistent results.
+    /// </summary>
+    [Fact]
+    public void HelpCards_ThreadSafety_ParallelUse_IsConsistent()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+        var expected = string.Join("|", catalog.Cards.Select(card => card.Body));
+        var calls = 0;
+        var inconsistent = 0;
+
+        // Act
+        Parallel.For(0, 50, _ =>
+        {
+            var view = catalog.Where(card =>
+            {
+                Interlocked.Increment(ref calls);
+                return true;
+            });
+            if (string.Join("|", view.Cards.Select(card => card.Body)) != expected || catalog.Find("guide setup") is null)
+            {
+                Interlocked.Increment(ref inconsistent);
+            }
+        });
+
+        // Assert
+        Assert.Equal(0, inconsistent);
+        Assert.Equal(250, calls);
+    }
+
+    /// <summary>
+    ///     Proves that creating a catalog twice gives equal results whatever the current culture is.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture()
+    {
+        // Arrange
+        var original = CultureInfo.CurrentCulture;
+        static string Describe(HelpCatalog catalog) => string.Join("|", catalog.Cards.Select(card => $"{card.Id}:{string.Join(",", card.ChildIds)}:{card.Body}"));
+
+        try
+        {
+            // Act
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+            var first = Describe(CatalogBuilding.Simple());
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+            var second = Describe(CatalogBuilding.Simple());
+
+            // Assert
+            Assert.Equal(first, second);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    /// <summary>
+    ///     Proves that the library references only framework assemblies.
+    /// </summary>
+    [Fact]
+    public void HelpCards_NoDependencies_ReferencedAssemblies_AreFrameworkOnly()
+    {
+        // Arrange / Act
+        var referenced = typeof(HelpCatalog).Assembly.GetReferencedAssemblies().Select(name => name.Name!).ToList();
+
+        // Assert: only the base class library, never a package
+        Assert.NotEmpty(referenced);
+        Assert.All(referenced, name => Assert.True(
+            name is "netstandard" or "System" || name.StartsWith("System.", StringComparison.Ordinal),
+            $"The library references '{name}', which is not part of the framework."));
+    }
+
+    /// <summary>
+    ///     Proves that a catalog exposes the translation selected for its culture and the culture of each body.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cultures_Catalog_ExposesTranslatedCardsWithBodyCulture()
+    {
+        // Arrange / Act
+        var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("i18n"), builder => builder.Culture(CultureInfo.GetCultureInfo("de-DE")));
+
+        // Assert
+        Assert.Equal(("Welcome (culture de-DE)", "de-DE"), (catalog.Find("welcome")!.Title, catalog.Find("welcome")!.Culture));
+        Assert.Equal(("Farewell (language de)", "de"), (catalog.Find("farewell")!.Title, catalog.Find("farewell")!.Culture));
+        Assert.Equal(("Plain", "en"), (catalog.Find("plain")!.Title, catalog.Find("plain")!.Culture));
+    }
 }

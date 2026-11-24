@@ -57,6 +57,24 @@ public partial class CardReaderTests
     }
 
     /// <summary>
+    ///     Proves that the file that supplied the body is recorded: the neutral file, or the selected translation.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_BodyFile_IsTheFileThatSuppliedTheBody()
+    {
+        // Arrange
+        var files = new[] { ("a.md", NeutralCard), ("a.de.md", GermanCard) };
+
+        // Act
+        var neutral = ReadFor(string.Empty, files).Cards.Single();
+        var german = ReadFor("de-DE", files).Cards.Single();
+
+        // Assert
+        Assert.Equal(("a.md", "a.md"), (neutral.File, neutral.BodyFile));
+        Assert.Equal(("a.md", "a.de.md"), (german.File, german.BodyFile));
+    }
+
+    /// <summary>
     ///     Proves that the invariant culture reads neutral files only.
     /// </summary>
     [Fact]

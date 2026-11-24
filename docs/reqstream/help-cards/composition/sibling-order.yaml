@@ -1,0 +1,51 @@
+---
+# SiblingOrder Unit Requirements
+#
+# Requirements for the SiblingOrder unit of the Composition subsystem, which gives the cards that share a parent
+# their one deterministic order.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        sections:
+          - title: SiblingOrder Requirements
+            requirements:
+              - id: HelpCards-Composition-SiblingOrder-OrderValues
+                title: >-
+                  The unit shall order cards by ascending order value, put cards without an order value after all
+                  cards with one, and break ties by name in ordinal order.
+                justification: |
+                  Authors steer the order with a number and expect the rest to be stable and independent of the
+                  culture of the machine.
+                tests:
+                  - SiblingOrder_Order_OrderValues_AscendingThenUnorderedByName
+                  - SiblingOrder_Order_NameTies_UseOrdinalOrder
+
+              - id: HelpCards-Composition-SiblingOrder-ChildrenList
+                title: >-
+                  The unit shall put the cards named in the children list first, in the order listed, before all
+                  other cards.
+                justification: |
+                  A parent knows best which of its cards a reader should see first.
+                tests:
+                  - SiblingOrder_Order_ChildrenList_GoesFirstInListedOrder
+
+              - id: HelpCards-Composition-SiblingOrder-ChildrenChecks
+                title: >-
+                  The unit shall report an entry that is listed twice, and an entry that is not a direct child
+                  card unless the card it names failed to load, at the file and line of the entry.
+                justification: |
+                  A children list that names nothing is a typo the author needs to see.
+                tests:
+                  - SiblingOrder_Order_RepeatedEntry_ReportsChildrenDuplicate
+                  - SiblingOrder_Order_UnknownEntry_ReportsChildrenUnknownUnlessSuppressed
+
+              - id: HelpCards-Composition-SiblingOrder-Names
+                title: >-
+                  The unit shall name a card by the last segment of its id and reject null arguments.
+                justification: |
+                  Entries of the children list and path segments are names, not ids.
+                tests:
+                  - SiblingOrder_NameOf_NestedCard_IsLastSegment
+                  - SiblingOrder_Order_NullArguments_ThrowArgumentNullException

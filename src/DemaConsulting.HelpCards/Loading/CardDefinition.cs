@@ -23,6 +23,7 @@ namespace DemaConsulting.HelpCards.Loading;
 /// <param name="Culture">The culture of the file that supplied the body.</param>
 /// <param name="Body">The body as text and link parts.</param>
 /// <param name="BodyLine">The one-based line of the body in the file that supplied it.</param>
+/// <param name="BodyFile">The path of the file that supplied the body, so a problem in a link names that file.</param>
 internal sealed record CardDefinition(
     string SourceName,
     string LocalId,
@@ -38,4 +39,5 @@ internal sealed record CardDefinition(
     IReadOnlyDictionary<string, string> Extensions,
     string Culture,
     IReadOnlyList<BodyPart> Body,
-    int BodyLine);
+    int BodyLine,
+    string BodyFile);

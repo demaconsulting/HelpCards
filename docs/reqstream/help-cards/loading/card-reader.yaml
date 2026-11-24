@@ -143,6 +143,7 @@ sections:
                   the culture is never taken from ambient state that could change between runs.
                 tests:
                   - CardReader_Read_InvariantCulture_UsesNeutralFiles
+                  - CardReader_Read_BodyFile_IsTheFileThatSuppliedTheBody
                   - CardReader_Read_InvariantCultureWithGermanUiCulture_IgnoresUiCulture
                   - CardReader_Read_TranslationSelected_AppliesTranslation
                   - CardReader_Read_TranslationSelected_TranslatesExampleDescriptions

@@ -21,6 +21,7 @@ namespace DemaConsulting.HelpCards.Loading;
 /// <param name="Culture">The culture of the file that supplied the body.</param>
 /// <param name="Body">The body to append, as text and link parts; empty when the overlay has no body.</param>
 /// <param name="BodyLine">The one-based line of the body in the file that supplied it.</param>
+/// <param name="BodyFile">The path of the file that supplied the body, so a problem in a link names that file.</param>
 internal sealed record OverlayDefinition(
     string SourceName,
     string LocalId,
@@ -34,4 +35,5 @@ internal sealed record OverlayDefinition(
     IReadOnlyDictionary<string, string> Extensions,
     string Culture,
     IReadOnlyList<BodyPart> Body,
-    int BodyLine);
+    int BodyLine,
+    string BodyFile);

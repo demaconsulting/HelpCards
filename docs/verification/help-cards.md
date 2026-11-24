@@ -116,6 +116,79 @@ Reads a source with a bad file name and asserts all six fields of the problem; r
 different defects in three files and one valid card and asserts that all defects are reported and the valid
 card is read.
 
+### Catalog: Tree, Aliases, Tags, Examples, and Links
+
+**Tests**: `HelpCards_Catalog_SimpleFixture_ExposesTreeAliasesTagsExamplesAndLinks`,
+`HelpCards_Catalog_Create_IsImmutableAndReadsNoFilesAfterwards`
+
+Creates a catalog from the embedded `simple` fixture and asserts the cards in depth-first order, the children, the tags,
+the see-also cards, the example kinds, and a body with plain-style links, a link to an absent library written as text,
+and a code span that is not a link. A second test creates a catalog over a counting provider and proves that one listing
+and one read per file happen during creation and none afterwards, even after views and bodies are used.
+
+### Ordering: Children List, Order, and Name
+
+**Test**: `HelpCards_Ordering_OrderFixture_FollowsChildrenOrderThenName`
+
+Creates a catalog from the `order` fixture and asserts the roots and the children of one card in the order the
+children list, the order values, and the names give.
+
+### References: Forward and Broken
+
+**Test**: `HelpCards_References_BrokenAndForwardReferences_AreHandled`
+
+Creates a catalog whose first card links forward, and composes a source with a broken see-also entry, card link, and
+example link; asserts the plain text of the forward link and the rule and line of each broken reference.
+
+### Lookup: Paths and Examples
+
+**Test**: `HelpCards_Lookup_PathsAndExamples_FindCardsAndExamples`
+
+Finds a card by alias path, finds nothing for an unqualified id, lists the valid names of a failed path, and finds
+examples by name and by card form.
+
+### Views: Subsets and Hidden Targets
+
+**Test**: `HelpCards_Views_FilterSourceWhereWithout_ShowSubsetsAndHideTargets`
+
+Combines a tag view with an id view, asserts the lifted roots, that the catalog is unchanged, that a hidden card is
+written as its title in another card, and that an unknown id is an argument error.
+
+### Vocabulary: Tags and Expected Roots
+
+**Test**: `HelpCards_Tags_VocabularyAndExpectedRoots_AreEnforced`
+
+Creates a catalog with a closed tag vocabulary, a required tag, and expected roots that the source does not match, and
+asserts the rules of all problems in display order.
+
+### Diagnostics: Failure Model
+
+**Test**: `HelpCards_Diagnostics_CreateFailure_ThrowsCatalogExceptionForDefectsAndArgumentExceptionForMisuse`
+
+Creates a catalog from a source with two defects and asserts that the catalog exception carries both errors, and that
+a null callback and a builder without a source are argument errors.
+
+### Thread Safety and Determinism
+
+**Tests**: `HelpCards_ThreadSafety_ParallelUse_IsConsistent`,
+`HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture`
+
+Fifty parallel workers share one catalog, make views with a counted predicate, and read bodies; every result is equal
+and every call is counted. Two creations under the current cultures `tr-TR` and `de-DE` give equal catalogs.
+
+### No Dependencies
+
+**Test**: `HelpCards_NoDependencies_ReferencedAssemblies_AreFrameworkOnly`
+
+Reads the assemblies that the library assembly references and asserts that each is part of the framework.
+
+### Cultures: Catalog
+
+**Test**: `HelpCards_Cultures_Catalog_ExposesTranslatedCardsWithBodyCulture`
+
+Creates the `i18n` fixture for `de-DE` and asserts the translated title and the culture of the body of three cards: a
+region translation, a language translation, and a card without translation.
+
 ## Acceptance Criteria
 
 A system-level test run passes when all scenarios above pass without error or exception beyond

@@ -1,0 +1,109 @@
+---
+# HelpCatalogBuilder Unit Requirements
+#
+# Requirements for the HelpCatalogBuilder unit of the Composition subsystem, which is configured by the adopter and
+# runs the one composition pipeline over the single source of a catalog.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        sections:
+          - title: HelpCatalogBuilder Requirements
+            requirements:
+              - id: HelpCards-Composition-HelpCatalogBuilder-Configuration
+                title: >-
+                  The builder shall accept the culture, the tool name, the tool version, the tag vocabulary, and the
+                  expected roots, reject an invalid argument at once with an argument exception, and return itself
+                  so that calls can be chained.
+                justification: |
+                  Mistakes in the configuration are programming errors, not card defects, and must surface where
+                  they are made.
+                tests:
+                  - HelpCatalogBuilder_Settings_InvalidArguments_ThrowAndValidOnesChain
+                  - HelpCatalogBuilder_AddSource_NullSource_ThrowsArgumentNullException
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-SingleSource
+                title: >-
+                  The builder shall accept exactly one source without imports, reject a second source and a source
+                  with imports with an argument exception, and reject composing without a source with an argument
+                  exception.
+                justification: |
+                  This release composes one source; the limit must be explicit and distinct from card defects.
+                tests:
+                  - HelpCatalogBuilder_AddSource_SecondSource_ThrowsArgumentException
+                  - HelpCatalogBuilder_AddSource_SourceWithImports_ThrowsArgumentException
+                  - HelpCatalogBuilder_Compose_NoSource_ThrowsArgumentException
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-Pipeline
+                title: >-
+                  The builder shall compose a valid source into frozen data without an error, giving the cards,
+                  roots, and source description, replacing the built-in tool and version tokens from its settings
+                  (the tool defaulting to the source name), and selecting translations for its culture.
+                justification: |
+                  The pipeline is the heart of the library; its result must follow the settings of the caller.
+                tests:
+                  - HelpCatalogBuilder_Compose_ValidSource_HasDataAndNoErrors
+                  - HelpCatalogBuilder_Compose_ToolAndVersion_ReplaceBuiltInTokens
+                  - HelpCatalogBuilder_Compose_Culture_SelectsTranslation
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-TreePlacement
+                title: >-
+                  The builder shall report a card whose parent card does not exist once, and shall leave out the
+                  cards below it and the cards below a file that failed to load without further reports.
+                justification: |
+                  One broken file must yield one problem, so that authors fix causes and not their consequences.
+                tests:
+                  - HelpCatalogBuilder_Compose_MissingParent_ReportsParentMissingOnce
+                  - HelpCatalogBuilder_Compose_FailedParent_ReportsOnlyTheFailure
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-TagVocabulary
+                title: >-
+                  The builder shall report a tag outside a configured vocabulary at the line of the tag, and a card
+                  with none of the required tags at its file.
+                justification: |
+                  A closed tag set keeps filters and indexes reliable.
+                tests:
+                  - HelpCatalogBuilder_Compose_UnknownTag_ReportsTagUnknownAtItsLine
+                  - HelpCatalogBuilder_Compose_RequiredTag_ReportsTagRequiredForCardsWithoutOne
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-ExpectedRoots
+                title: >-
+                  The builder shall report any difference between the roots of the source and the expected roots,
+                  naming what is missing and what is unexpected, count a root that failed to load as present, and
+                  skip the check when the source itself could not be read.
+                justification: |
+                  A product that promises its top-level topics must notice when one disappears, without piling a
+                  second problem on an already reported failure.
+                tests:
+                  - HelpCatalogBuilder_Compose_ExpectedRootsDiffer_ReportsMissingAndUnexpected
+                  - HelpCatalogBuilder_Compose_ExpectedRootFailedToLoad_ReportsOnlyTheFailure
+                  - HelpCatalogBuilder_Compose_UnsupportedSchema_DoesNotReportRootsMismatch
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-CollectAll
+                title: >-
+                  The builder shall collect the problems of every step instead of stopping at the first, return
+                  no data when any error exists, and return the problems in display order.
+                justification: |
+                  Authors fix their help in one pass.
+                tests:
+                  - HelpCatalogBuilder_Compose_SeveralDefects_AreAllReportedInOrder
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-Overlays
+                title: >-
+                  The builder shall read overlay files without applying them, so that an overlay does not add a
+                  card or change the card it extends.
+                justification: |
+                  Merging overlays belongs to the composition of several sources; until then an overlay must have
+                  no effect rather than a half-defined one.
+                tests:
+                  - HelpCatalogBuilder_Compose_Overlay_IsReadButHasNoEffect
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-Diagnostics
+                title: >-
+                  The builder shall keep informational problems, such as a link to a source that is not present,
+                  in the result and in the frozen data when there is no error.
+                justification: |
+                  Deliberate degradations must be visible to callers without failing anything.
+                tests:
+                  - HelpCatalogBuilder_Compose_AbsentExternalSource_IsInfoAndDataKeepsIt

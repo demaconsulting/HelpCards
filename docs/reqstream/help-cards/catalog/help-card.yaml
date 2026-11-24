@@ -1,0 +1,74 @@
+---
+# HelpCard Unit Requirements
+#
+# Requirements for the HelpCard unit of the Catalog subsystem: the immutable card as a view shows it, with its
+# examples, its body, and the small model types that belong to it.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: HelpCard Requirements
+            requirements:
+              - id: HelpCards-Catalog-HelpCard-Properties
+                title: >-
+                  A card shall expose its global and local id, name, nearest visible parent, source, title,
+                  summary, tags, aliases, body culture, visible children, visible see-also cards, and extension
+                  keys.
+                justification: |
+                  These are the facts about a card that renderers, tools, and adopters read.
+                tests:
+                  - HelpCard_Properties_Root_ExposeFileValuesAndPlace
+                  - HelpCard_Properties_Child_NamesParentAndLastSegment
+                  - HelpCard_Extensions_XKey_IsPreserved
+
+              - id: HelpCards-Catalog-HelpCard-Examples
+                title: >-
+                  A card shall expose its examples with name, kind, language, file name, description, and final
+                  content, with tokens replaced and example files read.
+                justification: |
+                  Examples are data that tools show and test; they must be final when the catalog is created.
+                tests:
+                  - HelpExample_Properties_Examples_ExposeResolvedValues
+
+              - id: HelpCards-Catalog-HelpCard-Body
+                title: >-
+                  A card shall expose its body as Markdown with every link written in the plain style using global
+                  ids, compute it once, and write an example of a descendant with the card that owns it.
+                justification: |
+                  Readers without link support still need to know where a link pointed.
+                tests:
+                  - HelpCard_Body_SimpleFixtureGuide_WritesLinksInPlainStyle
+                  - HelpCard_Body_ReadTwice_ReturnsTheSameString
+                  - HelpCard_Body_ExampleOfDescendant_IsWrittenWithItsOwner
+
+              - id: HelpCards-Catalog-HelpCard-BodyPieces
+                title: >-
+                  A card shall give its body to renderers as text and links to visible targets, with global ids,
+                  titles, and the display text and source of external links, merging adjacent text.
+                justification: |
+                  Renderers write each link in the style the caller asks for.
+                tests:
+                  - HelpCard_BodyPieces_Links_CarryIdsTitlesAndText
+                  - HelpCard_BodyPieces_AdjacentText_IsMerged
+
+              - id: HelpCards-Catalog-HelpCard-HiddenLinks
+                title: >-
+                  A card of a view shall write a link to a hidden card as that card's title and a link to a hidden
+                  example as the words an example.
+                justification: |
+                  A view must not point readers at cards it hides.
+                tests:
+                  - HelpCard_Body_LinksToHiddenTargets_AreWrittenAsTitleAndAnExample
+
+              - id: HelpCards-Catalog-HelpCard-ModelTypes
+                title: >-
+                  The source description, the example reference, and the search result shall be plain values that
+                  hold their fields and compare by value.
+                justification: |
+                  Results are compared and asserted on by callers and tests.
+                tests:
+                  - HelpSourceInfo_Equality_SameValues_AreEqual
+                  - HelpSearchResult_Constructor_Fields_AreExposed
+                  - HelpExampleReference_Constructor_Fields_AreExposed

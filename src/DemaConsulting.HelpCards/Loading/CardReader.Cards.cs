@@ -86,7 +86,8 @@ internal sealed partial class CardReader
             ReadExtensions(entries, path),
             language,
             ReadBody(document, path),
-            document.BodyLine);
+            document.BodyLine,
+            path);
     }
 
     /// <summary>
@@ -117,7 +118,8 @@ internal sealed partial class CardReader
             ReadExtensions(entries, path),
             language,
             ReadBody(document, path),
-            document.BodyLine);
+            document.BodyLine,
+            path);
     }
 
     /// <summary>
@@ -225,7 +227,8 @@ internal sealed partial class CardReader
             Examples = TranslateExamples(card.Examples, translation),
             Culture = translation.Culture,
             Body = translation.Body,
-            BodyLine = translation.BodyLine
+            BodyLine = translation.BodyLine,
+            BodyFile = translation.File
         };
     }
 
@@ -249,7 +252,8 @@ internal sealed partial class CardReader
             Examples = TranslateExamples(overlay.Examples, translation),
             Culture = translation.Culture,
             Body = translation.Body,
-            BodyLine = translation.BodyLine
+            BodyLine = translation.BodyLine,
+            BodyFile = translation.File
         };
     }
 

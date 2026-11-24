@@ -17,7 +17,19 @@ input-files:
   - docs/design/help-cards/loading/token-resolver.md
   - docs/design/help-cards/loading/culture-selector.md
   - docs/design/help-cards/loading/body-parser.md
+  - docs/design/help-cards/composition.md
+  - docs/design/help-cards/composition/help-catalog-builder.md
+  - docs/design/help-cards/composition/reference-validator.md
+  - docs/design/help-cards/composition/sibling-order.md
+  - docs/design/help-cards/composition/problem-collector.md
+  - docs/design/help-cards/catalog.md
+  - docs/design/help-cards/catalog/help-catalog.md
+  - docs/design/help-cards/catalog/help-card.md
   - docs/design/help-cards/catalog/help-problem.md
+  - docs/design/help-cards/catalog/catalog-data.md
+  - docs/design/help-cards/catalog/catalog-scope.md
+  - docs/design/help-cards/catalog/path-resolver.md
+  - docs/design/help-cards/catalog/example-resolver.md
   - docs/design/ots.md
   - docs/design/ots/buildmark.md
   - docs/design/ots/fileassert.md

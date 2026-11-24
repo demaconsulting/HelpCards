@@ -17,4 +17,12 @@ package HelpCardsDesignViews {
     view LoadingView {
         expose LoadingSubsystem;
     }
+
+    view CompositionView {
+        expose CompositionSubsystem;
+    }
+
+    view CatalogView {
+        expose CatalogSubsystem;
+    }
 }

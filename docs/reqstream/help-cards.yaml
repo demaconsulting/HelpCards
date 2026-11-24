@@ -104,8 +104,10 @@ sections:
           Help is read in the language of the reader; a partly translated source must still be complete.
         children:
           - HelpCards-Loading-Cultures
+          - HelpCards-Catalog-Cultures
         tests:
           - HelpCards_Cultures_Translation_IsSelectedPerFileWithFallback
+          - HelpCards_Cultures_Catalog_ExposesTranslatedCardsWithBodyCulture
 
       - id: HelpCards-Links-Syntax
         title: >-
@@ -131,9 +133,129 @@ sections:
           tools need to assert that cards are valid.
         children:
           - HelpCards-Loading-Diagnostics
-          - HelpCards-Catalog-HelpProblem-Fields
-          - HelpCards-Catalog-HelpProblem-Severity
-          - HelpCards-Catalog-HelpProblem-RuleIds
+          - HelpCards-Catalog-Problems
         tests:
           - HelpCards_Diagnostics_Defects_AreReportedWithAllFields
           - HelpCards_Diagnostics_SeveralDefectiveFiles_AreAllCollected
+
+      - id: HelpCards-Diagnostics-FailureModel
+        title: >-
+          Creating a catalog from a defective source shall throw one exception that carries every error, and an
+          invalid argument shall throw an argument exception that is never that exception.
+        tags: [system]
+        justification: |
+          Callers must be able to tell defective help content, which authors fix, from a programming mistake,
+          which developers fix.
+        children:
+          - HelpCards-Composition-Failures
+          - HelpCards-Catalog-Failures
+        tests:
+          - HelpCards_Diagnostics_CreateFailure_ThrowsCatalogExceptionForDefectsAndArgumentExceptionForMisuse
+
+      - id: HelpCards-Tree-Structure
+        title: >-
+          A catalog shall expose the cards of a source as an immutable tree with roots, children, aliases, tags,
+          see-also entries, examples, and links, and shall read no file after it was created.
+        tags: [system]
+        justification: |
+          The tree is the product of the library; adopters, renderers, and agents all start from it, and it is
+          shared between threads, so it must not change or touch the file system.
+        children:
+          - HelpCards-Composition-Tree
+          - HelpCards-Composition-SingleSource
+          - HelpCards-Catalog-Model
+        tests:
+          - HelpCards_Catalog_SimpleFixture_ExposesTreeAliasesTagsExamplesAndLinks
+          - HelpCards_Catalog_Create_IsImmutableAndReadsNoFilesAfterwards
+
+      - id: HelpCards-Ordering-Siblings
+        title: >-
+          Cards that share a parent, and the roots, shall be ordered by the children list of their parent, then by
+          order value, then by name.
+        tags: [system]
+        justification: |
+          Help is read top down; authors must be able to steer the order and rely on it being stable.
+        children:
+          - HelpCards-Composition-Ordering
+        tests:
+          - HelpCards_Ordering_OrderFixture_FollowsChildrenOrderThenName
+
+      - id: HelpCards-References-Resolution
+        title: >-
+          Links, see-also entries, and example links shall be resolved over the whole tree, so that forward
+          references are valid, and every broken reference and every repeated name shall be reported with file and
+          line.
+        tags: [system]
+        justification: |
+          Cards refer to each other; dead references and ambiguous names would leave readers with wrong help.
+        children:
+          - HelpCards-Composition-References
+          - HelpCards-Composition-Uniqueness
+        tests:
+          - HelpCards_References_BrokenAndForwardReferences_AreHandled
+
+      - id: HelpCards-Lookup-PathsAndExamples
+        title: >-
+          A catalog shall find cards by a path of names and aliases and examples by name, and a failed path shall
+          report the valid names at the level where it failed.
+        tags: [system]
+        justification: |
+          Command lines and agents address help by path; a failed path must tell the caller what would have worked.
+        children:
+          - HelpCards-Catalog-Lookup
+        tests:
+          - HelpCards_Lookup_PathsAndExamples_FindCardsAndExamples
+
+      - id: HelpCards-Views-Subsets
+        title: >-
+          A catalog shall provide views that show a subset of its cards by tag, source, predicate, or id without
+          changing the catalog, and a view shall never point at a card it hides.
+        tags: [system]
+        justification: |
+          Products show different parts of their help to different readers.
+        children:
+          - HelpCards-Catalog-Views
+        tests:
+          - HelpCards_Views_FilterSourceWhereWithout_ShowSubsetsAndHideTargets
+
+      - id: HelpCards-Vocabulary-TagsAndRoots
+        title: >-
+          A catalog shall be able to enforce a closed tag vocabulary, required tags, and an expected set of root
+          cards.
+        tags: [system]
+        justification: |
+          A product that fixes its topics and tags needs a build failure when a card strays from them.
+        children:
+          - HelpCards-Composition-Vocabulary
+        tests:
+          - HelpCards_Tags_VocabularyAndExpectedRoots_AreEnforced
+
+      - id: HelpCards-ThreadSafety-SharedCatalog
+        title: >-
+          One catalog and the views made from it shall be safe to use from many threads at the same time.
+        tags: [system]
+        justification: |
+          A tool or service creates its catalog once and shares it between all requests.
+        children:
+          - HelpCards-Catalog-Concurrency
+        tests:
+          - HelpCards_ThreadSafety_ParallelUse_IsConsistent
+
+      - id: HelpCards-Determinism-Output
+        title: >-
+          Creating a catalog from the same source shall give the same result whatever the current culture of the
+          machine is.
+        tags: [system]
+        justification: |
+          Help text and its order must be byte-identical on every machine.
+        tests:
+          - HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture
+
+      - id: HelpCards-NoDependencies-FrameworkOnly
+        title: >-
+          The library shall reference no assembly that is not part of the .NET base class library.
+        tags: [system]
+        justification: |
+          Every adopting library and tool stays free of transitive dependencies.
+        tests:
+          - HelpCards_NoDependencies_ReferencedAssemblies_AreFrameworkOnly
