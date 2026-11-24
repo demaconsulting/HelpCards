@@ -1,0 +1,12 @@
+<Project>
+  <!-- Imports after the project body and the SDK targets, so a HelpCardsDirectory or
+       HelpCardsPrefix override in the project body is honored and AssemblyName is defined. -->
+  <PropertyGroup Condition="'$(HelpCardsEnabled)' == 'true'">
+    <HelpCardsDirectory Condition="'$(HelpCardsDirectory)' == ''">Help</HelpCardsDirectory>
+    <HelpCardsPrefix Condition="'$(HelpCardsPrefix)' == ''">$(AssemblyName).Help</HelpCardsPrefix>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(HelpCardsEnabled)' == 'true' And Exists('$(HelpCardsDirectory)')">
+    <EmbeddedResource Include="$(HelpCardsDirectory)\**\*" WithCulture="false"
+                      LogicalName="$(HelpCardsPrefix)/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

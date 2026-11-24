@@ -21,9 +21,11 @@ subsystems, which inputs it takes, and which outputs it produces.
 
 The repository provides:
 
-- **Simple Library Structure**: Demo class with example methods (sample code retained from the template)
+- **Markdown Cards**: Help and knowledge content authored as Markdown files with restricted-subset front matter
+- **Resource Embedding**: A packaged MSBuild targets file embeds the cards in your assembly
+- **Dependency-Free**: Implemented exclusively against the .NET Base Class Library
 - **Multi-Platform Support**: Builds and runs on Windows, Linux, and macOS
-- **Multi-Runtime Support**: Targets .NET Standard 2.0, .NET 8, 9, 10, and 11
+- **Multi-Runtime Support**: Targets .NET 8, 9, 10, and 11
 - **xUnit v3**: Modern unit testing with xUnit framework version 3
 - **Comprehensive CI/CD**: GitHub Actions workflows with quality checks and builds
 - **Linting Enforcement**: LintMark, TextLint, and yamllint enforced on every CI run
@@ -44,11 +46,17 @@ dotnet add package DemaConsulting.HelpCards
 
 ## Usage
 
-```csharp
-using DemaConsulting.HelpCards;
+Put Markdown cards in a `Help` folder of your project; the package embeds them in the assembly. Then load
+them as a source and build a catalog:
 
-var demo = new Demo();
-var result = demo.DemoMethod("World"); // result = "Hello, World!"
+```csharp
+using DemaConsulting.HelpCards.Catalog;
+using DemaConsulting.HelpCards.Loading;
+
+var catalog = HelpCatalog.Create(builder => builder
+    .AddSource(HelpSource.FromAssembly(typeof(Program).Assembly)));
+var card = catalog.Find("getting-started");
+Console.WriteLine(card is null ? catalog.RenderIndex() : catalog.Render(card));
 ```
 
 ## Documentation

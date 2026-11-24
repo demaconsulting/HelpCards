@@ -102,19 +102,6 @@ reviews:
       - "requirements.yaml"                                                 # root requirements file
       - "docs/reqstream/**/*.yaml"                                          # all requirements files
 
-  # HelpCards-Demo Review (one per unit)
-  - id: HelpCards-Demo
-    title: Review that HelpCards Demo Implementation is Correct
-    context:
-      - "docs/design/help-cards.md"
-      - "docs/reqstream/help-cards.yaml"
-    paths:
-      - "docs/reqstream/help-cards/demo.yaml"                 # unit requirements
-      - "docs/design/help-cards/demo.md"                     # unit design
-      - "docs/verification/help-cards/demo.md"               # unit verification
-      - "src/DemaConsulting.HelpCards/Demo.cs"                  # unit source
-      - "test/DemaConsulting.HelpCards.Tests/DemoTests.cs"      # unit tests
-
   # OTS-BuildMark Review (one per OTS item)
   - id: OTS-BuildMark
     title: Review that BuildMark Provides Required Functionality

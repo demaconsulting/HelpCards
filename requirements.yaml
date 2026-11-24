@@ -9,7 +9,6 @@ root-tags: [system, quality]
 includes:
   - docs/reqstream/quality.yaml
   - docs/reqstream/help-cards.yaml
-  - docs/reqstream/help-cards/demo.yaml
   - docs/reqstream/help-cards/platform-requirements.yaml
   - docs/reqstream/ots/xunit.yaml
   - docs/reqstream/ots/reqstream.yaml

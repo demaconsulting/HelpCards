@@ -18,82 +18,28 @@ run for all scenarios constitutes evidence that both requirements are satisfied.
 
 ### Test Scenarios
 
-#### Demo_DemoMethod_DefaultPrefix_ReturnsGreeting
+#### HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix
 
-**Scenario**: xUnit discovers and runs this test; the test verifies that DemoMethod returns the
-expected greeting using the default prefix.
-
-**Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
-
-**Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
-
-#### Demo_DemoMethod_CustomPrefix_ReturnsGreeting
-
-**Scenario**: xUnit discovers and runs this test; the test verifies that DemoMethod returns the
-expected greeting using a custom prefix.
+**Scenario**: xUnit discovers and runs this test; the test verifies that a project using the
+default Help folder embeds its files under the assembly name prefix.
 
 **Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
 
 **Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
 
-#### Demo_DemoMethod_NullInput_ThrowsArgumentNullException
+#### HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix
 
-**Scenario**: xUnit discovers and runs this test; the test verifies that DemoMethod rejects a null
-argument with ArgumentNullException.
-
-**Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
-
-**Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
-
-#### Demo_DemoMethod_EmptyInput_ThrowsArgumentException
-
-**Scenario**: xUnit discovers and runs this test; the test verifies that DemoMethod rejects an
-empty string argument with ArgumentException.
+**Scenario**: xUnit discovers and runs this test; the test verifies that a project that overrides
+the embedded folder embeds every nested file under the prefix.
 
 **Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
 
 **Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
 
-#### Demo_Constructor_NullPrefix_ThrowsArgumentNullException
+#### HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent
 
-**Scenario**: xUnit discovers and runs this test; the test verifies that the constructor rejects a
-null prefix with ArgumentNullException.
-
-**Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
-
-**Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
-
-#### Demo_Constructor_EmptyPrefix_ThrowsArgumentException
-
-**Scenario**: xUnit discovers and runs this test; the test verifies that the constructor rejects an
-empty string prefix with ArgumentException.
-
-**Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
-
-**Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
-
-#### Demo_DefaultPrefix_Read_IsHello
-
-**Scenario**: xUnit discovers and runs this test; the test verifies that the DefaultPrefix constant
-has the value "Hello".
-
-**Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
-
-**Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
-
-#### Demo_Prefix_WithCustomConstruction_ReturnsCustomPrefix
-
-**Scenario**: xUnit discovers and runs this test; the test verifies that the Prefix property
-returns the value supplied at construction.
-
-**Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
-
-**Requirement coverage**: `HelpCards-OTS-xUnit-Execute`, `HelpCards-OTS-xUnit-Report`.
-
-#### Demo_DefaultConstructor_WithNoArgs_SetsDefaultPrefix
-
-**Scenario**: xUnit discovers and runs this test; the test verifies that the default constructor
-sets Prefix to the DefaultPrefix constant.
+**Scenario**: xUnit discovers and runs this test; the test verifies that an embedded resource can
+be read back with its authored content.
 
 **Expected**: xUnit executes the test, the test passes, and the result appears in the TRX output.
 
@@ -101,19 +47,9 @@ sets Prefix to the DefaultPrefix constant.
 
 ### Requirements Coverage
 
-- **`HelpCards-OTS-xUnit-Execute`**: Demo_DemoMethod_DefaultPrefix_ReturnsGreeting,
-  Demo_DemoMethod_CustomPrefix_ReturnsGreeting,
-  Demo_DemoMethod_NullInput_ThrowsArgumentNullException,
-  Demo_DemoMethod_EmptyInput_ThrowsArgumentException,
-  Demo_Constructor_NullPrefix_ThrowsArgumentNullException,
-  Demo_Constructor_EmptyPrefix_ThrowsArgumentException, Demo_DefaultPrefix_Read_IsHello,
-  Demo_Prefix_WithCustomConstruction_ReturnsCustomPrefix,
-  Demo_DefaultConstructor_WithNoArgs_SetsDefaultPrefix
-- **`HelpCards-OTS-xUnit-Report`**: Demo_DemoMethod_DefaultPrefix_ReturnsGreeting,
-  Demo_DemoMethod_CustomPrefix_ReturnsGreeting,
-  Demo_DemoMethod_NullInput_ThrowsArgumentNullException,
-  Demo_DemoMethod_EmptyInput_ThrowsArgumentException,
-  Demo_Constructor_NullPrefix_ThrowsArgumentNullException,
-  Demo_Constructor_EmptyPrefix_ThrowsArgumentException, Demo_DefaultPrefix_Read_IsHello,
-  Demo_Prefix_WithCustomConstruction_ReturnsCustomPrefix,
-  Demo_DefaultConstructor_WithNoArgs_SetsDefaultPrefix
+- **`HelpCards-OTS-xUnit-Execute`**: HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix,
+  HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix,
+  HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent
+- **`HelpCards-OTS-xUnit-Report`**: HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix,
+  HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix,
+  HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent

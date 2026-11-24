@@ -42,141 +42,33 @@ Install the library using the .NET CLI:
 dotnet add package DemaConsulting.HelpCards
 ```
 
+The package targets .NET 8, 9, 10, and 11 and has no dependencies beyond the .NET Base Class Library.
+
 # Usage
 
 ## Basic Usage
 
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo();
-var result = demo.DemoMethod("World");
-Console.WriteLine(result); // Output: Hello, World!
-```
-
-## API Reference
-
-### Demo
-
-The `Demo` class provides sample functionality retained from the library template.
-
-#### Constants
-
-##### DefaultPrefix
+Put Markdown cards in a `Help` folder of your project. The package embeds every file of that folder in
+your assembly, so the cards travel with it. Then load them as a source and build a catalog:
 
 ```csharp
-public const string DefaultPrefix = "Hello";
+using DemaConsulting.HelpCards.Catalog;
+using DemaConsulting.HelpCards.Loading;
+
+var catalog = HelpCatalog.Create(builder => builder
+    .AddSource(HelpSource.FromAssembly(typeof(Program).Assembly)));
+var card = catalog.Find("getting-started");
+Console.WriteLine(card is null ? catalog.RenderIndex() : catalog.Render(card));
 ```
 
-The greeting prefix used when no custom prefix is specified.
+## Embedding Options
 
-#### Constructors
+Two MSBuild properties let a project change where the cards come from:
 
-##### Demo()
+- `HelpCardsDirectory` is the folder below the project directory that is embedded (default `Help`).
+- `HelpCardsPrefix` is the resource name prefix (default `{AssemblyName}.Help`).
 
-```csharp
-public Demo()
-```
-
-Initializes a new instance of the `Demo` class with the default prefix "Hello".
-
-##### Demo(string prefix)
-
-```csharp
-public Demo(string prefix)
-```
-
-Initializes a new instance of the `Demo` class with a custom prefix.
-
-**Parameters:**
-
-- `prefix` (string): The prefix to use in greetings. Must not be null or empty.
-
-**Exceptions:**
-
-- `ArgumentNullException`: Thrown when `prefix` is null.
-- `ArgumentException`: Thrown when `prefix` is an empty string.
-
-#### Properties
-
-##### Prefix
-
-```csharp
-public string Prefix { get; }
-```
-
-Gets the greeting prefix used by this instance.
-
-#### Methods
-
-##### DemoMethod
-
-```csharp
-public string DemoMethod(string name)
-```
-
-Returns a greeting message for the specified name.
-
-**Parameters:**
-
-- `name` (string): The name to greet. Must not be null or empty.
-
-**Returns:**
-
-A string containing the greeting message in the format "{prefix}, {name}!".
-
-**Exceptions:**
-
-- `ArgumentNullException`: Thrown when `name` is null.
-- `ArgumentException`: Thrown when `name` is an empty string.
-
-**Example:**
-
-```csharp
-var demo = new Demo();
-var greeting = demo.DemoMethod("World");
-// greeting = "Hello, World!"
-```
-
-# Examples
-
-## Example 1: Basic Greeting
-
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo();
-var result = demo.DemoMethod("Alice");
-Console.WriteLine(result);
-// Output: Hello, Alice!
-```
-
-## Example 2: Custom Prefix
-
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo("Hi");
-var result = demo.DemoMethod("Alice");
-Console.WriteLine(result);
-// Output: Hi, Alice!
-```
-
-## Example 3: Error Handling
-
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo();
-try
-{
-    var result = demo.DemoMethod(null);
-}
-catch (ArgumentNullException ex)
-{
-    Console.WriteLine("Name cannot be null");
-}
-```
+Set `HelpCardsEnabled` to `false` to switch embedding off.
 
 # References
 

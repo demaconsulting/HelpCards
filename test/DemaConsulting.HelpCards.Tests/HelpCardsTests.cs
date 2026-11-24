@@ -1,113 +1,96 @@
-using DemaConsulting.HelpCards;
+using System.Reflection;
 
 namespace DemaConsulting.HelpCards.Tests;
 
 /// <summary>
 ///     System-level integration tests for the HelpCards system.
 /// </summary>
+/// <remarks>
+///     The tests in this file prove user-visible capabilities of the whole library. Each test
+///     name starts with the system name followed by the capability under test.
+/// </remarks>
 public class HelpCardsTests
 {
     /// <summary>
-    ///     Proves that the system can be instantiated and provides expected functionality
-    ///     when integrated with all components.
+    ///     The assembly name of the source-less project that embeds a default Help folder.
+    /// </summary>
+    private const string DefaultEmbeddingAssemblyName = "DemaConsulting.HelpCards.Tests.EmbeddingDefault";
+
+    /// <summary>
+    ///     Proves that the packaged build files embed a <c>Help</c> folder under the default logical
+    ///     name prefix <c>{AssemblyName}.Help</c> when the project overrides nothing.
     /// </summary>
     [Fact]
-    public void HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting()
+    public void HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix()
     {
-        // Arrange: set up system-level integration test
-        var demo = new Demo();
-        const string testName = "System";
+        // Arrange: load the project that imports the packaged files and keeps every default
+        var assembly = Assembly.Load(DefaultEmbeddingAssemblyName);
 
-        // Act: exercise system functionality end-to-end
-        var result = demo.DemoMethod(testName);
+        // Act: list the embedded resources in the deterministic order the loader uses
+        var names = assembly.GetManifestResourceNames()
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
 
-        // Assert: system produces expected integrated behavior
-        Assert.Equal("Hello, System!", result);
+        // Assert: every file of the Help folder is embedded under "{AssemblyName}.Help/"
+        Assert.Equal(
+            [
+                $"{DefaultEmbeddingAssemblyName}.Help/_source.md",
+                $"{DefaultEmbeddingAssemblyName}.Help/first.md"
+            ],
+            names);
     }
 
     /// <summary>
-    ///     Proves that the system handles configuration and customization properly
-    ///     across all integrated components.
+    ///     Proves that a project-body override of <c>HelpCardsDirectory</c> is honored by the packaged
+    ///     targets: every file below the overridden folder is embedded, including nested folders and
+    ///     data files, with forward slashes in the logical names.
     /// </summary>
     [Fact]
-    public void HelpCards_SystemCustomization_CustomPrefix_ReturnsExpectedGreeting()
+    public void HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix()
     {
-        // Arrange: set up system with custom configuration
-        const string customPrefix = "Welcome";
-        var demo = new Demo(customPrefix);
-        const string testName = "Integration";
+        // Arrange: this test project sets HelpCardsDirectory to "Fixtures" in its project body
+        var assembly = typeof(HelpCardsTests).Assembly;
+        const string prefix = "DemaConsulting.HelpCards.Tests.Help/embedding/Help/";
 
-        // Act: exercise system with custom configuration
-        var result = demo.DemoMethod(testName);
+        // Act: select the resources of the embedding fixture in deterministic order, converting
+        // the backslashes MSBuild writes for RecursiveDir exactly as the loader does
+        var names = assembly.GetManifestResourceNames()
+            .Select(name => name.Replace('\\', '/'))
+            .Where(name => name.StartsWith(prefix, StringComparison.Ordinal))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
 
-        // Assert: system respects configuration across components
-        Assert.Equal("Welcome, Integration!", result);
+        // Assert: nested folders and non-Markdown data files are embedded with "/" separators
+        Assert.Equal(
+            [
+                prefix + "_source.md",
+                prefix + "guide.md",
+                prefix + "guide/diagram.mmd",
+                prefix + "guide/setup.md"
+            ],
+            names);
     }
 
     /// <summary>
-    ///     Proves that the system rejects null input passed to DemoMethod
-    ///     with the expected exception at the system level.
+    ///     Proves that an embedded resource can be read back as UTF-8 text with the authored content.
     /// </summary>
     [Fact]
-    public void HelpCards_SystemValidation_DemoMethodNullInput_ThrowsArgumentNullException()
+    public void HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent()
     {
-        // Arrange: set up system components
-        var demo = new Demo();
+        // Arrange: pick one embedded card of the overridden fixture directory
+        var assembly = typeof(HelpCardsTests).Assembly;
+        const string name = "DemaConsulting.HelpCards.Tests.Help/embedding/Help/guide/setup.md";
 
-        // Act & Assert: system validates DemoMethod null input properly
-        Assert.Throws<ArgumentNullException>(() => demo.DemoMethod(null!));
-    }
+        // Act: find the resource whose normalized name matches (MSBuild writes backslashes on
+        // Windows) and read it as text
+        var resourceName = assembly.GetManifestResourceNames()
+            .Single(candidate => candidate.Replace('\\', '/') == name);
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        Assert.NotNull(stream);
+        using var reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+        var text = reader.ReadToEnd();
 
-    /// <summary>
-    ///     Proves that the system rejects empty input passed to DemoMethod
-    ///     with the expected exception at the system level.
-    /// </summary>
-    [Fact]
-    public void HelpCards_SystemValidation_DemoMethodEmptyInput_ThrowsArgumentException()
-    {
-        // Arrange: set up system components
-        var demo = new Demo();
-
-        // Act & Assert: system validates DemoMethod empty input properly
-        Assert.Throws<ArgumentException>(() => demo.DemoMethod(string.Empty));
-    }
-
-    /// <summary>
-    ///     Proves that the system rejects a null constructor prefix
-    ///     with the expected exception at the system level.
-    /// </summary>
-    [Fact]
-    public void HelpCards_SystemValidation_ConstructorNullPrefix_ThrowsArgumentNullException()
-    {
-        // Act & Assert: system validates constructor null prefix properly
-        Assert.Throws<ArgumentNullException>(() => new Demo(null!));
-    }
-
-    /// <summary>
-    ///     Proves that the system rejects an empty constructor prefix
-    ///     with the expected exception at the system level.
-    /// </summary>
-    [Fact]
-    public void HelpCards_SystemValidation_ConstructorEmptyPrefix_ThrowsArgumentException()
-    {
-        // Act & Assert: system validates constructor empty prefix properly
-        Assert.Throws<ArgumentException>(() => new Demo(string.Empty));
-    }
-
-    /// <summary>
-    ///     Proves that the Prefix property exposes the configured prefix at the system level.
-    /// </summary>
-    [Fact]
-    public void HelpCards_SystemIntegration_CustomPrefix_ExposesPrefix()
-    {
-        // Arrange: construct system with a custom prefix
-        const string customPrefix = "Greetings";
-        var demo = new Demo(customPrefix);
-
-        // Act: read the Prefix property through the public API
-        var prefix = demo.Prefix;
-
-        // Assert: the system exposes the configured prefix correctly
-        Assert.Equal(customPrefix, prefix);
+        // Assert: the card text is the authored file content
+        Assert.Contains("title: Setup", text, StringComparison.Ordinal);
     }
 }

@@ -7,7 +7,7 @@
   Markdown cards with YAML front matter, embedded in assemblies and served as command-line help
   for people and as searchable knowledge for AI agents.
 - **languages**: `C#`
-- **technologies**: `.NET` (netstandard2.0, net8.0, net9.0, net10.0, net11.0), `NuGet`
+- **technologies**: `.NET` (net8.0, net9.0, net10.0, net11.0), `NuGet`
 
 # Project Structure
 

@@ -26,7 +26,6 @@ This document covers the detailed design of the HelpCards system and its constit
 software items, specifically:
 
 - **HelpCards (System)** — The complete HelpCards .NET library system
-- **Demo (Unit)** — Demonstration greeting class providing example functionality
 
 The following OTS items are also covered:
 
@@ -61,10 +60,11 @@ diagram or the prose below.
 
 ![Software Structure](SoftwareStructureView.svg)
 
-This repository currently has a minimal system structure with no subsystems — it contains only the
-`Demo` unit directly under the system level. In more complex implementations, subsystems would
-organize related units and provide architectural boundaries with well-defined interfaces and
-responsibilities.
+This repository organizes the software into subsystems that each own a folder of units. The system
+contains the Loading, Composition, Catalog, Presentation, and Testing subsystems; each unit is a
+behavior-bearing class, or a tightly coupled set of classes, and pure data types are documented as
+supporting types in the unit that owns them. Subsystem and unit boundaries follow the folder and
+namespace structure of the source code.
 
 The diagram below complements the structure view by showing the library in its run-time context:
 how the calling application uses the library's subsystems and units, and which inputs, outputs,
@@ -80,12 +80,16 @@ and descriptions as follows:
 
 ```text
 src/DemaConsulting.HelpCards/
-└── Demo.cs                     — Sample greeting class retained from the library template
+├── build/                      — Packaged MSBuild props and targets that embed help cards
+├── Loading/                    — Loading subsystem units
+├── Composition/                — Composition subsystem units
+├── Catalog/                    — Catalog subsystem units
+├── Presentation/               — Presentation subsystem units
+└── Testing/                    — Testing subsystem units
 ```
 
-This flat folder structure reflects the single-unit nature of the current system. As the system
-grows with additional subsystems and units, the folder structure will expand to mirror the
-software architecture with subsystem-specific folders containing their respective units.
+Each subsystem folder holds one file per unit class, named after the class. Test projects mirror the
+source folders; they are listed in the verification documentation, not here.
 
 ## Document Conventions
 

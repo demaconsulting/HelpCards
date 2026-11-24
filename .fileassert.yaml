@@ -9,6 +9,29 @@
 
 tests:
 
+  # --- PACKAGE ---
+  # The packaged build files are what embeds help cards in consuming projects, so the package
+  # must carry them under build\ (not buildTransitive\).
+
+  - name: HelpCards_PackageBuildFiles
+    description: "The DemaConsulting.HelpCards package contains the packaged props and targets under build"
+    tags: [package]
+    files:
+      - pattern: "src/DemaConsulting.HelpCards/bin/Release/DemaConsulting.HelpCards.*.nupkg"
+        count: 1
+        zip:
+          files:
+            - pattern: "build/DemaConsulting.HelpCards.props"
+              min: 1
+              max: 1
+              text:
+                - contains: "HelpCardsEnabled"
+            - pattern: "build/DemaConsulting.HelpCards.targets"
+              min: 1
+              max: 1
+              text:
+                - contains: "LogicalName"
+
   # --- BUILD NOTES ---
 
   - name: Pandoc_BuildNotesHtml

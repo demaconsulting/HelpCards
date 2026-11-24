@@ -5,89 +5,60 @@ This document describes the system-level verification strategy for HelpCards.
 ## Verification Approach
 
 The HelpCards system is verified through system-level integration tests that
-exercise the library as a whole from the perspective of a consumer. Tests instantiate the library
-using its public API and assert on observable outputs, without relying on knowledge of internal
-implementation details. No mocking or stubbing is required at the system level — the entire
-integrated system is exercised as it would be used by a real caller.
+exercise the library as a whole from the perspective of a consumer. Tests use the packaged
+MSBuild files exactly as an adopting project would, build catalogs from sources, and assert on
+observable outputs, without relying on knowledge of internal implementation details. No mocking
+or stubbing is required at the system level — the entire integrated system is exercised as it
+would be used by a real caller.
 
 System tests reside in `HelpCardsTests.cs` within the
-`DemaConsulting.HelpCards.Tests` project.
+`DemaConsulting.HelpCards.Tests` project. Fixture sources are embedded in that project through the
+packaged targets with `HelpCardsDirectory` set to `Fixtures`, so every fixture is loaded the way an
+adopter's embedded cards are loaded.
 
 ## Test Environment
 
 - **Framework**: xUnit v3 running under the .NET SDK
 - **Execution**: `dotnet test` invoked by `build.ps1` and the CI pipeline
 - **Dependencies**: No external services, databases, or network access required
-- **Isolation**: Each test method constructs its own `Demo` instance; no shared state between tests
+- **Projects**: the test project imports the packaged props and targets; the source-less project
+  `DemaConsulting.HelpCards.Tests.EmbeddingDefault` keeps every embedding default and is loaded by
+  assembly name
+- **Isolation**: Each test method builds its own inputs; no shared mutable state between tests
 
 ## External Interface Simulation
 
 The system has no external interfaces requiring simulation. It is a pure in-process .NET library
-with no I/O, network calls, or platform services. System tests call the public API directly
-with controlled inputs and verify returned values and thrown exceptions.
+with no network calls or platform services. System tests call the public API directly
+with controlled inputs and verify returned values and thrown exceptions. File system access is
+limited to temporary directories created by the tests themselves.
 
 ## System-Level Test Scenarios
 
-### Integration: Provides Expected Functionality
+### Embedding: Default Directory Uses the Assembly Name Prefix
 
-**Test**: `HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting`
+**Test**: `HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix`
 
-Exercises end-to-end system behavior: constructs a `Demo` instance using the default constructor
-and calls `DemoMethod` with a valid name. Asserts that the system produces the expected greeting
-string `"Hello, System!"`, confirming that all components integrate correctly under default
-configuration.
+Loads the source-less project that keeps every default and lists its embedded resources. Asserts
+that every file of its `Help` folder is embedded under the assembly name followed by `.Help/`.
 
-### Customization: Handles Configuration Properly
+### Embedding: Overridden Directory Embeds Every File
 
-**Test**: `HelpCards_SystemCustomization_CustomPrefix_ReturnsExpectedGreeting`
+**Test**: `HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix`
 
-Verifies that the system correctly propagates a custom prefix supplied at construction time.
-Constructs a `Demo` instance with prefix `"Welcome"`, calls `DemoMethod` with a valid name, and
-asserts the result is `"Welcome, Integration!"`. Confirms that the configuration path through all
-integrated components functions as expected.
+Lists the resources of the test project, which overrides `HelpCardsDirectory`. Asserts that the
+files of the embedding fixture, including a nested folder and a non-Markdown data file, are embedded
+with `/` separators after the loader's separator conversion.
 
-### Validation: DemoMethod Null Input Throws ArgumentNullException
+### Embedding: Embedded Resource Reads Authored Content
 
-**Test**: `HelpCards_SystemValidation_DemoMethodNullInput_ThrowsArgumentNullException`
+**Test**: `HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent`
 
-Verifies that the system rejects a `null` argument to `DemoMethod` with `ArgumentNullException`.
-Constructs a `Demo` instance with the default constructor and passes `null` to `DemoMethod`.
-Confirms that the system boundary enforces the null-rejection contract.
-
-### Validation: DemoMethod Empty Input Throws ArgumentException
-
-**Test**: `HelpCards_SystemValidation_DemoMethodEmptyInput_ThrowsArgumentException`
-
-Verifies that the system rejects an empty-string argument to `DemoMethod` with `ArgumentException`.
-Constructs a `Demo` instance with the default constructor and passes `string.Empty` to `DemoMethod`.
-Confirms that the system boundary enforces the empty-string rejection contract.
-
-### Validation: Constructor Null Prefix Throws ArgumentNullException
-
-**Test**: `HelpCards_SystemValidation_ConstructorNullPrefix_ThrowsArgumentNullException`
-
-Verifies that the system rejects a `null` prefix argument at construction time with
-`ArgumentNullException`. Attempts to construct a `Demo` instance with `null` as the prefix.
-Confirms that the system boundary prevents invalid configuration from being established.
-
-### Validation: Constructor Empty Prefix Throws ArgumentException
-
-**Test**: `HelpCards_SystemValidation_ConstructorEmptyPrefix_ThrowsArgumentException`
-
-Verifies that the system rejects an empty-string prefix argument at construction time with
-`ArgumentException`. Attempts to construct a `Demo` instance with `string.Empty` as the prefix.
-Confirms that the system boundary prevents empty-string configuration from being established.
-
-### Integration: Exposes Configured Prefix
-
-**Test**: `HelpCards_SystemIntegration_CustomPrefix_ExposesPrefix`
-
-Verifies that the `Prefix` property exposes the prefix supplied at construction time. Constructs
-a `Demo` instance with a custom prefix and reads the `Prefix` property. Confirms the system's
-public API correctly surfaces the configured prefix to callers.
+Reads one embedded card as UTF-8 text and asserts that it holds the authored content.
 
 ## Acceptance Criteria
 
-A system-level test run passes when all seven scenarios above pass without error or exception beyond
+A system-level test run passes when all scenarios above pass without error or exception beyond
 those explicitly asserted. Any unexpected exception, wrong exception type, or wrong return value
-constitutes a failure.
+constitutes a failure. The packed NuGet package is additionally checked by FileAssert to contain
+the props and targets files under `build/`.

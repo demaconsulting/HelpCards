@@ -1,5 +1,4 @@
 package HelpCards {
-    public import HelpCards_Demo::*;
     private import SoftwareItemMetadata::*;
 
     doc
@@ -18,7 +17,5 @@ package HelpCards {
             verificationFiles = ("docs/verification/help-cards.md");
             requirementFiles = ("docs/reqstream/help-cards.yaml");
         }
-
-        part demo : Demo;
     }
 }

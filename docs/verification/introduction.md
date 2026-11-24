@@ -25,7 +25,6 @@ This document covers the verification design for the HelpCards system and its
 constituent software items, specifically:
 
 - **HelpCards (System)** — The complete HelpCards .NET library system
-- **Demo (Unit)** — Demonstration greeting class providing example functionality
 
 The following OTS items are also covered:
 

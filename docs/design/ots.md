@@ -5,7 +5,7 @@ repository.
 
 ## Overview
 
-HelpCards itself has zero runtime NuGet dependencies — the `Demo` unit is
+HelpCards itself has zero runtime NuGet dependencies — the library is
 implemented exclusively against the .NET Base Class Library. All OTS items listed below are
 build-time and quality-pipeline tools, not runtime library dependencies. Each OTS item provides one
 stage of the documentation, requirements-traceability, testing, and quality-reporting pipeline

@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Packaged HelpCards defaults, imported as NuGet imports them (before the project body) -->
+  <Import Project="..\..\src\DemaConsulting.HelpCards\build\DemaConsulting.HelpCards.props" />
+
   <PropertyGroup>
     <!-- Build Configuration -->
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net481;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
-    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('Windows'))">net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -22,7 +24,6 @@
 
   <!-- Implicit Usings -->
   <ItemGroup>
-    <Using Include="Polyfills" />
     <Using Include="Xunit" />
   </ItemGroup>
 
@@ -67,6 +68,17 @@
   <!-- Project References -->
   <ItemGroup>
     <ProjectReference Include="..\..\src\DemaConsulting.HelpCards\DemaConsulting.HelpCards.csproj" />
+    <!-- The default-embedding library proves the packaged targets with HelpCardsDirectory and
+         HelpCardsPrefix left at their defaults; it is only loaded by assembly name at run time. -->
+    <ProjectReference Include="..\DemaConsulting.HelpCards.Tests.EmbeddingDefault\DemaConsulting.HelpCards.Tests.EmbeddingDefault.csproj" />
   </ItemGroup>
+
+  <!-- Fixture Embedding: the test project imports the packaged HelpCards build files exactly as a
+       consuming project would, and overrides HelpCardsDirectory so that every fixture folder under
+       Fixtures is embedded (logical names start with the assembly name and ".Help/"). -->
+  <PropertyGroup>
+    <HelpCardsDirectory>Fixtures</HelpCardsDirectory>
+  </PropertyGroup>
+  <Import Project="..\..\src\DemaConsulting.HelpCards\build\DemaConsulting.HelpCards.targets" />
 
 </Project>
