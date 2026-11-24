@@ -18,12 +18,12 @@ flag, the name of a search or example, the tags and sources, the all flag, and t
 | Option | Value | Rule |
 | --- | --- | --- |
 | `--json`, `--format` | none; text, markdown, json | Equal when both are given |
-| `--examples`, `--example` | none; a name | A card path is required; conflict with each other, `--search`, `--tag`, `--all` |
-| `--search` | one query | No card path; conflicts with `--examples`, `--example`, `--all`; may combine with `--tag` and `--source` |
+| `--examples`, `--example` | none; a name | Need a path; conflict with each other, `--search`, `--tag`, `--all` |
+| `--search` | one query | No path; conflicts with `--examples`, `--example`, `--all`; may use `--tag`, `--source` |
 | `--tag`, `--source` | a name | May repeat; not with a card path |
-| `--all` | none | Index only; not with `--tag` (an intentional addition to the option table of spec 6.12: both choose what the index lists) |
+| `--all` | none | Index only; not with `--tag` (an addition to spec 6.12: both choose what the index lists) |
 | `--width` | 20 to 500, or auto | Validated for every format |
-| `--lang` | a culture name | Only when enabled; 2 or 3 letters and subtags of 2 to 8 letters or digits |
+| `--lang` | a culture name | Only when enabled; 2 or 3 letters, then subtags of 2 to 8 letters or digits |
 
 #### Key Methods
 

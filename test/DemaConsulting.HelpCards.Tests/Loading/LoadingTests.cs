@@ -166,7 +166,7 @@ public class LoadingTests
         // Arrange
         var files = SourceReading.Files(
             ("a.md", SourceReading.Card(body: "English.")),
-            ("a.de.md", "---\ntitle: Eins\n---\nDeutsch."));
+            ("a.de.md", "---\ntitle: One\n---\nGerman body."));
 
         // Act
         var neutral = SourceReading.Read(files);
