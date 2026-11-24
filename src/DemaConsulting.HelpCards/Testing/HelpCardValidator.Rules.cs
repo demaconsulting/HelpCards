@@ -60,6 +60,15 @@ public static partial class HelpCardValidator
     /// <returns>One warning for every unused token.</returns>
     private static IEnumerable<HelpProblem> CheckTokens(IReadOnlyList<HelpSource> sources, IReadOnlyList<HelpSourceInfo> infos)
     {
+        // A token of a source may be used by the sources that import it, so usage is collected over all sources
+        if (sources.All(source => source.Tokens.Count == 0))
+        {
+            yield break;
+        }
+
+        var used = sources
+            .SelectMany(source => source.Provider.ListFiles().SelectMany(path => TokenResolver.FindNames(source.Provider.ReadText(path))))
+            .ToHashSet(StringComparer.Ordinal);
         for (var index = 0; index < sources.Count && index < infos.Count; index++)
         {
             var source = sources[index];
@@ -68,9 +77,6 @@ public static partial class HelpCardValidator
                 continue;
             }
 
-            var used = source.Provider.ListFiles()
-                .SelectMany(path => TokenResolver.FindNames(source.Provider.ReadText(path)))
-                .ToHashSet(StringComparer.Ordinal);
             foreach (var name in source.Tokens.Keys.Order(StringComparer.Ordinal).Where(name => !used.Contains(name)))
             {
                 yield return Warning(

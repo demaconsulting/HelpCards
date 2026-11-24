@@ -244,4 +244,70 @@ public class ReferenceValidatorTests
         // Assert
         Assert.Empty(result.Errors);
     }
+
+    /// <summary>
+    ///     Proves that a link with a source name resolves in that source even when the importer has a card of the same
+    ///     id, and that a bare link and a bare see-also entry resolve to the importer's own cards.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_ResolveBody_ImportedSource_ResolvesBareAndQualifiedLinks()
+    {
+        // Arrange
+        var lib = CatalogBuilding.Named("lib", ("x.md", SourceReading.Card(title: "Lib X")));
+        var app = CatalogBuilding.Named(
+            "app",
+            ("x.md", SourceReading.Card(title: "App X")),
+            ("y.md", SourceReading.Card(body: "See [[lib:x|the lib]]. [[z]] too.", extraFrontMatter: "see-also:\n  - z\n")),
+            ("z.md", SourceReading.Card())).Imports(lib);
+
+        // Act
+        var result = CatalogBuilding.Compose(builder => builder.AddSource(lib).AddMountedSource(app));
+
+        // Assert: the qualified link names the library card; the bare ones are the importer's own
+        Assert.Empty(result.Errors);
+        var body = result.Data!.Find("app/y")!.Body;
+        Assert.Equal(("x", "lib", "the lib"), (body[1].Link!.CardId, body[1].Link!.SourceName, body[1].Link!.Text));
+        Assert.Equal("app/z", body[3].Link!.CardId);
+        Assert.Equal(["app/z"], result.Data.Find("app/y")!.SeeAlsoIds);
+    }
+
+    /// <summary>
+    ///     Proves that a bare see-also entry that names a card of two sources is ambiguous and a qualified one is not.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_ResolveSeeAlso_BareIdInTwoSources_ReportsAmbiguousReference()
+    {
+        // Arrange
+        var lib = CatalogBuilding.Named("lib", ("x.md", SourceReading.Card()));
+        var app = CatalogBuilding.Named(
+            "app",
+            ("x.md", SourceReading.Card()),
+            ("a.md", SourceReading.Card(extraFrontMatter: "see-also:\n  - x\n  - lib:x\n"))).Imports(lib);
+
+        // Act
+        var result = CatalogBuilding.Compose(builder => builder.AddSource(lib).AddMountedSource(app));
+
+        // Assert
+        var problem = Assert.Single(result.Errors);
+        Assert.Equal(("ambiguous-reference", "a.md", 5), (problem.RuleId, problem.File, problem.Line));
+        Assert.Contains("source:x", problem.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that an example name added by an overlay is checked in the scope of the card it extends and that the
+    ///     problem is reported in the overlay file.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_CheckExampleNames_OverlayRepeatsName_IsReportedInOverlayFile()
+    {
+        // Arrange / Act
+        var result = CatalogBuilding.Compose(
+            ("a.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("a/b.md", SourceReading.Card()),
+            ("o.md", $"---\nextends: a/b\n{Examples("same")}---\n"));
+
+        // Assert
+        var problem = Assert.Single(result.Errors);
+        Assert.Equal(("duplicate-example", "o.md", 4), (problem.RuleId, problem.File, problem.Line));
+    }
 }

@@ -154,18 +154,22 @@ public partial class HelpCardValidatorTests
     }
 
     /// <summary>
-    ///     Proves that a callback that adds no source and a source that imports another source are argument errors.
+    ///     Proves that a callback that adds no source is an argument error, and that a source whose import is not
+    ///     added is a problem and not an exception.
     /// </summary>
     [Fact]
-    public void HelpCardValidator_Validate_InvalidBuilder_ThrowsArgumentException()
+    public void HelpCardValidator_Validate_InvalidBuilder_ThrowsArgumentExceptionAndReportsImports()
     {
         // Arrange
         var inner = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card())), "inner");
         var outer = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card())), "outer").Imports(inner);
 
-        // Act and Assert
+        // Act
+        var problems = HelpCardValidator.Validate(outer);
+
+        // Assert
         Assert.Throws<ArgumentException>(() => HelpCardValidator.Validate(_ => { }));
-        Assert.Throws<ArgumentException>(() => HelpCardValidator.Validate(outer));
+        Assert.Equal(["import-missing"], problems.Select(problem => problem.RuleId));
     }
 
     /// <summary>
@@ -236,5 +240,25 @@ public partial class HelpCardValidatorTests
         var problem = Assert.Single(exception.Problems);
         Assert.Equal(HelpSeverity.Warning, problem.Severity);
         Assert.Equal(RuleIds.SummaryLength, problem.RuleId);
+    }
+
+    /// <summary>
+    ///     Proves that the validator checks a composition of several sources and that a token that only an importing
+    ///     source uses is not reported as unused.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_SeveralSources_ChecksCompositionAndTokenUseAcrossSources()
+    {
+        // Arrange: the token limit of lib-a is used by lib-a itself; define one that only the application uses
+        var libA = CatalogBuilding.LibA().WithTokens(new Dictionary<string, string> { ["limit"] = "10", ["onlyApp"] = "x", ["unused"] = "y" });
+        var app = CatalogBuilding.Named("app", ("a.md", SourceReading.Card(body: "Value {{onlyApp}}."))).Imports(libA);
+
+        // Act
+        var problems = HelpCardValidator.Validate(builder => builder.AddMountedSource(libA).AddSource(app));
+
+        // Assert: only the token that nobody uses is a warning; the others are used by some source
+        var warning = Assert.Single(problems, problem => problem.RuleId == RuleIds.UnusedToken);
+        Assert.Contains("'unused'", warning.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(problems, problem => problem.Severity == HelpSeverity.Error);
     }
 }

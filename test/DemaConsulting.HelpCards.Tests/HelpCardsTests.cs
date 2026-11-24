@@ -790,7 +790,7 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface()
     {
-        // Arrange: the surface of the specification without search, suggestions, mounting, and the integration
+        // Arrange: the surface of the specification without search, suggestions, and the integration
         // namespace, which later releases add
         string[] expected =
         [
@@ -805,7 +805,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Catalog.HelpSearchResult: .ctor, Id, MatchedOn, Score, SourceName, Summary, Title",
             "DemaConsulting.HelpCards.Catalog.HelpSeverity: Error, Info, Warning",
             "DemaConsulting.HelpCards.Catalog.HelpSourceInfo: .ctor, Language, Mount, Name, Schema, Summary, Title",
-            "DemaConsulting.HelpCards.Composition.HelpCatalogBuilder: AddSource, Culture, ExpectedRoots, TagVocabulary, ToolName, ToolVersion",
+            "DemaConsulting.HelpCards.Composition.HelpCatalogBuilder: AddMountedSource, AddSource, Culture, ExpectedRoots, TagVocabulary, ToolName, ToolVersion",
             "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromDirectory, FromFiles, Imports, WithName, WithTokens",
             "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
             "DemaConsulting.HelpCards.Presentation.HelpLinkStyle: Command, Markdown, Plain",

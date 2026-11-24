@@ -126,24 +126,6 @@ public class CompositionTests
     }
 
     /// <summary>
-    ///     Proves that this release composes one source and does not apply overlays.
-    /// </summary>
-    [Fact]
-    public void Composition_SingleSource_SecondSourceImportsAndOverlays_AreHandledAsDocumented()
-    {
-        // Arrange
-        var source = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card()), ("o.md", "---\nextends: a\n---\nMore.")), "test");
-        var builder = new HelpCatalogBuilder().AddSource(source);
-
-        // Act / Assert: a second source and an import are argument errors; an overlay is read and left unapplied
-        Assert.Throws<ArgumentException>(() => builder.AddSource(source));
-        Assert.Throws<ArgumentException>(() => new HelpCatalogBuilder().AddSource(source.Imports(source.WithName("other"))));
-        var data = builder.Compose().Data!;
-        Assert.Equal(["a"], data.Cards.Select(node => node.Id));
-        Assert.Equal("Body text.", string.Concat(data.Find("a")!.Body.Select(part => part.Text)));
-    }
-
-    /// <summary>
     ///     Proves that composition reads each file once and selects translations by the configured culture.
     /// </summary>
     [Fact]

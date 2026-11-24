@@ -33,6 +33,56 @@ internal static class CatalogBuilding
     }
 
     /// <summary>
+    ///     Creates the source of the first fixture library, with its <c>limit</c> token.
+    /// </summary>
+    /// <returns>The source <c>lib-a</c>.</returns>
+    public static HelpSource LibA()
+    {
+        return Fixture("lib-a", new Dictionary<string, string> { ["limit"] = "10" });
+    }
+
+    /// <summary>
+    ///     Creates the source of the second fixture library, with its <c>palette</c> token.
+    /// </summary>
+    /// <returns>The source <c>lib-b</c>.</returns>
+    public static HelpSource LibB()
+    {
+        return Fixture("lib-b", new Dictionary<string, string> { ["palette"] = "blue" });
+    }
+
+    /// <summary>
+    ///     Creates the source of the fixture application, which imports a library.
+    /// </summary>
+    /// <param name="imported">The library source the application imports.</param>
+    /// <returns>The source <c>app</c>.</returns>
+    public static HelpSource App(HelpSource imported)
+    {
+        return Fixture("app").Imports(imported);
+    }
+
+    /// <summary>
+    ///     Creates the source of the fixture tool, which imports its companion library.
+    /// </summary>
+    /// <param name="imported">The library source the tool imports.</param>
+    /// <returns>The source <c>tool</c>.</returns>
+    public static HelpSource Tool(HelpSource imported)
+    {
+        return Fixture("tool", new Dictionary<string, string> { ["schemaVersion"] = "2" }).Imports(imported);
+    }
+
+    /// <summary>
+    ///     Creates a source from in-memory files with a declared name.
+    /// </summary>
+    /// <param name="name">The declared name.</param>
+    /// <param name="files">The path and text of each file.</param>
+    /// <returns>The source.</returns>
+    public static HelpSource Named(string name, params (string Path, string Text)[] files)
+    {
+        return HelpSource.FromFiles(SourceReading.Files(files), name);
+    }
+
+
+    /// <summary>
     ///     Creates the catalog of the <c>simple</c> fixture with its <c>limit</c> token and tool version 2.5.
     /// </summary>
     /// <returns>The catalog.</returns>
@@ -102,6 +152,17 @@ internal static class CatalogBuilding
         return builder.Compose();
     }
 
+    /// <summary>
+    ///     Composes the sources a callback adds and returns every problem, whether or not composition succeeds.
+    /// </summary>
+    /// <param name="configure">Configures the builder.</param>
+    /// <returns>The result of composition.</returns>
+    public static CompositionResult Compose(Action<HelpCatalogBuilder> configure)
+    {
+        var builder = new HelpCatalogBuilder();
+        configure(builder);
+        return builder.Compose();
+    }
     /// <summary>
     ///     Gets the problems that make creation fail for in-memory files.
     /// </summary>

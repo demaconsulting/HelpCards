@@ -9,23 +9,6 @@ namespace DemaConsulting.HelpCards.Composition;
 public sealed partial class HelpCatalogBuilder
 {
     /// <summary>
-    ///     The cards of one source placed in their tree.
-    /// </summary>
-    /// <param name="Cards">The cards that have a place in the tree, by local id.</param>
-    /// <param name="Children">The ordered children of each parent by local id; the empty string holds the roots.</param>
-    /// <param name="Suppressed">The ids of files that failed to load or have no place in the tree.</param>
-    private sealed record SourceTree(
-        IReadOnlyDictionary<string, CardDefinition> Cards,
-        IReadOnlyDictionary<string, IReadOnlyList<CardDefinition>> Children,
-        IReadOnlySet<string> Suppressed)
-    {
-        /// <summary>
-        ///     Gets the roots in order.
-        /// </summary>
-        public IReadOnlyList<CardDefinition> Roots => Children[string.Empty];
-    }
-
-    /// <summary>
     ///     Gets the local id of the parent of a card.
     /// </summary>
     /// <param name="localId">The local id.</param>
@@ -37,35 +20,43 @@ public sealed partial class HelpCatalogBuilder
     }
 
     /// <summary>
-    ///     Gives every card its place in the tree and orders the siblings (pipeline steps 4 and 5).
+    ///     Gives every card of a source its place in the tree and orders the siblings (pipeline steps 4 and 5).
     /// </summary>
     /// <remarks>
-    ///     A card whose parent is not a card is reported once as <c>parent-missing</c>; the cards below it are
-    ///     left out without further reports. A parent that failed to load is not reported again.
+    ///     A card whose parent is not a card of its source is reported once; the cards below it are left out
+    ///     without further reports. The report is <c>tree-foreign</c> when the parent id is a card of another
+    ///     source, and <c>parent-missing</c> otherwise. A parent that failed to load, or whose global id was taken
+    ///     by another source, is not reported again.
     /// </remarks>
-    /// <param name="definition">The definition of the source.</param>
+    /// <param name="entry">The source, with its cards read.</param>
+    /// <param name="owners">The source that owns each claimed global id.</param>
     /// <param name="problems">Receives the problems found.</param>
     /// <returns>The tree.</returns>
-    private static SourceTree PlaceCards(SourceDefinition definition, ICollection<HelpProblem> problems)
+    private static SourceTree PlaceCards(
+        SourceEntry entry,
+        IReadOnlyDictionary<string, SourceEntry> owners,
+        ICollection<HelpProblem> problems)
     {
+        var definition = entry.Definition;
         var suppressed = new HashSet<string>(definition.FailedIds, StringComparer.Ordinal);
+        suppressed.UnionWith(entry.Dropped);
         var placed = new Dictionary<string, CardDefinition>(StringComparer.Ordinal);
         var groups = new Dictionary<string, List<CardDefinition>> { [string.Empty] = [] };
 
         // Ordinal order puts every parent before its children
         foreach (var card in definition.Cards.OrderBy(card => card.LocalId, StringComparer.Ordinal))
         {
+            if (entry.Dropped.Contains(card.LocalId))
+            {
+                continue;
+            }
+
             var parentId = ParentOf(card.LocalId);
             if (parentId is not null && !placed.ContainsKey(parentId))
             {
                 if (!suppressed.Contains(parentId))
                 {
-                    problems.Add(HelpProblem.CreateError(
-                        RuleIds.ParentMissing,
-                        definition.Name,
-                        card.File,
-                        0,
-                        $"The card '{card.LocalId}' needs a parent card '{parentId}' ('{parentId}.md'), which does not exist."));
+                    problems.Add(ReportMissingParent(entry, card, parentId, owners));
                 }
 
                 suppressed.Add(card.LocalId);
@@ -100,17 +91,52 @@ public sealed partial class HelpCatalogBuilder
     }
 
     /// <summary>
+    ///     Creates the problem for a card whose parent is not a card of its source.
+    /// </summary>
+    /// <param name="entry">The source of the card.</param>
+    /// <param name="card">The card.</param>
+    /// <param name="parentId">The local id of the missing parent.</param>
+    /// <param name="owners">The source that owns each claimed global id.</param>
+    /// <returns>A <c>tree-foreign</c> problem when another source owns the parent id; otherwise <c>parent-missing</c>.</returns>
+    private static HelpProblem ReportMissingParent(
+        SourceEntry entry,
+        CardDefinition card,
+        string parentId,
+        IReadOnlyDictionary<string, SourceEntry> owners)
+    {
+        var parentGlobalId = Mounter.GlobalId(entry, parentId);
+        if (owners.TryGetValue(parentGlobalId, out var owner) && !ReferenceEquals(owner, entry))
+        {
+            return HelpProblem.CreateError(
+                RuleIds.TreeForeign,
+                entry.Name,
+                card.File,
+                0,
+                $"The card '{card.LocalId}' sits under '{parentGlobalId}', which belongs to the source '{owner.Name}'; "
+                + "a card cannot sit under a card of another source. Extend the card with an overlay instead.");
+        }
+
+        return HelpProblem.CreateError(
+            RuleIds.ParentMissing,
+            entry.Name,
+            card.File,
+            0,
+            $"The card '{card.LocalId}' needs a parent card '{parentId}' ('{parentId}.md'), which does not exist.");
+    }
+    /// <summary>
     ///     Checks the tags of every card against the tag vocabulary (pipeline step 5).
     /// </summary>
-    /// <param name="definition">The definition of the source.</param>
-    /// <param name="tree">The placed cards.</param>
+    /// <param name="entry">The source whose placed cards are checked.</param>
     /// <param name="problems">Receives <c>tag-unknown</c> and <c>tag-required</c> problems.</param>
-    private void CheckTags(SourceDefinition definition, SourceTree tree, ICollection<HelpProblem> problems)
+    private void CheckTags(SourceEntry entry, ICollection<HelpProblem> problems)
     {
         if (_allowedTags is null)
         {
             return;
         }
+
+        var definition = entry.Definition;
+        var tree = entry.Tree;
 
         foreach (var card in tree.Cards.Values.OrderBy(card => card.LocalId, StringComparer.Ordinal))
         {

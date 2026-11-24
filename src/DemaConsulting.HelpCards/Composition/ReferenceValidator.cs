@@ -5,29 +5,32 @@ using DemaConsulting.HelpCards.Loading;
 namespace DemaConsulting.HelpCards.Composition;
 
 /// <summary>
-///     Checks the final tree of a source: it resolves every link and see-also entry, and checks that names are unique.
+///     Checks the final tree of a catalog: it resolves every link and see-also entry, and checks that names are unique.
 /// </summary>
 /// <remarks>
 ///     <para>
 ///         Resolution runs once over the finished tree, so a forward reference is as good as a backward one. A
-///         <c>[[id]]</c> link and a see-also entry must name a card of the source; <c>[[id#name]]</c> must name an
-///         example in the subtree of that card; <c>[[#name]]</c> must name an example in the subtree of the card the
-///         link is written in. An external link whose source is registered resolves like a local link; one whose
-///         source is not present degrades to its display text and leaves an informational problem. A reference to a
-///         file that failed to load, or to a card that had no place in the tree, is not reported again.
+///         bare <c>[[id]]</c> link and a see-also entry name a card of the source the text is written in, or of a
+///         source it imports; <c>[[source:id|text]]</c> names a card of that source; <c>[[id#name]]</c> must name
+///         an example in the subtree of that card; <c>[[#name]]</c> must name an example in the subtree of the card
+///         the link ends up in, which for an overlay body is the card the overlay extends. A link to a source that
+///         is not part of the catalog degrades to its display text and leaves an informational problem; a link to
+///         a present source with no such card is an error. A reference to a file that failed to load, or to a card
+///         that had no place in the tree, is not reported again.
 ///     </para>
 ///     <para>
 ///         The validator also checks that example names are unique within a scope (the source and the first
-///         segment of the owning card's id) and that the names and aliases of siblings and of roots are unique,
-///         ignoring case. A validator belongs to one build and is not safe for concurrent use.
+///         segment of the id of the card the example belongs to, counting the examples that overlays add) and that
+///         the names and aliases of siblings are unique, ignoring case. A validator belongs to one build and is not
+///         safe for concurrent use.
 ///     </para>
 /// </remarks>
 internal sealed class ReferenceValidator
 {
     /// <summary>
-    ///     The name of the source being validated.
+    ///     The registry that finds the cards references name.
     /// </summary>
-    private readonly string _sourceName;
+    private readonly SourceRegistry _registry;
 
     /// <summary>
     ///     The nodes of the tree by global id.
@@ -35,94 +38,107 @@ internal sealed class ReferenceValidator
     private readonly IReadOnlyDictionary<string, CardNode> _nodes;
 
     /// <summary>
-    ///     The ids of files that failed to load or had no place in the tree.
-    /// </summary>
-    private readonly IReadOnlySet<string> _suppressed;
-
-    /// <summary>
-    ///     The declared names of the registered sources.
-    /// </summary>
-    private readonly IReadOnlySet<string> _registeredSources;
-
-    /// <summary>
     ///     Receives the problems found.
     /// </summary>
-    private readonly ICollection<HelpProblem> _problems;
+    private readonly ProblemCollector _problems;
 
     /// <summary>
-    ///     Creates a validator for one source.
+    ///     Creates a validator for one build.
     /// </summary>
-    /// <param name="sourceName">The name of the source.</param>
+    /// <param name="registry">The registry that finds the cards references name.</param>
     /// <param name="nodes">The nodes of the tree by global id, with children and examples in place.</param>
-    /// <param name="suppressedIds">The ids of files that failed to load or had no place in the tree.</param>
-    /// <param name="registeredSources">The declared names of the registered sources.</param>
     /// <param name="problems">Receives every problem found.</param>
-    public ReferenceValidator(
-        string sourceName,
-        IReadOnlyDictionary<string, CardNode> nodes,
-        IReadOnlySet<string> suppressedIds,
-        IReadOnlySet<string> registeredSources,
-        ICollection<HelpProblem> problems)
+    public ReferenceValidator(SourceRegistry registry, IReadOnlyDictionary<string, CardNode> nodes, ProblemCollector problems)
     {
-        _sourceName = sourceName;
+        _registry = registry;
         _nodes = nodes;
-        _suppressed = suppressedIds;
-        _registeredSources = registeredSources;
         _problems = problems;
     }
 
     /// <summary>
-    ///     Resolves the body links of a card.
+    ///     Resolves the body of a card, including the bodies that overlays append.
     /// </summary>
-    /// <param name="card">The definition of the card.</param>
-    /// <returns>The body with every link resolved to global ids; unresolvable links are left out.</returns>
-    public IReadOnlyList<ResolvedPart> ResolveBody(CardDefinition card)
+    /// <param name="build">The card.</param>
+    /// <returns>
+    ///     The body with every link resolved to global ids and the pieces separated by a blank line; unresolvable
+    ///     links are left out.
+    /// </returns>
+    public IReadOnlyList<ResolvedPart> ResolveBody(CardBuild build)
     {
-        var containing = _nodes[card.LocalId];
         var parts = new List<ResolvedPart>();
-        foreach (var part in card.Body)
+        foreach (var segment in build.Bodies)
         {
-            var resolved = part.Link is null
-                ? new ResolvedPart(part.Text, null)
-                : ResolveLink(part.Link, containing, card.BodyFile);
-            if (resolved is not null)
+            var resolved = ResolveParts(segment.Parts, segment.File, segment.Entry, build.Node!);
+            if (resolved.Count == 0)
             {
-                parts.Add(resolved);
+                continue;
             }
+
+            // Overlay bodies are appended after a blank line; an empty card body needs no separator
+            if (parts.Count > 0)
+            {
+                parts.Add(new ResolvedPart("\n\n", null));
+            }
+
+            parts.AddRange(resolved);
         }
 
         return parts;
     }
 
     /// <summary>
-    ///     Resolves the see-also entries of a card.
+    ///     Resolves the landing body of a mounted source.
     /// </summary>
-    /// <param name="card">The definition of the card.</param>
+    /// <param name="entry">The mounted source.</param>
+    /// <param name="root">The generated root card the body belongs to.</param>
+    /// <returns>The body with every link resolved to global ids.</returns>
+    public IReadOnlyList<ResolvedPart> ResolveLanding(SourceEntry entry, CardNode root)
+    {
+        return ResolveParts(entry.Definition.Body, entry.Definition.File, entry, root);
+    }
+
+    /// <summary>
+    ///     Resolves the see-also entries of a card, including those that overlays append.
+    /// </summary>
+    /// <param name="build">The card.</param>
     /// <returns>The global ids of the related cards in the order written, without duplicates.</returns>
-    public IReadOnlyList<string> ResolveSeeAlso(CardDefinition card)
+    public IReadOnlyList<string> ResolveSeeAlso(CardBuild build)
     {
         var ids = new List<string>();
-        foreach (var reference in card.SeeAlso)
+        foreach (var (reference, entry) in build.SeeAlso.Select(item => (item.Reference, item.Entry)))
         {
-            if (reference.SourceName is not null && !_registeredSources.Contains(reference.SourceName))
+            var lookup = _registry.Lookup(entry, reference.SourceName, reference.LocalId);
+            switch (lookup.Kind)
             {
-                ReportAbsentSource(reference.SourceName, reference.File, reference.Line);
-            }
-            else if (_nodes.TryGetValue(reference.LocalId, out var target))
-            {
-                if (!ids.Contains(target.Id, StringComparer.Ordinal))
-                {
-                    ids.Add(target.Id);
-                }
-            }
-            else if (!_suppressed.Contains(reference.LocalId))
-            {
-                _problems.Add(HelpProblem.CreateError(
-                    RuleIds.SeeAlsoTarget,
-                    _sourceName,
-                    reference.File,
-                    reference.Line,
-                    $"The 'see-also' entry '{Describe(reference)}' names no card; check the id."));
+                case LookupKind.SourceAbsent:
+                    ReportAbsentSource(entry, reference.SourceName!, reference.File, reference.Line);
+                    break;
+                case LookupKind.Found:
+                    if (!ids.Contains(lookup.Build!.GlobalId, StringComparer.Ordinal))
+                    {
+                        ids.Add(lookup.Build.GlobalId);
+                    }
+
+                    break;
+                case LookupKind.NotFound:
+                    Report(
+                        entry,
+                        RuleIds.SeeAlsoTarget,
+                        reference.File,
+                        reference.Line,
+                        $"The 'see-also' entry '{Describe(reference)}' names no card; check the id.");
+                    break;
+                case LookupKind.Ambiguous:
+                    Report(
+                        entry,
+                        RuleIds.AmbiguousReference,
+                        reference.File,
+                        reference.Line,
+                        $"The 'see-also' entry '{Describe(reference)}' is ambiguous: {lookup.Detail}; write 'source:{reference.LocalId}' to choose.");
+                    break;
+                default:
+                    // The target failed to load or is left out; that defect is already reported
+                    break;
             }
         }
 
@@ -133,31 +149,33 @@ internal sealed class ReferenceValidator
     ///     Checks that example names are unique within each scope.
     /// </summary>
     /// <remarks>
-    ///     The scope of an example is the source and the first segment of the id of the card that owns it. The
-    ///     second use of a name in a scope is reported at its own file and line.
+    ///     The scope of an example is the source of the card that owns it and the first segment of the local id of
+    ///     that card; examples that overlays add count for the card they extend. The second use of a name in a scope
+    ///     is reported at its own file and line.
     /// </remarks>
-    /// <param name="cards">The cards in ordinal id order.</param>
-    public void CheckExampleNames(IEnumerable<CardDefinition> cards)
+    /// <param name="builds">The cards, in the order that decides which use of a name is the first.</param>
+    public void CheckExampleNames(IEnumerable<CardBuild> builds)
     {
-        var first = new Dictionary<(string Scope, string Name), ExampleDefinition>();
-        foreach (var card in cards)
+        var first = new Dictionary<(string Source, string Scope, string Name), ExampleDefinition>();
+        foreach (var build in builds)
         {
-            var scope = card.LocalId.Split('/')[0];
-            foreach (var example in card.Examples)
+            var scope = build.Definition.LocalId.Split('/')[0];
+            foreach (var (example, entry) in build.Examples.Select(item => (item.Definition, item.Entry)))
             {
-                if (first.TryGetValue((scope, example.Name), out var original))
+                var key = (build.Entry.Name, scope, example.Name);
+                if (first.TryGetValue(key, out var original))
                 {
-                    _problems.Add(HelpProblem.CreateError(
+                    Report(
+                        entry,
                         RuleIds.DuplicateExample,
-                        _sourceName,
                         example.File,
                         example.Line,
                         $"The example name '{example.Name}' is already used at line {original.Line} of '{original.File}'; "
-                        + $"example names must be unique within '{scope}' and the cards below it."));
+                        + $"example names must be unique within '{scope}' and the cards below it.");
                 }
                 else
                 {
-                    first[(scope, example.Name)] = example;
+                    first[key] = example;
                 }
             }
         }
@@ -166,18 +184,19 @@ internal sealed class ReferenceValidator
     /// <summary>
     ///     Checks that the names and aliases of cards that share a parent are unique, ignoring case.
     /// </summary>
+    /// <param name="entry">The source of the cards.</param>
     /// <param name="siblings">The cards that share a parent, or the roots of the source, in order.</param>
-    public void CheckSiblingNames(IReadOnlyList<CardDefinition> siblings)
+    public void CheckSiblingNames(SourceEntry entry, IReadOnlyList<CardDefinition> siblings)
     {
         var used = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var card in siblings)
         {
             var name = SiblingOrder.NameOf(card);
-            Claim(used, name, $"the name of the card '{card.LocalId}'", card, card.File, 0, "name");
+            Claim(entry, used, name, $"the name of the card '{card.LocalId}'", card, card.File, 0, "name");
             foreach (var alias in card.Aliases)
             {
                 var normalized = alias.Value.Normalize(NormalizationForm.FormC);
-                Claim(used, normalized, $"an alias of the card '{card.LocalId}'", card, alias.File, alias.Line, "alias");
+                Claim(entry, used, normalized, $"an alias of the card '{card.LocalId}'", card, alias.File, alias.Line, "alias");
             }
         }
     }
@@ -185,6 +204,7 @@ internal sealed class ReferenceValidator
     /// <summary>
     ///     Records a name or alias as used, or reports it when a sibling already uses it.
     /// </summary>
+    /// <param name="entry">The source of the cards.</param>
     /// <param name="used">The names used so far and who uses them.</param>
     /// <param name="key">The name or alias.</param>
     /// <param name="description">Who uses it, for the message.</param>
@@ -192,17 +212,17 @@ internal sealed class ReferenceValidator
     /// <param name="file">The file to report.</param>
     /// <param name="line">The line to report.</param>
     /// <param name="kind">The word <c>name</c> or <c>alias</c>, for the message.</param>
-    private void Claim(Dictionary<string, string> used, string key, string description, CardDefinition card, string file, int line, string kind)
+    private void Claim(SourceEntry entry, Dictionary<string, string> used, string key, string description, CardDefinition card, string file, int line, string kind)
     {
         if (used.TryGetValue(key, out var owner))
         {
-            _problems.Add(HelpProblem.CreateError(
+            Report(
+                entry,
                 RuleIds.NameDuplicate,
-                _sourceName,
                 file,
                 line,
                 $"The {kind} '{key}' of the card '{card.LocalId}' is already {owner}; "
-                + "names and aliases must be unique among siblings, ignoring case."));
+                + "names and aliases must be unique among siblings, ignoring case.");
         }
         else
         {
@@ -211,35 +231,67 @@ internal sealed class ReferenceValidator
     }
 
     /// <summary>
+    ///     Resolves the links of one body.
+    /// </summary>
+    /// <param name="parts">The parts of the body.</param>
+    /// <param name="file">The file the body came from, for problems.</param>
+    /// <param name="entry">The source whose scope resolves the links.</param>
+    /// <param name="containing">The card the body ends up in.</param>
+    /// <returns>The resolved parts; unresolvable links are left out.</returns>
+    private List<ResolvedPart> ResolveParts(IReadOnlyList<BodyPart> parts, string file, SourceEntry entry, CardNode containing)
+    {
+        var resolved = new List<ResolvedPart>();
+        foreach (var part in parts)
+        {
+            var result = part.Link is null
+                ? new ResolvedPart(part.Text, null)
+                : ResolveLink(part.Link, containing, file, entry);
+            if (result is not null)
+            {
+                resolved.Add(result);
+            }
+        }
+
+        return resolved;
+    }
+
+    /// <summary>
     ///     Resolves one link of a body.
     /// </summary>
     /// <param name="link">The parsed link.</param>
-    /// <param name="containing">The card the link is written in.</param>
+    /// <param name="containing">The card the link ends up in.</param>
     /// <param name="file">The file the body came from, for problems.</param>
+    /// <param name="entry">The source whose scope resolves the link.</param>
     /// <returns>The resolved part, or <see langword="null"/> when the link cannot be resolved.</returns>
-    private ResolvedPart? ResolveLink(ParsedLink link, CardNode containing, string file)
+    private ResolvedPart? ResolveLink(ParsedLink link, CardNode containing, string file, SourceEntry entry)
     {
-        // A link to a source that is not present degrades to its display text
-        if (link.SourceName is not null && !_registeredSources.Contains(link.SourceName))
-        {
-            ReportAbsentSource(link.SourceName, file, link.Line);
-            return new ResolvedPart(link.Text, null);
-        }
-
         var target = containing;
         if (link.CardId is not null)
         {
-            if (!_nodes.TryGetValue(link.CardId, out var named))
+            var lookup = _registry.Lookup(entry, link.SourceName, link.CardId);
+            switch (lookup.Kind)
             {
-                if (!_suppressed.Contains(link.CardId))
-                {
-                    Report(RuleIds.LinkTarget, file, link.Line, $"The link '{Describe(link)}' names no card; check the id.");
-                }
-
-                return null;
+                case LookupKind.SourceAbsent:
+                    // A link to a source that is not present degrades to its display text
+                    ReportAbsentSource(entry, link.SourceName!, file, link.Line);
+                    return new ResolvedPart(link.Text, null);
+                case LookupKind.Found:
+                    target = lookup.Build!.Node!;
+                    break;
+                case LookupKind.NotFound:
+                    Report(entry, RuleIds.LinkTarget, file, link.Line, $"The link '{Describe(link)}' names no card; check the id.");
+                    return null;
+                case LookupKind.Ambiguous:
+                    Report(
+                        entry,
+                        RuleIds.AmbiguousReference,
+                        file,
+                        link.Line,
+                        $"The link '{Describe(link)}' is ambiguous: {lookup.Detail}; write 'source:{link.CardId}' to choose.");
+                    return null;
+                default:
+                    return null;
             }
-
-            target = named;
         }
 
         if (link.ExampleName is null)
@@ -251,6 +303,7 @@ internal sealed class ReferenceValidator
         if (found is null)
         {
             Report(
+                entry,
                 RuleIds.ExampleTarget,
                 file,
                 link.Line,
@@ -275,14 +328,15 @@ internal sealed class ReferenceValidator
     /// <summary>
     ///     Records the informational note for a link or reference to a source that is not present.
     /// </summary>
+    /// <param name="entry">The source whose file contains the reference.</param>
     /// <param name="sourceName">The name of the absent source.</param>
     /// <param name="file">The file the link was written in.</param>
     /// <param name="line">The line of the link.</param>
-    private void ReportAbsentSource(string sourceName, string file, int line)
+    private void ReportAbsentSource(SourceEntry entry, string sourceName, string file, int line)
     {
-        _problems.Add(HelpProblem.CreateInfo(
+        _problems.Add(entry.Index, HelpProblem.CreateInfo(
             RuleIds.ExternalSourceAbsent,
-            _sourceName,
+            entry.Name,
             file,
             line,
             $"The source '{sourceName}' is not part of this catalog; the link is written as its display text."));
@@ -291,13 +345,14 @@ internal sealed class ReferenceValidator
     /// <summary>
     ///     Records an error at a file and line.
     /// </summary>
+    /// <param name="entry">The source whose file contains the defect.</param>
     /// <param name="ruleId">The rule that was broken.</param>
     /// <param name="file">The file.</param>
     /// <param name="line">The line.</param>
     /// <param name="message">The message.</param>
-    private void Report(string ruleId, string file, int line, string message)
+    private void Report(SourceEntry entry, string ruleId, string file, int line, string message)
     {
-        _problems.Add(HelpProblem.CreateError(ruleId, _sourceName, file, line, message));
+        _problems.Add(entry.Index, HelpProblem.CreateError(ruleId, entry.Name, file, line, message));
     }
 
     /// <summary>

@@ -32,32 +32,56 @@ public class HelpCatalogBuilderTests
     }
 
     /// <summary>
-    ///     Proves that a second source is rejected because this release composes exactly one.
+    ///     Proves that a second source, flat or mounted, is accepted and both compose into one catalog.
     /// </summary>
     [Fact]
-    public void HelpCatalogBuilder_AddSource_SecondSource_ThrowsArgumentException()
+    public void HelpCatalogBuilder_AddSource_SecondSource_ComposesBothSources()
     {
         // Arrange
-        var builder = new HelpCatalogBuilder().AddSource(OneCard());
+        var other = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card())), "other");
 
-        // Act / Assert
-        var exception = Assert.Throws<ArgumentException>(() => builder.AddSource(OneCard()));
-        Assert.Contains("exactly one source", exception.Message, StringComparison.Ordinal);
+        // Act
+        var result = new HelpCatalogBuilder().AddSource(OneCard()).AddMountedSource(other).Compose();
+
+        // Assert
+        Assert.Empty(result.Errors);
+        Assert.Equal(["a", "other", "other/b"], result.Data!.Cards.Select(node => node.Id));
     }
 
     /// <summary>
-    ///     Proves that a source with imports is rejected because this release does not compose imports.
+    ///     Proves that a source with imports is accepted and its imports are checked when the catalog is composed.
     /// </summary>
     [Fact]
-    public void HelpCatalogBuilder_AddSource_SourceWithImports_ThrowsArgumentException()
+    public void HelpCatalogBuilder_AddSource_SourceWithImports_IsCheckedAtComposition()
     {
         // Arrange
-        var importing = OneCard().Imports(OneCard());
+        var imported = OneCard();
+        var importing = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card())), "importer").Imports(imported);
 
-        // Act / Assert
-        Assert.Throws<ArgumentException>(() => new HelpCatalogBuilder().AddSource(importing));
+        // Act
+        var good = new HelpCatalogBuilder().AddSource(imported).AddSource(importing).Compose();
+        var missing = new HelpCatalogBuilder().AddSource(importing).Compose();
+
+        // Assert
+        Assert.Empty(good.Errors);
+        Assert.Equal(["import-missing"], missing.Errors.Select(problem => problem.RuleId));
     }
 
+    /// <summary>
+    ///     Proves that a null source and an empty mount are argument errors, and that a mount may be omitted.
+    /// </summary>
+    [Fact]
+    public void HelpCatalogBuilder_AddMountedSource_InvalidArguments_ThrowAndValidOnesChain()
+    {
+        // Arrange
+        var builder = new HelpCatalogBuilder();
+
+        // Act / Assert
+        Assert.Throws<ArgumentNullException>(() => builder.AddMountedSource(null!));
+        Assert.Throws<ArgumentException>(() => builder.AddMountedSource(OneCard(), " "));
+        Assert.Same(builder, builder.AddMountedSource(OneCard()));
+        Assert.Same(builder, builder.AddMountedSource(OneCard(), "m"));
+    }
     /// <summary>
     ///     Proves that invalid settings are argument errors at once and valid ones return the builder for chaining.
     /// </summary>
@@ -84,6 +108,7 @@ public class HelpCatalogBuilderTests
         Assert.Same(builder, builder.TagVocabulary(["a"], ["a"]));
         Assert.Same(builder, builder.ExpectedRoots(["a"]));
         Assert.Same(builder, builder.AddSource(OneCard()));
+        Assert.Same(builder, builder.AddMountedSource(OneCard(), "mount"));
     }
 
     /// <summary>
@@ -276,10 +301,10 @@ public class HelpCatalogBuilderTests
     }
 
     /// <summary>
-    ///     Proves that an overlay is read but has no effect on the catalog in this release.
+    ///     Proves that an overlay replaces the title and appends its body to the card it extends.
     /// </summary>
     [Fact]
-    public void HelpCatalogBuilder_Compose_Overlay_IsReadButHasNoEffect()
+    public void HelpCatalogBuilder_Compose_Overlay_ReplacesTitleAndAppendsBody()
     {
         // Arrange
         var result = CatalogBuilding.Compose(
@@ -289,13 +314,12 @@ public class HelpCatalogBuilderTests
         // Act
         var node = result.Data!.Find("a")!;
 
-        // Assert
+        // Assert: the overlay is not a card of its own
         Assert.Empty(result.Errors);
         Assert.Equal(["a"], result.Data.Cards.Select(card => card.Id));
-        Assert.Equal("Original", node.Title);
-        Assert.Equal("Text.", PlainBody(result.Data, "a"));
+        Assert.Equal("Replaced", node.Title);
+        Assert.Equal("Text.\n\nMore text.", PlainBody(result.Data, "a"));
     }
-
     /// <summary>
     ///     Proves that informational problems are kept in the result and in the data when there is no error.
     /// </summary>

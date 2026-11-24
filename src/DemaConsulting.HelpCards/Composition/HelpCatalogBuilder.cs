@@ -15,16 +15,20 @@ namespace DemaConsulting.HelpCards.Composition;
 ///         defects of the sources are found when the catalog is created and are reported together.
 ///     </para>
 ///     <para>
-///         This release composes exactly one source: a second <see cref="AddSource"/> call, and a source that
-///         imports another source, are rejected with an <see cref="ArgumentException"/>. A builder is not safe
-///         for concurrent use. The public signatures use only base class library types and
+///         Several sources compose into one catalog; see <see cref="AddSource"/> and <see cref="AddMountedSource"/>.
+///         A builder is not safe for concurrent use. The public signatures use only base class library types and
 ///         <see cref="HelpSource"/>.
 ///     </para>
 /// </remarks>
 public sealed partial class HelpCatalogBuilder
 {
     /// <summary>
-    ///     The registered sources in registration order.
+    ///     The registered sources, flat or mounted, in registration order.
+    /// </summary>
+    private readonly List<SourceRegistration> _registrations = [];
+
+    /// <summary>
+    ///     The sources of the registrations in registration order, for the validator.
     /// </summary>
     private readonly List<HelpSource> _sources = [];
 
@@ -74,32 +78,61 @@ public sealed partial class HelpCatalogBuilder
     ///     Registers a source whose cards are added to the catalog without a mount.
     /// </summary>
     /// <remarks>
-    ///     The source is not read here; its files are read when the catalog is created.
+    ///     <para>
+    ///         The source is not read here; its files are read when the catalog is created. The cards of a flat
+    ///         source keep their local ids as global ids, so its roots become roots of the catalog.
+    ///     </para>
+    ///     <para>
+    ///         Registration order is significant: it orders the roots, orders overlays, and decides which sources
+    ///         may be imported, because a source can only import sources that were added before it.
+    ///     </para>
     /// </remarks>
-    /// <param name="source">The source. Must not be null and must not import another source.</param>
+    /// <param name="source">The source. Must not be null.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
-    /// <exception cref="ArgumentException">
-    ///     Thrown when a source was already added or <paramref name="source"/> imports another source; this
-    ///     release composes exactly one source.
-    /// </exception>
     public HelpCatalogBuilder AddSource(HelpSource source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        if (_sources.Count > 0)
-        {
-            throw new ArgumentException("This release composes exactly one source; a second source cannot be added.", nameof(source));
-        }
-
-        if (source.ImportedSources.Count > 0)
-        {
-            throw new ArgumentException("This release does not support sources that import other sources.", nameof(source));
-        }
-
+        _registrations.Add(new SourceRegistration(source, false, null));
         _sources.Add(source);
         return this;
     }
 
+    /// <summary>
+    ///     Registers a source whose cards are mounted below a generated root card.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         The catalog gets a root card whose id is the mount; its title, summary, aliases, and landing text
+    ///         come from the source's <c>_source.md</c> and its children are the roots of the source. The global
+    ///         id of each card of the source is <c>mount/localId</c>. A mount renames only global ids: cards keep
+    ///         referring to each other by local id.
+    ///     </para>
+    ///     <para>
+    ///         An invalid mount, or one that another mount or a flat root already uses, is reported when the
+    ///         catalog is created.
+    ///     </para>
+    /// </remarks>
+    /// <param name="source">The source. Must not be null.</param>
+    /// <param name="mount">
+    ///     The mount, one segment, or <see langword="null"/> for the declared name of the source. Must not be
+    ///     empty or white space when given.
+    /// </param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="mount"/> is empty or white space.</exception>
+    public HelpCatalogBuilder AddMountedSource(HelpSource source, string? mount = null)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        if (mount is not null && string.IsNullOrWhiteSpace(mount))
+        {
+            throw new ArgumentException("The mount must not be empty.", nameof(mount));
+        }
+
+        _registrations.Add(new SourceRegistration(source, true, mount));
+        _sources.Add(source);
+        return this;
+    }
     /// <summary>
     ///     Sets the culture whose translations are used.
     /// </summary>

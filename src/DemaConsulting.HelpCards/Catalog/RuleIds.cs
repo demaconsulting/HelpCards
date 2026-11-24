@@ -8,11 +8,11 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     named constants in one place instead of string literals scattered across the units that raise them.
 ///     The groups follow the failure model: errors make catalog creation fail, informational notes never
 ///     fail, and warnings are produced only by the validator.
-///     A few identifiers are reserved for the composition of several sources and overlays, which this release does
-///     not perform, so no code raises them yet: <see cref="Collision"/>, <see cref="TreeForeign"/>,
-///     <see cref="ExtendsTarget"/>, <see cref="OverlayTarget"/>, <see cref="SourceNameDuplicate"/>,
-///     <see cref="MountInvalid"/>, <see cref="ImportOrder"/>, <see cref="ImportMissing"/>,
-///     <see cref="ImportCycle"/>, <see cref="AmbiguousReference"/>, and <see cref="OverlayOptionalSkipped"/>.
+///     The identifiers of the composition of several sources and overlays are raised by the Composition
+///     subsystem: <see cref="Collision"/>, <see cref="TreeForeign"/>, <see cref="ExtendsTarget"/>,
+///     <see cref="OverlayTarget"/>, <see cref="SourceNameDuplicate"/>, <see cref="MountInvalid"/>,
+///     <see cref="ImportOrder"/>, <see cref="ImportMissing"/>, <see cref="ImportCycle"/>,
+///     <see cref="AmbiguousReference"/>, and <see cref="OverlayOptionalSkipped"/>.
 ///     Within one source a repeated sibling name or alias is <see cref="NameDuplicate"/>, never
 ///     <see cref="Collision"/>.
 /// </remarks>
