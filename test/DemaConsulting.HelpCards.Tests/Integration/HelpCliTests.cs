@@ -399,7 +399,7 @@ public class HelpCliTests
         var options = new HelpCliOptions { ToolName = "t", CatalogFactory = _ => CatalogBuilding.Simple() };
 
         // Act / Assert
-        Assert.Throws<ArgumentException>(() => options.GetCatalogConfiguration());
+        Assert.Throws<InvalidOperationException>(() => options.GetCatalogConfiguration());
     }
 
     /// <summary>

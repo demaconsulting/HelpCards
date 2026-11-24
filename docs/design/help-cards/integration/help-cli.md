@@ -32,8 +32,8 @@ themselves and then set the name and the version on their own builder; exactly o
   verb that is white space, a verb with white space or a leading hyphen, a tool name with a brace, and, through
   `HelpRenderOptions`, a white-space command template and a default width that is not 0 or 20 to 500. It never builds
   the catalog and does no I/O.
-- **`HelpCliOptions.GetCatalogConfiguration(culture)`** returns the builder action that the helper itself applies
-  (name, version, culture, then `ConfigureCatalog`) and throws `ArgumentException` when `ConfigureCatalog` is not set.
+- **`HelpCliOptions.GetCatalogConfiguration(culture)`** returns the builder action that the helper itself applies (name,
+  version, culture, then `ConfigureCatalog`) and throws `InvalidOperationException` when `ConfigureCatalog` is not set.
 - **`TryRun(args, out exitCode)`** returns false with exit code 0 unless there is a first argument that equals the verb,
   ignoring case; otherwise it runs the remaining arguments and returns true.
 - **`Run(helpArguments)`** runs a help command whose verb is already removed.

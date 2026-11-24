@@ -186,11 +186,11 @@ public sealed class HelpCliOptions
     /// </remarks>
     /// <param name="culture">The culture of the <c>--lang</c> option to build the catalog for, or <see langword="null"/>.</param>
     /// <returns>The action that configures a builder.</returns>
-    /// <exception cref="ArgumentException">Thrown when <see cref="ConfigureCatalog"/> is not set.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when <see cref="ConfigureCatalog"/> is not set.</exception>
     public Action<HelpCatalogBuilder> GetCatalogConfiguration(CultureInfo? culture = null)
     {
         var configure = ConfigureCatalog
-            ?? throw new ArgumentException("ConfigureCatalog is not set; use CatalogFactory for the catalog or set ConfigureCatalog.");
+            ?? throw new InvalidOperationException("ConfigureCatalog is not set; use CatalogFactory for the catalog or set ConfigureCatalog.");
         var toolName = ToolName;
         var version = Version;
         return builder =>
