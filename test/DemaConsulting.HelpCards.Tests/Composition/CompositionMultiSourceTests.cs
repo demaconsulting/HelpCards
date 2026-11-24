@@ -33,7 +33,7 @@ public class CompositionMultiSourceTests
         Assert.Equal(
             ["lib-a", "lib-a/shapes", "lib-a/graph", "lib-a/graph/layout", "charts", "charts/chart", "charts/chart/axis"],
             catalog.Cards.Select(card => card.Id));
-        var root = catalog.Find("liba")!;
+        var root = catalog.Find("alpha")!;
         Assert.Equal(("lib-a", "lib-a", "Library A", null), (root.Id, root.SourceName, root.Title, root.ParentId));
         Assert.Empty(root.Tags);
         Assert.Empty(root.Examples);

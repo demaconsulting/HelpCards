@@ -32,7 +32,7 @@ are immutable or build-scoped supporting types that are documented in the units 
 
 | Interface | Direction | Purpose |
 | --- | --- | --- |
-| `HelpCatalogBuilder` settings methods | Inbound (adopters) | Add sources flat or mounted; set culture, tool, and rules |
+| `HelpCatalogBuilder` settings methods | Inbound (adopters) | Add sources; set culture, tool, and rules |
 | `HelpCatalogBuilder.Compose()` | Inbound (Catalog, Testing) | Run the pipeline; return `CompositionResult` |
 | `CardReader.Read`, `TokenResolver.Create` | Outbound (Loading) | Read each source into definitions |
 | `CatalogData`, `CardNode`, `ResolvedPart`, `ResolvedLink` | Outbound (Catalog) | The frozen result |

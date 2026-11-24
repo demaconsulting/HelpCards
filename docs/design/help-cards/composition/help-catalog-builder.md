@@ -13,7 +13,7 @@ that building a catalog is one fixed sequence of steps whose behavior does not d
 
 | Member | Type | Meaning |
 | --- | --- | --- |
-| `_registrations` | list of `SourceRegistration` | The registered sources in registration order, each flat or mounted with an optional mount |
+| `_registrations` | list of `SourceRegistration` | The registered sources in order, flat or mounted |
 | `_sources` | list of `HelpSource` | The same sources, for the validator |
 | `_culture` | `CultureInfo` | The culture whose translations are used; invariant by default |
 | `_toolName`, `_toolVersion` | nullable strings | The values of the built-in tokens `tool` and `version` |

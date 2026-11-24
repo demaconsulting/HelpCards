@@ -253,7 +253,7 @@ reviews:
       - "docs/design/help-cards/composition.md"                     # subsystem design
       - "docs/verification/help-cards/composition.md"               # subsystem verification
       - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionTests.cs"  # subsystem tests
-      - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionMultiSourceTests.cs"  # subsystem tests (several sources)
+      - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionMultiSourceTests.cs"  # subsystem tests
 
   # HelpCards-Composition-HelpCatalogBuilder Review (one per unit)
   - id: HelpCards-Composition-HelpCatalogBuilder
