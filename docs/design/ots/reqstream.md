@@ -19,7 +19,7 @@ requirements a build-breaking condition rather than a manual review task.
 ### Integration Pattern
 
 ReqStream is invoked as a `dotnet tool` from two places: `lint.ps1` runs
-`dotnet reqstream --lint --requirements requirements.yaml` as an early-detection lint gate, and
+`dotnet reqstream --lint --enforce --requirements requirements.yaml` as an early-detection lint gate, and
 `.github/workflows/build.yaml` runs `dotnet reqstream --enforce` with all accumulated TRX
 test-evidence files to generate `requirements.md`, `justifications.md`, and `trace_matrix.md`.
 It is a stateless CLI invocation — each run reads `requirements.yaml` and TRX files, writes its

@@ -11,13 +11,15 @@ data, rather than requiring reviewers to open the SARIF file separately.
 
 - SARIF-file reading of CodeQL code-scanning output
 - Markdown report generation summarizing SARIF findings
-- Enforcement mode, which returns a non-zero exit code when the SARIF input contains reported
-  issues
+- Self-validation mode (`--validate`), which exercises report generation and enforcement against known
+  fixtures; the enforcement mode (non-zero exit code when the SARIF input contains reported issues) is
+  verified there but is not used by the workflow
 
 ### Integration Pattern
 
 SarifMark is invoked as a `dotnet tool` (`dotnet sarifmark`) from `.github/workflows/build.yaml`
-after the CodeQL scanning step, both to generate `docs/code_quality/generated/codeql-quality.md`
-and to enforce a clean result. It is a stateless CLI invocation — each run reads a SARIF file,
-writes its markdown report or returns an exit code, and exits; there is no initialization,
+after the CodeQL scanning step to generate `docs/code_quality/generated/codeql-quality.md`. The
+workflow does not enforce a clean result: the report documents the findings and CodeQL itself gates the
+code scanning. It is a stateless CLI invocation — each run reads a SARIF file,
+writes its markdown report, and exits; there is no initialization,
 configuration object, or disposal step.
