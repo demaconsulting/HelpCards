@@ -79,3 +79,5 @@ ignorePaths:
   - "**/.agent-logs/**"
   - "**/bin/**"
   - "**/obj/**"
+  # ApiMark-generated API reference (regenerated on every build)
+  - "src/**/api/**"

@@ -46,6 +46,7 @@ constituent software items, specifically:
 
 The following OTS items are also covered:
 
+- **ApiMark** — API reference generation tool
 - **BuildMark** — build-notes documentation tool
 - **FileAssert** — document assertion tool
 - **Pandoc** — Markdown-to-HTML conversion tool

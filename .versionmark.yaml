@@ -63,6 +63,11 @@ tools:
     command: dotnet tool list
     regex: '(?i)demaconsulting\.fileassert\s+(?<version>\d+\.\d+\.\d+(?:-[a-zA-Z0-9.]+)?)'
 
+  # ApiMark.MSBuild (DemaConsulting.ApiMark.MSBuild from the project package references)
+  apimark-msbuild:
+    command: dotnet list src/DemaConsulting.HelpCards/DemaConsulting.HelpCards.csproj package
+    regex: '(?i)DemaConsulting\.ApiMark\.MSBuild\s+(?<version>\d+\.\d+\.\d+(?:-[a-zA-Z0-9.]+)?)'
+
   # CanvasNet (DemaConsulting.CanvasNet.Tool from dotnet tool list)
   canvasnet:
     command: dotnet tool list

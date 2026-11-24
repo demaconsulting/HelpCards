@@ -27,6 +27,16 @@ package OtsDependencies {
         }
     }
 
+    part def ApiMark {
+        doc /* ApiMark MSBuild package generating the Markdown API reference shipped in the NuGet package. */
+
+        metadata info : SoftwareInfo {
+            designFiles = ("docs/design/ots/apimark.md");
+            verificationFiles = ("docs/verification/ots/apimark.md");
+            requirementFiles = ("docs/reqstream/ots/apimark.yaml");
+        }
+    }
+
     part def BuildMark {
         doc /* BuildMark tool generating build-notes documentation from build metadata. */
 

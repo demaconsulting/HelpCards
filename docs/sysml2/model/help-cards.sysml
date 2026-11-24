@@ -37,6 +37,7 @@ package HelpCards {
         // Off-the-shelf tools of the build, test, and compliance pipeline; there are no runtime dependencies.
         ref part xUnit : XUnit;
         ref part reqStream : ReqStream;
+        ref part apiMark : ApiMark;
         ref part buildMark : BuildMark;
         ref part versionMark : VersionMark;
         ref part sarifMark : SarifMark;

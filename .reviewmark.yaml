@@ -871,6 +871,14 @@ reviews:
       - "src/DemaConsulting.HelpCards/Testing/MarkdownLineKind.cs"   # unit source
       - "test/DemaConsulting.HelpCards.Tests/Testing/HelpCardMarkdownTests.cs"   # unit tests
 
+  # OTS-ApiMark Review (one per OTS item)
+  - id: OTS-ApiMark
+    title: Review that ApiMark Provides Required Functionality
+    paths:
+      - "docs/reqstream/ots/apimark.yaml"                                   # OTS requirements
+      - "docs/design/ots/apimark.md"                                        # OTS integration design
+      - "docs/verification/ots/apimark.md"                                  # OTS verification
+
   # OTS-BuildMark Review (one per OTS item)
   - id: OTS-BuildMark
     title: Review that BuildMark Provides Required Functionality

@@ -41,10 +41,24 @@
     <SBOMPackageName>$(PackageId)</SBOMPackageName>
     <SBOMPackageVersion>$(Version)</SBOMPackageVersion>
     <SBOMPackageSupplier>Organization: $(Company)</SBOMPackageSupplier>
+
+    <!-- API Documentation Configuration -->
+    <!-- ApiMark turns this project's XML doc comments into gradually-disclosed Markdown API
+         reference (api.md index -> namespace -> type -> member) for coding agents and developers.
+         - Output defaults to $(MSBuildProjectDirectory)\api (git-ignored, regenerated on every build).
+         - Generation runs once per build for the first target framework only, which is correct
+           because the public surface is identical across target frameworks.
+         - ApiMarkPackDocs ships the generated api/ tree inside the NuGet package.
+         - ApiMarkEnforceDocs fails the build on any public API member lacking an XML doc summary,
+           so the shipped reference cannot silently develop gaps. -->
+    <ApiMarkPackDocs>true</ApiMarkPackDocs>
+    <ApiMarkEnforceDocs>Public</ApiMarkEnforceDocs>
+    <ApiMarkEnforceDocsSeverity>Error</ApiMarkEnforceDocsSeverity>
   </PropertyGroup>
 
   <!-- Build Tool Dependencies -->
   <ItemGroup>
+    <PackageReference Include="DemaConsulting.ApiMark.MSBuild" Version="0.5.12" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Sbom.Targets" Version="4.1.13" PrivateAssets="All" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.403" PrivateAssets="All" />
   </ItemGroup>

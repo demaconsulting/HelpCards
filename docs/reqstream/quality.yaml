@@ -68,16 +68,20 @@ sections:
           - HelpCards-OTS-ReviewMark-DirectoryOverride
 
       - id: Quality-DocumentationGeneration
-        title: The repository shall generate its documentation as HTML and PDF.
+        title: >-
+          The repository shall generate its documentation as HTML and PDF and
+          ship an API reference with its package.
         tags: [quality]
         justification: |
           Documentation generation depends on format conversion from Markdown to
-          HTML and from HTML to PDF. This grouping requirement links those OTS
+          HTML and from HTML to PDF, and on generating the Markdown API reference
+          packed into the NuGet package. This grouping requirement links those OTS
           requirements to the quality root so they participate in orphan detection
           without being falsely reported as disconnected from library functionality.
         children:
           - HelpCards-OTS-Pandoc
           - HelpCards-OTS-WeasyPrint
+          - HelpCards-OTS-ApiMark
 
       - id: Quality-RequirementsTraceability
         title: >-

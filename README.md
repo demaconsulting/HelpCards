@@ -40,6 +40,8 @@ Presentation, Integration, and Testing build on that catalog.
 - **Agent Tool**: `HelpAgentTool` is a provider-neutral knowledge tool (index, card, example, and search) with a
   JSON schema and output budgets
 - **Testing Helpers**: `HelpCardValidator` and example helpers prove in your own tests that your cards are valid
+- **API Reference**: A generated Markdown API reference in the package's `api/` folder, organized for gradual
+  disclosure
 - **Dependency-Free**: Built only on the .NET Base Class Library, with its own restricted front-matter parser
 - **Continuous Compliance**: Requirements, design, verification, and a SysML2 model, following the
   [Continuous Compliance][link-continuous-compliance] methodology
@@ -305,6 +307,14 @@ pwsh ./fix.ps1 -Changed     # auto-fix the changed file types
 
 The HelpCards User Guide is available on the
 [HelpCards releases page](https://github.com/demaconsulting/HelpCards/releases).
+
+## API Reference
+
+The package ships its API reference as Markdown in the package's `api/` folder, generated from the XML doc comments by
+[ApiMark](https://github.com/demaconsulting/ApiMark) and organized for gradual disclosure, so a developer or a coding
+agent can read a small targeted page instead of one large document. Start at `api/api.md` (the index), open a namespace
+page, then follow the links to type and member pages. When building from source, the same files are written to
+`src/DemaConsulting.HelpCards/api/`.
 
 ## Contributing
 

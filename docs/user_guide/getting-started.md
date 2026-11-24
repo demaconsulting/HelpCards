@@ -114,3 +114,14 @@ and line, not only the first one. See the chapter *Composing Sources* for the pr
 - To add `tool help` to a command-line tool, read *Command-Line Integration*.
 - To answer questions of an AI agent, read *Agent Knowledge Tool*.
 - To prove that the cards are valid in your tests, read *Testing Your Help*.
+
+## API Reference
+
+The package ships a Markdown API reference in its `api/` folder, generated from the XML doc comments on every build
+and organized for gradual disclosure: `api/api.md` is the index (one row per namespace), each namespace has a page,
+each type has a page, and each member has its own page. Read the namespace page first, then follow the links to the
+types and members you need.
+
+To read it from a restored package, open the HelpCards package folder in the NuGet global-packages cache and read
+`api/api.md`, or unzip the `.nupkg`. When building this
+repository, the same files are written to the `api/` folder of the project under `src/` (ignored by git).
