@@ -7,8 +7,9 @@ library's subsystems, which inputs it takes, and which outputs it produces.
 
 ## Purpose
 
-This document is the user guide for the Template DotNet Library, a demonstration project that
-showcases best practices for DEMA Consulting DotNet Libraries.
+This document is the user guide for HelpCards, a .NET library for authoring help and knowledge
+content as Markdown cards with YAML front matter, embedded in assemblies and served as
+command-line help for people and as searchable knowledge for AI agents.
 
 ## Scope
 
@@ -20,7 +21,7 @@ This user guide covers:
 
 # Continuous Compliance
 
-This template follows the
+This repository follows the
 [Continuous Compliance](https://github.com/demaconsulting/ContinuousCompliance) methodology, which ensures
 compliance evidence is generated automatically on every CI run.
 
@@ -38,7 +39,7 @@ compliance evidence is generated automatically on every CI run.
 Install the library using the .NET CLI:
 
 ```bash
-dotnet add package TemplateDotNetLibrary
+dotnet add package DemaConsulting.HelpCards
 ```
 
 # Usage
@@ -46,7 +47,7 @@ dotnet add package TemplateDotNetLibrary
 ## Basic Usage
 
 ```csharp
-using TemplateDotNetLibrary;
+using DemaConsulting.HelpCards;
 
 var demo = new Demo();
 var result = demo.DemoMethod("World");
@@ -57,7 +58,7 @@ Console.WriteLine(result); // Output: Hello, World!
 
 ### Demo
 
-The `Demo` class provides demonstration functionality for the template library.
+The `Demo` class provides sample functionality retained from the library template.
 
 #### Constants
 
@@ -142,7 +143,7 @@ var greeting = demo.DemoMethod("World");
 ## Example 1: Basic Greeting
 
 ```csharp
-using TemplateDotNetLibrary;
+using DemaConsulting.HelpCards;
 
 var demo = new Demo();
 var result = demo.DemoMethod("Alice");
@@ -153,7 +154,7 @@ Console.WriteLine(result);
 ## Example 2: Custom Prefix
 
 ```csharp
-using TemplateDotNetLibrary;
+using DemaConsulting.HelpCards;
 
 var demo = new Demo("Hi");
 var result = demo.DemoMethod("Alice");
@@ -164,7 +165,7 @@ Console.WriteLine(result);
 ## Example 3: Error Handling
 
 ```csharp
-using TemplateDotNetLibrary;
+using DemaConsulting.HelpCards;
 
 var demo = new Demo();
 try

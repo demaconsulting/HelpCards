@@ -1,13 +1,13 @@
 ---
-title: Template DotNet Library User Guide
-subtitle: A .NET Reference Implementation for Libraries
+title: HelpCards User Guide
+subtitle: Markdown help and knowledge cards for .NET
 author: DEMA Consulting
-description: A .NET Reference Implementation for Libraries
+description: User Guide for HelpCards
 lang: en-US
 keywords:
-  - Template DotNet Library
+  - HelpCards
   - .NET
   - Library
   - Documentation
-  - Best Practices
+  - Markdown
 ---

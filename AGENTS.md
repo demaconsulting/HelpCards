@@ -1,21 +1,15 @@
 # Project Overview
 
-> **Downstream customization required**: Replace the `TODO` values below with
-> values specific to the target repository. These values are the canonical source
-> for project-wide template placeholders used throughout the repository.
-
-- **project-name**: TODO — repository/project name (e.g., `ReqStream`)
-- **organization**: TODO — organization name for document authorship (e.g., `DEMA Consulting`)
-- **project-tagline**: TODO — document subtitle; 4–8 words, noun phrase, no period
-  (e.g., `Requirements traceability for .NET projects`)
-- **description**: TODO — full project description, may be multiple sentences
-- **languages**: TODO — programming languages used (e.g., `C#`, `C++`)
-- **technologies**: TODO — key technologies and frameworks (e.g., `.NET`, `CMake`)
+- **project-name**: `HelpCards`
+- **organization**: DEMA Consulting
+- **project-tagline**: Markdown help and knowledge cards for .NET
+- **description**: HelpCards is a .NET library for authoring help and knowledge content as
+  Markdown cards with YAML front matter, embedded in assemblies and served as command-line help
+  for people and as searchable knowledge for AI agents.
+- **languages**: `C#`
+- **technologies**: `.NET` (netstandard2.0, net8.0, net9.0, net10.0, net11.0), `NuGet`
 
 # Project Structure
-
-> **Downstream customization required**: Replace `{project}` and
-> `{test-project}` with the actual source and test project folder names.
 
 ```text
 ├── docs/
@@ -31,9 +25,9 @@
 │   ├── user_guide/
 │   └── verification/
 ├── src/
-│   └── {project}/
+│   └── DemaConsulting.HelpCards/
 └── test/
-    └── {test-project}/
+    └── DemaConsulting.HelpCards.Tests/
 ```
 
 # Language and Spelling (ALL Agents)

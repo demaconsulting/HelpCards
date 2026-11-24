@@ -1,0 +1,24 @@
+package HelpCards {
+    public import HelpCards_Demo::*;
+    private import SoftwareItemMetadata::*;
+
+    doc
+    /*
+     * HelpCards is a .NET library for authoring help and knowledge content as
+     * Markdown cards with YAML front matter, embedded in assemblies and served as
+     * command-line help for people and as searchable knowledge for AI agents.
+     */
+
+    part def HelpCardsSystem {
+        doc /* The HelpCards system as a whole. */
+
+        metadata info : SoftwareInfo {
+            testFiles = ("test/DemaConsulting.HelpCards.Tests/HelpCardsTests.cs");
+            designFiles = ("docs/design/help-cards.md");
+            verificationFiles = ("docs/verification/help-cards.md");
+            requirementFiles = ("docs/reqstream/help-cards.yaml");
+        }
+
+        part demo : Demo;
+    }
+}

@@ -1,11 +1,11 @@
 ---
-title: Template DotNet Library Requirements
-subtitle: Requirements Specification for the Template DotNet Library
+title: HelpCards Requirements
+subtitle: Requirements Specification for HelpCards
 author: DEMA Consulting
-description: Requirements Specification for the Template DotNet Library
+description: Requirements Specification for HelpCards
 lang: en-US
 keywords:
-  - Template DotNet Library
+  - HelpCards
   - Requirements
   - Specification
   - .NET

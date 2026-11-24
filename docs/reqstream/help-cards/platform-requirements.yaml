@@ -21,34 +21,34 @@
 sections:
   - title: Platform Support
     requirements:
-      - id: Template-Platform-Windows
+      - id: HelpCards-Platform-Windows
         title: The library shall build and run on Windows platforms.
         tags: [system]
         justification: |
           DEMA Consulting libraries must support Windows as a major development platform.
         tests:
           # Tests link to "windows" to ensure results come from Windows platform
-          - "windows@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "windows@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
 
-      - id: Template-Platform-Linux
+      - id: HelpCards-Platform-Linux
         title: The library shall build and run on Linux platforms.
         tags: [system]
         justification: |
           DEMA Consulting libraries must support Linux for CI/CD and containerized environments.
         tests:
           # Tests link to "ubuntu" to ensure results come from Linux platform
-          - "ubuntu@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "ubuntu@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
 
-      - id: Template-Platform-MacOS
+      - id: HelpCards-Platform-MacOS
         title: The library shall build and run on macOS platforms.
         tags: [system]
         justification: |
           DEMA Consulting libraries must support macOS for developers using Apple platforms.
         tests:
           # Tests link to "macos" to ensure results come from macOS platform
-          - "macos@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "macos@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
 
-      - id: Template-Platform-Net8
+      - id: HelpCards-Platform-Net8
         title: The library shall support .NET 8 runtime.
         tags: [system]
         justification: |
@@ -57,9 +57,9 @@ sections:
           a newer release, such as enterprise environments with slow upgrade cycles, can keep
           using it.
         tests:
-          - "net8.0@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "net8.0@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
 
-      - id: Template-Platform-Net9
+      - id: HelpCards-Platform-Net9
         title: The library shall support .NET 9 runtime.
         tags: [system]
         justification: |
@@ -67,27 +67,27 @@ sections:
           library continues to support this runtime so that users who have not yet migrated to a
           newer release can keep using it.
         tests:
-          - "net9.0@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "net9.0@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
 
-      - id: Template-Platform-Net10
+      - id: HelpCards-Platform-Net10
         title: The library shall support .NET 10 runtime.
         tags: [system]
         justification: |
           .NET 10 is the current Long-Term Support (LTS) release. Supporting this runtime provides
           a stable, long-term supported target for users who prefer LTS releases.
         tests:
-          - "net10.0@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "net10.0@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
 
-      - id: Template-Platform-Net11
+      - id: HelpCards-Platform-Net11
         title: The library shall support .NET 11 runtime.
         tags: [system]
         justification: |
           .NET 11 is the latest release in the .NET platform roadmap. Supporting this runtime
           ensures the library works for users as they adopt the newest .NET version.
         tests:
-          - "net11.0@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "net11.0@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
 
-      - id: Template-Platform-NetStd20
+      - id: HelpCards-Platform-NetStd20
         title: The library shall support the .NET Standard 2.0 target framework.
         tags: [system]
         justification: |
@@ -98,4 +98,4 @@ sections:
           Because .NET Framework 4.8.1 implements .NET Standard 2.0, a passing test on net481
           demonstrates .NET Standard 2.0 compatibility.
         tests:
-          - "net481@TemplateDotNetLibrary_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
+          - "net481@HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting"
