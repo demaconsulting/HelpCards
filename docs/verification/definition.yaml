@@ -16,6 +16,9 @@ input-files:
   - docs/verification/help-cards/loading/body-parser.md
   - docs/verification/help-cards/composition.md
   - docs/verification/help-cards/composition/help-catalog-builder.md
+  - docs/verification/help-cards/composition/source-registry.md
+  - docs/verification/help-cards/composition/mounter.md
+  - docs/verification/help-cards/composition/overlay-merger.md
   - docs/verification/help-cards/composition/reference-validator.md
   - docs/verification/help-cards/composition/sibling-order.md
   - docs/verification/help-cards/composition/problem-collector.md

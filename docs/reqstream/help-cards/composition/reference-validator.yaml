@@ -65,13 +65,14 @@ sections:
               - id: HelpCards-Composition-ReferenceValidator-ExampleNames
                 title: >-
                   The validator shall report an example name that is used twice in one scope, which is the source
-                  and the first segment of the owning card's id, at the second use, and allow the same name in
-                  different scopes.
+                  and the first segment of the owning card's id and includes the examples that overlays add, at the
+                  second use in the file where it is written, and allow the same name in different scopes.
                 justification: |
                   A link to an example must find exactly one example.
                 tests:
                   - ReferenceValidator_CheckExampleNames_SameScope_ReportsDuplicateAtSecondUse
                   - ReferenceValidator_CheckExampleNames_DifferentScopes_AreAllowed
+                  - ReferenceValidator_CheckExampleNames_OverlayRepeatsName_IsReportedInOverlayFile
 
               - id: HelpCards-Composition-ReferenceValidator-SiblingNames
                 title: >-
@@ -84,3 +85,15 @@ sections:
                   - ReferenceValidator_CheckSiblingNames_AliasEqualsSibling_ReportsNameDuplicate
                   - ReferenceValidator_CheckSiblingNames_OwnAliasesAndNames_AreChecked
                   - ReferenceValidator_CheckSiblingNames_DifferentParents_AreAllowed
+
+              - id: HelpCards-Composition-ReferenceValidator-ImportedSources
+                title: >-
+                  The validator shall resolve a bare link and a bare see-also entry in the source the text is
+                  written in and in the sources it imports, resolve a link that names a source in that source,
+                  and report a bare id that the source and an import both have as ambiguous-reference.
+                justification: |
+                  A tool links the cards of its companion library by local id, and a clash must be fixed by
+                  naming the source.
+                tests:
+                  - ReferenceValidator_ResolveBody_ImportedSource_ResolvesBareAndQualifiedLinks
+                  - ReferenceValidator_ResolveSeeAlso_BareIdInTwoSources_ReportsAmbiguousReference

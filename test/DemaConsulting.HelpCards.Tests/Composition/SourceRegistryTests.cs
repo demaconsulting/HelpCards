@@ -259,4 +259,29 @@ public class SourceRegistryTests
         Assert.Throws<ArgumentNullException>(() => SourceRegistry.Read(null!, CultureInfo.InvariantCulture, null, null));
         Assert.Throws<ArgumentNullException>(() => SourceRegistry.Read([], null!, null, null));
     }
+
+    /// <summary>
+    ///     Proves that an import that is not registered, is registered later, or is the source itself is reported once
+    ///     per import and that the imports of such a source are not listed.
+    /// </summary>
+    [Fact]
+    public void SourceRegistry_Read_MissingLaterAndSelfImports_ReportEachRule()
+    {
+        // Arrange
+        var later = CatalogBuilding.Named("later", ("l.md", SourceReading.Card()));
+        var missing = CatalogBuilding.Named("missing", ("m.md", SourceReading.Card()));
+        var self = CatalogBuilding.Named("self", ("s.md", SourceReading.Card()));
+        var importer = CatalogBuilding.Named("importer", ("i.md", SourceReading.Card())).Imports(later).Imports(missing);
+
+        // Act
+        var registry = Read(Flat(importer, later, self.Imports(self.WithName("self"))));
+
+        // Assert
+        Assert.Equal(
+            [(0, "import-order"), (0, "import-missing"), (2, "import-cycle")],
+            registry.Problems.Select(item => (item.SourceIndex, item.Problem.RuleId)));
+        Assert.Empty(registry.Entries[0].Imports);
+        Assert.True(registry.Entries[0].BrokenImports);
+        Assert.False(registry.Entries[1].BrokenImports);
+    }
 }

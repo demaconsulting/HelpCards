@@ -188,4 +188,24 @@ public class OverlayMergerTests
         // Act / Assert
         Assert.Throws<ArgumentNullException>(() => OverlayMerger.Apply(null!, new ProblemCollector()));
     }
+
+    /// <summary>
+    ///     Proves that the overlays of one source apply in ordinal file order, not in the order the files were listed.
+    /// </summary>
+    [Fact]
+    public void OverlayMerger_Apply_OverlaysOfOneSource_ApplyInOrdinalFileOrder()
+    {
+        // Arrange
+        var result = CatalogBuilding.Compose(
+            ("a.md", SourceReading.Card(title: "Base", body: "Base.")),
+            ("o-b.md", Overlay("a", "title: B\n", "B.")),
+            ("o-a.md", Overlay("a", "title: A\n", "A.")));
+
+        // Act
+        var node = result.Data!.Find("a")!;
+
+        // Assert: the last overlay in file order wins the title and its body comes last
+        Assert.Equal("B", node.Title);
+        Assert.Equal("Base.\n\nA.\n\nB.", string.Concat(node.Body.Select(part => part.Text)));
+    }
 }

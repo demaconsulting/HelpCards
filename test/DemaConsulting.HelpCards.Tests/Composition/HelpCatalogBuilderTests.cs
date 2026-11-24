@@ -187,6 +187,25 @@ public class HelpCatalogBuilderTests
     }
 
     /// <summary>
+    ///     Proves that a card under a card of another source is reported once as tree-foreign and left out.
+    /// </summary>
+    [Fact]
+    public void HelpCatalogBuilder_Compose_CardUnderForeignCard_ReportsTreeForeign()
+    {
+        // Arrange: the second source has a/b.md but a.md belongs to the first source
+        var first = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card())), "first");
+        var second = HelpSource.FromFiles(SourceReading.Files(("a/b.md", SourceReading.Card()), ("a/b/c.md", SourceReading.Card())), "second");
+
+        // Act
+        var result = new HelpCatalogBuilder().AddSource(first).AddSource(second).Compose();
+
+        // Assert
+        var problem = Assert.Single(result.Errors);
+        Assert.Equal(("tree-foreign", "second", "a/b.md"), (problem.RuleId, problem.SourceName, problem.File));
+        Assert.Contains("'first'", problem.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that a card with a tag outside the vocabulary is reported at the line of the tag.
     /// </summary>
     [Fact]

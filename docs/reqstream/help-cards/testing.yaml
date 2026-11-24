@@ -26,6 +26,7 @@ sections:
               - HelpCards-Testing-HelpCardValidator-Assert
               - HelpCards-Testing-HelpCardValidator-Options
               - HelpCards-Testing-HelpCardValidator-Arguments
+              - HelpCards-Testing-HelpCardValidator-SeveralSources
             tests:
               - Testing_Validation_ValidAndDefectiveSources_ReportAndAssert
 

@@ -29,9 +29,9 @@ software items, specifically:
 - **Loading (Subsystem)** — Finds the files of a source, decodes front matter, and reads cards, overlays,
   translations, tokens, and bodies into definitions; its units are HelpSource, HelpFileProvider,
   FrontMatterDecoder, CardReader, TokenResolver, CultureSelector, and BodyParser
-- **Composition (Subsystem)** — Registers the single source, runs the one composition pipeline, orders siblings,
-  validates every reference and name, and collects all problems; its units are HelpCatalogBuilder,
-  ReferenceValidator, SiblingOrder, and ProblemCollector
+- **Composition (Subsystem)** — Registers the sources, mounts them, resolves imports and overlays, runs the one
+  composition pipeline, orders siblings, validates every reference and name, and collects all problems; its units are
+  HelpCatalogBuilder, SourceRegistry, Mounter, OverlayMerger, ReferenceValidator, SiblingOrder, and ProblemCollector
 - **Catalog (Subsystem)** — The frozen data, the immutable model, filtered views, path and example lookup, and the
   problem model; its units are HelpCatalog, HelpCard, HelpProblem, CatalogData, CatalogScope, PathResolver, and
   ExampleResolver

@@ -27,7 +27,10 @@ gives exactly one problem at the expected file and line, and references to faile
 - **See-also**: entries resolve in order without duplicates, an absent source is dropped with an informational problem,
   and an unknown entry is reported at its line.
 - **Suppression**: links and see-also entries that name a file that failed to load give no problem.
+- **Imported sources**: a bare link and a bare see-also entry resolve to the importer's own card, a link that names a
+  source resolves to that source even when the importer has a card of the same id, and a bare see-also entry that names
+  a card of the source and of an import is ambiguous.
 - **Example names**: the second use in one scope is reported with the first location; the same name in different scopes
-  is allowed.
+  is allowed; a name that an overlay repeats is reported in the overlay file.
 - **Sibling names**: an alias equal to a sibling alias or name is reported at the alias line, an alias equal to the
   card's own name is reported, and equal names below different parents are allowed.

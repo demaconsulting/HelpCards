@@ -22,6 +22,9 @@ includes:
   - docs/reqstream/help-cards/composition/help-catalog-builder.yaml
   - docs/reqstream/help-cards/composition/reference-validator.yaml
   - docs/reqstream/help-cards/composition/sibling-order.yaml
+  - docs/reqstream/help-cards/composition/source-registry.yaml
+  - docs/reqstream/help-cards/composition/mounter.yaml
+  - docs/reqstream/help-cards/composition/overlay-merger.yaml
   - docs/reqstream/help-cards/composition/problem-collector.yaml
   - docs/reqstream/help-cards/catalog.yaml
   - docs/reqstream/help-cards/catalog/help-catalog.yaml

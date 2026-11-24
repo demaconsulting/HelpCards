@@ -424,6 +424,84 @@ public class HelpCardsTests
     }
 
     /// <summary>
+    ///     Proves that libraries mounted under their names and an application that imports one of them compose into
+    ///     one catalog with global ids, shared tokens, bare links, overlays, and cross-library links.
+    /// </summary>
+    [Fact]
+    public void HelpCards_MultiSource_MountedLibrariesAndApp_ComposeOneCatalog()
+    {
+        // Arrange
+        var libA = CatalogBuilding.LibA();
+
+        // Act
+        var catalog = HelpCatalog.Create(builder => builder
+            .ToolName("demo")
+            .AddMountedSource(libA)
+            .AddMountedSource(CatalogBuilding.LibB())
+            .AddSource(CatalogBuilding.App(libA)));
+
+        // Assert: one tree grouped by source, with the application's cards after the libraries
+        Assert.Equal(["lib-a", "lib-b", "start"], catalog.Roots.Select(card => card.Id));
+        Assert.Equal(["lib-a", "lib-b", "app"], catalog.Sources.Select(info => info.Name));
+
+        // Assert: the application sees the tokens and bare ids of the library it imports and extends its cards
+        Assert.Contains("at most 10 nodes", catalog.Find("start")!.Body, StringComparison.Ordinal);
+        Assert.Equal("Graph in the app", catalog.Find("lib-a/graph")!.Title);
+        Assert.Contains("In the application, begin at the card `start`", catalog.Find("lib-a/graph")!.Body, StringComparison.Ordinal);
+
+        // Assert: links between the libraries resolve because both are present
+        Assert.Equal(["lib-b/chart", "start"], catalog.Find("lib-a/graph")!.SeeAlsoIds);
+        Assert.Contains("the card `lib-a/graph`", catalog.Find("lib-b/chart")!.Body, StringComparison.Ordinal);
+        Assert.Contains("lib-b", catalog.RenderIndex(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that links and optional overlays that name a source that is not present degrade without failing.
+    /// </summary>
+    [Fact]
+    public void HelpCards_MultiSource_AbsentSources_DegradeToDisplayTextAndSkipOptionalOverlays()
+    {
+        // Arrange
+        var source = CatalogBuilding.Named(
+            "app",
+            ("a.md", SourceReading.Card(body: "See [[other:thing|the thing]].", extraFrontMatter: "see-also:\n  - other:thing\n")),
+            ("o.md", "---\nextends: other:thing\noptional: true\n---\nExtra."));
+
+        // Act
+        var catalog = HelpCatalog.Create(builder => builder.AddSource(source));
+
+        // Assert
+        Assert.Equal("See the thing.", catalog.Find("a")!.Body);
+        Assert.Empty(catalog.GetSeeAlso(catalog.Find("a")!));
+        Assert.Equal(
+            ["external-source-absent", "external-source-absent", "overlay-optional-skipped"],
+            catalog.Diagnostics.Select(problem => problem.RuleId).Order(StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    ///     Proves that clashes between sources are reported together in one exception that names both sources.
+    /// </summary>
+    [Fact]
+    public void HelpCards_MultiSource_Collisions_AreCollectedInOneException()
+    {
+        // Arrange: a shared card id, a shared mount, and a shared source name
+        var one = CatalogBuilding.Named("one", ("a.md", SourceReading.Card()));
+        var two = CatalogBuilding.Named("two", ("a.md", SourceReading.Card()));
+        var three = CatalogBuilding.Named("one", ("c.md", SourceReading.Card()));
+
+        // Act
+        var exception = Assert.Throws<HelpCatalogException>(() => HelpCatalog.Create(builder => builder
+            .AddSource(one)
+            .AddSource(two)
+            .AddMountedSource(three, "x")));
+
+        // Assert
+        Assert.Equal(
+            [("two", "collision"), ("one", "source-name-duplicate")],
+            exception.Problems.Select(problem => (problem.SourceName, problem.RuleId)));
+        Assert.Contains("(and 1 more)", exception.Message, StringComparison.Ordinal);
+    }
+    /// <summary>
     ///     Proves that forward references are valid and broken references are reported with file and line.
     /// </summary>
     [Fact]

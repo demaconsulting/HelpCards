@@ -253,6 +253,7 @@ reviews:
       - "docs/design/help-cards/composition.md"                     # subsystem design
       - "docs/verification/help-cards/composition.md"               # subsystem verification
       - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionTests.cs"  # subsystem tests
+      - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionMultiSourceTests.cs"  # subsystem tests (several sources)
 
   # HelpCards-Composition-HelpCatalogBuilder Review (one per unit)
   - id: HelpCards-Composition-HelpCatalogBuilder
@@ -268,6 +269,8 @@ reviews:
       - "docs/verification/help-cards/composition/help-catalog-builder.md"  # unit verification
       - "src/DemaConsulting.HelpCards/Composition/HelpCatalogBuilder*.cs"   # unit source (partial files)
       - "src/DemaConsulting.HelpCards/Composition/CompositionResult.cs"     # unit source
+      - "src/DemaConsulting.HelpCards/Composition/SourceTree.cs"            # unit source
+      - "src/DemaConsulting.HelpCards/Composition/CardBuild.cs"             # unit source
       - "test/DemaConsulting.HelpCards.Tests/Composition/HelpCatalogBuilderTests.cs"  # unit tests
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"          # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"            # test support
@@ -288,6 +291,62 @@ reviews:
       - "test/DemaConsulting.HelpCards.Tests/Composition/ReferenceValidatorTests.cs"  # unit tests
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"          # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"            # test support
+
+  # HelpCards-Composition-SourceRegistry Review (one per unit)
+  - id: HelpCards-Composition-SourceRegistry
+    title: Review that HelpCards Composition SourceRegistry Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/source-registry.yaml"   # unit requirements
+      - "docs/design/help-cards/composition/source-registry.md"   # unit design
+      - "docs/verification/help-cards/composition/source-registry.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/SourceRegistry.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/SourceEntry.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/SourceRegistration.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/LookupKind.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/LookupResult.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/SourceRegistryTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Composition-Mounter Review (one per unit)
+  - id: HelpCards-Composition-Mounter
+    title: Review that HelpCards Composition Mounter Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/mounter.yaml"   # unit requirements
+      - "docs/design/help-cards/composition/mounter.md"   # unit design
+      - "docs/verification/help-cards/composition/mounter.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/Mounter.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/MounterTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Composition-OverlayMerger Review (one per unit)
+  - id: HelpCards-Composition-OverlayMerger
+    title: Review that HelpCards Composition OverlayMerger Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/overlay-merger.yaml"   # unit requirements
+      - "docs/design/help-cards/composition/overlay-merger.md"   # unit design
+      - "docs/verification/help-cards/composition/overlay-merger.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/OverlayMerger.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/OverlayMergerTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
 
   # HelpCards-Composition-SiblingOrder Review (one per unit)
   - id: HelpCards-Composition-SiblingOrder

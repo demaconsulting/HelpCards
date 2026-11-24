@@ -19,6 +19,9 @@ input-files:
   - docs/design/help-cards/loading/body-parser.md
   - docs/design/help-cards/composition.md
   - docs/design/help-cards/composition/help-catalog-builder.md
+  - docs/design/help-cards/composition/source-registry.md
+  - docs/design/help-cards/composition/mounter.md
+  - docs/design/help-cards/composition/overlay-merger.md
   - docs/design/help-cards/composition/reference-validator.md
   - docs/design/help-cards/composition/sibling-order.md
   - docs/design/help-cards/composition/problem-collector.md

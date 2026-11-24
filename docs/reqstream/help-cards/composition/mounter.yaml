@@ -1,0 +1,53 @@
+---
+# Mounter Unit Requirements
+#
+# Requirements for the Mounter unit of the Composition subsystem, which gives the cards of every source their global
+# ids, creates the generated root cards of mounted sources, and finds the clashes that two sources can cause.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        sections:
+          - title: Mounter Requirements
+            requirements:
+              - id: HelpCards-Composition-Mounter-GlobalIds
+                title: >-
+                  The unit shall give a card of a flat source its local id as global id and a card of a mounted
+                  source the global id mount/localId, and reject null arguments.
+                justification: |
+                  A mount renames only global ids, so a library can be mounted anywhere without editing its cards.
+                tests:
+                  - Mounter_GlobalId_FlatAndMounted_PrefixesOnlyMountedSources
+
+              - id: HelpCards-Composition-Mounter-Claims
+                title: >-
+                  The unit shall let the first source in registration order keep a global id, report a later card or
+                  mount that uses the same id as collision naming both sources and files, report a mount that is
+                  not a valid segment as mount-invalid, and leave the later card or source out without further
+                  reports.
+                justification: |
+                  Nothing may shadow another card silently, and one clash must be one problem.
+                tests:
+                  - Mounter_Register_DistinctIds_ReturnsOwners
+                  - Mounter_Register_ContestedIdAndMount_DropsTheLaterHolder
+
+              - id: HelpCards-Composition-Mounter-MountRoot
+                title: >-
+                  The unit shall create for a mounted source a root card whose id is the mount, whose title,
+                  summary, aliases, culture, and extension keys come from the source file, which has no tags and
+                  no examples, and whose children are the roots of the source.
+                justification: |
+                  The generated root is the landing page of a library inside a larger catalog.
+                tests:
+                  - Mounter_CreateRoot_MountedSource_TakesTextFromSourceFileAndListsRoots
+
+              - id: HelpCards-Composition-Mounter-RootNames
+                title: >-
+                  The unit shall report a root name or alias, ignoring case, that two sources both use as
+                  collision, leave a repeat inside one flat source to the sibling check, and report a mount alias
+                  that repeats the mount as name-duplicate.
+                justification: |
+                  A first path segment must lead to exactly one library or card.
+                tests:
+                  - Mounter_CheckRootNames_NamesAndAliases_ReportCollisionsAcrossSources

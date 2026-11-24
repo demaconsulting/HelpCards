@@ -2,7 +2,7 @@
 # HelpCatalogBuilder Unit Requirements
 #
 # Requirements for the HelpCatalogBuilder unit of the Composition subsystem, which is configured by the adopter and
-# runs the one composition pipeline over the single source of a catalog.
+# runs the one composition pipeline over the sources of a catalog.
 
 sections:
   - title: HelpCards Requirements
@@ -23,18 +23,28 @@ sections:
                   - HelpCatalogBuilder_Settings_InvalidArguments_ThrowAndValidOnesChain
                   - HelpCatalogBuilder_AddSource_NullSource_ThrowsArgumentNullException
 
-              - id: HelpCards-Composition-HelpCatalogBuilder-SingleSource
+              - id: HelpCards-Composition-HelpCatalogBuilder-MultipleSources
                 title: >-
-                  The builder shall accept exactly one source without imports, reject a second source and a source
-                  with imports with an argument exception, and reject composing without a source with an argument
-                  exception.
+                  The builder shall accept any number of sources, added flat or mounted, including sources that
+                  import other sources, check the imports when the catalog is composed, and reject composing
+                  without a source with an argument exception.
                 justification: |
-                  This release composes one source; the limit must be explicit and distinct from card defects.
+                  A product composes its own help with the help of its libraries; defects of the composition are
+                  card defects and belong in the problem list, while a missing source is a programming mistake.
                 tests:
-                  - HelpCatalogBuilder_AddSource_SecondSource_ThrowsArgumentException
-                  - HelpCatalogBuilder_AddSource_SourceWithImports_ThrowsArgumentException
+                  - HelpCatalogBuilder_AddSource_SecondSource_ComposesBothSources
+                  - HelpCatalogBuilder_AddSource_SourceWithImports_IsCheckedAtComposition
                   - HelpCatalogBuilder_Compose_NoSource_ThrowsArgumentException
 
+              - id: HelpCards-Composition-HelpCatalogBuilder-MountedSources
+                title: >-
+                  The builder shall accept a source with an optional mount, reject a null source and an empty or
+                  white-space mount with an argument exception, and return itself so that calls can be chained.
+                justification: |
+                  The mount is the only way an application names a library inside its catalog; mistakes in it must
+                  surface where they are made.
+                tests:
+                  - HelpCatalogBuilder_AddMountedSource_InvalidArguments_ThrowAndValidOnesChain
               - id: HelpCards-Composition-HelpCatalogBuilder-Pipeline
                 title: >-
                   The builder shall compose a valid source into frozen data without an error, giving the cards,
@@ -49,13 +59,15 @@ sections:
 
               - id: HelpCards-Composition-HelpCatalogBuilder-TreePlacement
                 title: >-
-                  The builder shall report a card whose parent card does not exist once, and shall leave out the
+                  The builder shall report a card whose parent card does not exist once, as tree-foreign when the
+                  parent id is a card of another source and as parent-missing otherwise, and shall leave out the
                   cards below it and the cards below a file that failed to load without further reports.
                 justification: |
                   One broken file must yield one problem, so that authors fix causes and not their consequences.
                 tests:
                   - HelpCatalogBuilder_Compose_MissingParent_ReportsParentMissingOnce
                   - HelpCatalogBuilder_Compose_FailedParent_ReportsOnlyTheFailure
+                  - HelpCatalogBuilder_Compose_CardUnderForeignCard_ReportsTreeForeign
 
               - id: HelpCards-Composition-HelpCatalogBuilder-TagVocabulary
                 title: >-
@@ -91,14 +103,12 @@ sections:
 
               - id: HelpCards-Composition-HelpCatalogBuilder-Overlays
                 title: >-
-                  The builder shall read overlay files without applying them, so that an overlay does not add a
-                  card or change the card it extends.
+                  The builder shall apply the overlays of every source before it resolves references, so that an
+                  overlay changes the card it extends and does not add a card of its own.
                 justification: |
-                  Merging overlays belongs to the composition of several sources; until then an overlay must have
-                  no effect rather than a half-defined one.
+                  Overlays are the only way a source contributes to the cards of another source.
                 tests:
-                  - HelpCatalogBuilder_Compose_Overlay_IsReadButHasNoEffect
-
+                  - HelpCatalogBuilder_Compose_Overlay_ReplacesTitleAndAppendsBody
               - id: HelpCards-Composition-HelpCatalogBuilder-Diagnostics
                 title: >-
                   The builder shall keep informational problems, such as a link to a source that is not present,
@@ -110,8 +120,8 @@ sections:
 
               - id: HelpCards-Composition-HelpCatalogBuilder-Sources
                 title: >-
-                  The builder shall list the sources that were added, in the order they were added, for the
-                  validator, and list none for a new builder.
+                  The builder shall list the sources that were added, flat or mounted, in the order they were added,
+                  for the validator, and list none for a new builder.
                 justification: |
                   The validator inspects the sources that a product configured without adding a second way to
                   configure them.

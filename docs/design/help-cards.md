@@ -93,18 +93,24 @@ build fails after the last step if any error exists, and each step still runs on
 survived earlier steps (a file with a syntax error contributes nothing, and references to its id are
 not reported):
 
-1. **Validate builder input**: names, culture, and the number of sources.
-2. **Read files**: list the files of the source in ordinal order, read `_source.md` and its
-   translations, and group files into cards, overlays, translations, and data files. Names that fit
-   no pattern are rejected.
+1. **Validate builder input**: source names, mounts, imports (they must be added before their importer),
+   and the schema of every source, in registration order.
+2. **Read files**: for each source in registration order, list its files in ordinal order, read
+   `_source.md` and its translations, and group files into cards, overlays, translations, and data
+   files. Names that fit no pattern are rejected.
 3. **Read cards**: choose the culture variant per file, decode the front matter, build the card
-   definition, substitute tokens, and parse the body into text and link parts.
-4. **Register cards**: compute ids, detect duplicates, and order siblings.
+   definition, substitute tokens (the tokens of the source, of the sources it imports, and the
+   built-ins), and parse the body into text and link parts.
+4. **Register cards**: compute global ids (mounted sources get the mount as prefix and a generated
+   root card), detect collisions and cards under another source's cards, and order siblings.
 5. **Check the tree**: parent exists, `children` entries are unique and exist, example kinds and
    files are valid, tags satisfy the optional vocabulary.
-6. **Apply overlays**: reserved; a catalog currently holds one source and does not merge overlays.
-7. **Resolve references** in a final pass over the final tree: links, see-also entries, and examples.
-8. **Check uniqueness**: example names, expected roots, and sibling names and aliases.
+6. **Apply overlays**: sources in registration order and, inside a source, by ordinal file path; an
+   overlay replaces title and summary and appends body, see-also entries, and examples to the card it
+   extends.
+7. **Resolve references** in a final pass over the final tree, in the scope of the source that wrote
+   each text and its imports: links, see-also entries, and examples. Links to absent sources degrade.
+8. **Check uniqueness**: example names, expected roots, and sibling and root names and aliases.
 9. **Freeze**: build the immutable catalog data. Warnings are produced only by the validator.
 
 Rendering is a pure function of the immutable catalog and the render options; no rendered output is
@@ -121,10 +127,9 @@ cached. A catalog never reads files after `Create` returns.
 - **Failure model**: card defects throw `HelpCatalogException` carrying every problem; bad arguments
   throw `ArgumentException` or `ArgumentNullException`; the library never throws
   `InvalidOperationException` directly.
-- **Single source**: a catalog currently holds exactly one source with no imports; adding a second
-  source or a source with imports is rejected with `ArgumentException`. Composition of several
-  sources, mounting, overlays, search, suggestions, the command-line helper, and the agent tool are
-  not part of the current system.
+- **Several sources**: a catalog composes any number of sources in registration order, flat or mounted;
+  a source can import only sources that were added before it. Search, suggestions, the command-line
+  helper, and the agent tool are not part of the current system.
 - **Compliance**: All functionality must be traceable to requirements.
 - **Quality**: Zero warnings, complete documentation of every member, and tests for every requirement.
 

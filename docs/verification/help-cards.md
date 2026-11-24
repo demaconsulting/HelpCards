@@ -140,6 +140,19 @@ children list, the order values, and the names give.
 Creates a catalog whose first card links forward, and composes a source with a broken see-also entry, card link, and
 example link; asserts the plain text of the forward link and the rule and line of each broken reference.
 
+### Multiple Sources: Mounts, Imports, Overlays, and Links
+
+**Tests**: `HelpCards_MultiSource_MountedLibrariesAndApp_ComposeOneCatalog`,
+`HelpCards_MultiSource_AbsentSources_DegradeToDisplayTextAndSkipOptionalOverlays`,
+`HelpCards_MultiSource_Collisions_AreCollectedInOneException`
+
+Creates a catalog from the embedded `lib-a` and `lib-b` libraries mounted under their names and the `app` source added
+flat after them, which imports `lib-a`. Asserts the roots and sources in registration order, the tokens and bare links
+of the application, the overlay that changes a library card, and the links between the libraries. A second test
+creates a catalog from a source with a link, a see-also entry, and an optional overlay for a source that is not
+present, and asserts the display text, the empty see-also list, and the informational problems. A third test asserts
+that a shared card id, a shared mount, and a shared source name are reported together in one exception.
+
 ### Lookup: Paths and Examples
 
 **Test**: `HelpCards_Lookup_PathsAndExamples_FindCardsAndExamples`

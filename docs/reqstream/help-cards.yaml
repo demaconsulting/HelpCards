@@ -162,12 +162,30 @@ sections:
           shared between threads, so it must not change or touch the file system.
         children:
           - HelpCards-Composition-Tree
-          - HelpCards-Composition-SingleSource
           - HelpCards-Catalog-Model
         tests:
           - HelpCards_Catalog_SimpleFixture_ExposesTreeAliasesTagsExamplesAndLinks
           - HelpCards_Catalog_Create_IsImmutableAndReadsNoFilesAfterwards
 
+      - id: HelpCards-MultiSource-Composition
+        title: >-
+          A catalog shall compose the help of several libraries and an application: each source can be mounted
+          under its own name or added flat, a source can import the sources of its own product to use their tokens
+          and card ids, overlays can extend cards of other sources, links between sources degrade to their display
+          text when the other source is absent, and clashes between sources shall be reported with both sources.
+        tags: [system]
+        justification: |
+          An application shows its own help together with the help of the libraries it uses, and a library must
+          be usable with or without its neighbors.
+        children:
+          - HelpCards-Composition-Sources
+          - HelpCards-Composition-Imports
+          - HelpCards-Composition-Overlays
+          - HelpCards-Composition-Collisions
+        tests:
+          - HelpCards_MultiSource_MountedLibrariesAndApp_ComposeOneCatalog
+          - HelpCards_MultiSource_AbsentSources_DegradeToDisplayTextAndSkipOptionalOverlays
+          - HelpCards_MultiSource_Collisions_AreCollectedInOneException
       - id: HelpCards-Ordering-Siblings
         title: >-
           Cards that share a parent, and the roots, shall be ordered by the children list of their parent, then by

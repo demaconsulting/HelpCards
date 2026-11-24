@@ -166,11 +166,20 @@ sections:
               - id: HelpCards-Testing-HelpCardValidator-Arguments
                 title: >-
                   The validator shall reject a null source, callback, catalog, or directory with an argument null
-                  exception, a builder without a source, a source that imports another source, and a directory
-                  that does not exist with an argument exception.
+                  exception, a builder without a source and a directory that does not exist with an argument
+                  exception, and report a source whose import is not added as a problem.
                 justification: |
                   A mistake of the caller must be told apart from a defect of the help.
                 tests:
-                  - HelpCardValidator_Validate_InvalidBuilder_ThrowsArgumentException
+                  - HelpCardValidator_Validate_InvalidBuilder_ThrowsArgumentExceptionAndReportsImports
                   - HelpCardValidator_Members_NullArguments_ThrowArgumentNullException
                   - HelpCardValidator_CompareToDirectory_InvalidArguments_Throw
+
+              - id: HelpCards-Testing-HelpCardValidator-SeveralSources
+                title: >-
+                  The validator shall check the composition of several sources that a configuration callback adds,
+                  and report a token as unused only when no source uses it.
+                justification: |
+                  A token of a library is often used only by the application that imports it.
+                tests:
+                  - HelpCardValidator_Validate_SeveralSources_ChecksCompositionAndTokenUseAcrossSources
