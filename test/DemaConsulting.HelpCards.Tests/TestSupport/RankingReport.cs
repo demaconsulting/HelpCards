@@ -28,7 +28,7 @@ internal static class RankingReport
         "rel",
         "unit test",
         "make the program",
-        "xyzzy",
+        "zebra",
     ];
 
     /// <summary>

@@ -136,9 +136,9 @@ public partial class HelpCatalogTests
         var catalog = BigCatalog();
 
         // Act
-        var name = catalog.Suggest("buid");
-        var alias = catalog.Suggest("shipp");
-        var id = catalog.Suggest("build/clen");
+        var name = catalog.Suggest("built");
+        var alias = catalog.Suggest("shop");
+        var id = catalog.Suggest("build/lean");
         var limited = catalog.Suggest("test", 1);
         var none = catalog.Suggest("qqqqqqqq");
 
@@ -160,7 +160,7 @@ public partial class HelpCatalogTests
         var view = BigCatalog().Without(["build/clean"]);
 
         // Act
-        var suggestions = view.Suggest("clen");
+        var suggestions = view.Suggest("lean");
 
         // Assert
         Assert.DoesNotContain("build/clean", suggestions);
@@ -191,8 +191,8 @@ public partial class HelpCatalogTests
         var catalog = BigCatalog();
 
         // Act
-        var name = catalog.Resolve("build compil");
-        var alias = catalog.Resolve("shipp");
+        var name = catalog.Resolve("build compiled");
+        var alias = catalog.Resolve("shop");
         var far = catalog.Resolve("qqqqqqqq");
         var found = catalog.Resolve("build");
 

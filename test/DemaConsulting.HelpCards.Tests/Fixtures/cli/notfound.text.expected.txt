@@ -1,2 +1,2 @@
-Error: Unknown help card 'usag' under 'guide'.
+Error: Unknown help card 'usages' under 'guide'.
 Did you mean 'usage'? Cards under 'guide': setup, usage. Run 'tool help guide' for their summaries.

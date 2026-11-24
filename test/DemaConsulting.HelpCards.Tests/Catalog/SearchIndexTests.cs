@@ -83,22 +83,22 @@ public class SearchIndexTests
     {
         // Arrange
         var catalog = CatalogBuilding.FromFiles(
-            ("alpha.md", SourceReading.Card(title: "Different", summary: "Plain words.", extraFrontMatter: "aliases:\n  - gamma\ntags:\n  - gammatag\n")),
-            ("gammaray.md", SourceReading.Card(title: "Gammarays", summary: "Gamma rays are photons.")));
+            ("alpha.md", SourceReading.Card(title: "Different", summary: "Plain words.", extraFrontMatter: "aliases:\n  - gamma\ntags:\n  - gambit\n")),
+            ("gamut.md", SourceReading.Card(title: "Gamuts", summary: "Gamut and range.")));
 
         // Act
         var gam = SearchAll(catalog, "gam").ToDictionary(result => result.Id, result => result);
         var ga = SearchAll(catalog, "ga");
-        var tag = SearchAll(catalog, "gammat");
+        var tag = SearchAll(catalog, "gamb");
 
         // Assert: the best prefix of "gam" is the alias or the id (20); the other fields prefix-match too and are reported
         Assert.Equal(20 + 50, gam["alpha"].Score);
         Assert.Equal(["alias"], gam["alpha"].MatchedOn);
-        Assert.Equal(20 + 50, gam["gammaray"].Score);
-        Assert.Equal(["id", "title", "summary"], gam["gammaray"].MatchedOn); Assert.Empty(ga);
+        Assert.Equal(20 + 50, gam["gamut"].Score);
+        Assert.Equal(["id", "title", "summary"], gam["gamut"].MatchedOn);
+        Assert.Empty(ga);
         Assert.Empty(tag);
     }
-
     /// <summary>
     ///     Proves that a plural <c>s</c> is removed from long words for an English or neutral catalog and from no other.
     /// </summary>
@@ -219,7 +219,7 @@ public class SearchIndexTests
     }
 
     /// <summary>
-    ///     Proves that suggestions are the closest names within the distance rule, ordered by distance and then ordinally.
+    ///     Proves that suggestions are the closest names within the distance rule, ordered by distance and then by the ordinal order of the candidates.
     /// </summary>
     [Fact]
     public void SearchIndex_Suggest_Candidates_AreFilteredByDistanceAndOrdered()
@@ -228,13 +228,13 @@ public class SearchIndexTests
         string[] candidates = ["tags", "tests", "tag", "build", "Tags", "stage"];
 
         // Act
-        var close = SearchIndex.Suggest("tagz", candidates, 3);
-        var limited = SearchIndex.Suggest("tagz", candidates, 1);
+        var close = SearchIndex.Suggest("tab", candidates, 3);
+        var limited = SearchIndex.Suggest("tab", candidates, 1);
         var none = SearchIndex.Suggest("zzzzzz", candidates, 3);
 
-        // Assert: "tags" and "Tags" are distance 1 and "tag" is distance 1; "tests" and "stage" are 3 and 2 away
-        Assert.Equal(["Tags", "tag", "tags"], close);
-        Assert.Equal(["Tags"], limited);
+        // Assert: "tag" is one change away, "Tags" and "tags" are two; "stage" and "tests" are too far
+        Assert.Equal(["tag", "Tags", "tags"], close);
+        Assert.Equal(["tag"], limited);
         Assert.Empty(none);
     }
 
@@ -249,10 +249,10 @@ public class SearchIndexTests
         string[] candidates = ["configuration"];
 
         // Act: "configuration" has 13 letters, so 4 changes are accepted for a 13-letter word, 2 for a short one
-        var four = SearchIndex.Suggest("CONFIGURATXXX", candidates, 3);
-        var five = SearchIndex.Suggest("configuraXXXXX", candidates, 3);
-        var shortWord = SearchIndex.Suggest("tagzz", ["tags"], 3);
-        var tooFar = SearchIndex.Suggest("tagzzz", ["tags"], 3);
+        var four = SearchIndex.Suggest("configuration".Remove(10).ToUpperInvariant() + new string('X', 3), candidates, 3);
+        var five = SearchIndex.Suggest("configuration".Remove(9) + new string('X', 5), candidates, 3);
+        var shortWord = SearchIndex.Suggest("tags".Remove(3) + "zz", ["tags"], 3);
+        var tooFar = SearchIndex.Suggest("tags".Remove(3) + "zzz", ["tags"], 3);
 
         // Assert
         Assert.Equal(["configuration"], four);

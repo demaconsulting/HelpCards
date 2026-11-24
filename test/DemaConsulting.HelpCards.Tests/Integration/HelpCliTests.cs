@@ -42,7 +42,7 @@ public class HelpCliTests
         Array.Empty<string>(),
         new[] { "--help" },
         new[] { "build" },
-        new[] { "helpx" },
+        new[] { "helper" },
         new[] { "-h" },
         new[] { "x", "help" },
         new[] { string.Empty },

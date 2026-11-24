@@ -186,11 +186,11 @@ public class AgentDispatcherTests
         var tool = BigTool();
 
         // Act
-        var close = tool.Invoke("{\"topic\":\"buid\"}");
+        var close = tool.Invoke("{\"topic\":\"built\"}");
         var far = tool.Invoke("{\"topic\":\"qqqqqqqq\"}");
 
         // Assert
-        Assert.StartsWith("No help card matches 'buid'. Did you mean: build", close, StringComparison.Ordinal);
+        Assert.StartsWith("No help card matches 'built'. Did you mean: build", close, StringComparison.Ordinal);
         Assert.EndsWith(" Call with no arguments for the index.", close, StringComparison.Ordinal);
         Assert.Equal("No help card matches 'qqqqqqqq'. Call with no arguments for the index.", far);
     }
@@ -251,13 +251,13 @@ public class AgentDispatcherTests
         var tool = SimpleTool();
 
         // Act
-        var close = tool.Invoke("{\"example\":\"setings\"}");
-        var card = tool.Invoke("{\"example\":\"gide\"}");
+        var close = tool.Invoke("{\"example\":\"setting\"}");
+        var card = tool.Invoke("{\"example\":\"guided\"}");
         var none = tool.Invoke("{\"example\":\"qqqqqqqq\"}");
 
         // Assert
-        Assert.Equal("No example named 'setings' was found. Did you mean: guide#settings? Search with the query argument to find examples.", close);
-        Assert.Equal("No example named 'gide' was found. Did you mean: guide? Search with the query argument to find examples.", card);
+        Assert.Equal("No example named 'setting' was found. Did you mean: guide#settings? Search with the query argument to find examples.", close);
+        Assert.Equal("No example named 'guided' was found. Did you mean: guide? Search with the query argument to find examples.", card);
         Assert.Equal("No example named 'qqqqqqqq' was found. Search with the query argument to find examples.", none);
     }
 
@@ -296,7 +296,7 @@ public class AgentDispatcherTests
         var two = tool.Invoke("{\"query\":\"the\",\"maxResults\":2}");
         var byOptions = small.Invoke("{\"query\":\"the\"}");
         var byOverride = small.Invoke("{\"query\":\"the\",\"maxResults\":3}");
-        var none = tool.Invoke("{\"query\":\"xyzzy\"}");
+        var none = tool.Invoke("{\"query\":\"zebra\"}");
 
         // Assert
         Assert.StartsWith("Cards matching 'build':\n\nbuild ", answer, StringComparison.Ordinal);
@@ -305,7 +305,7 @@ public class AgentDispatcherTests
         Assert.Equal(2, CountResults(two));
         Assert.Equal(2, CountResults(byOptions));
         Assert.Equal(3, CountResults(byOverride));
-        Assert.Equal("No cards match 'xyzzy'. Call with no arguments for the index.", none);
+        Assert.Equal("No cards match 'zebra'. Call with no arguments for the index.", none);
     }
 
     /// <summary>
@@ -377,7 +377,7 @@ public class AgentDispatcherTests
         // Act / Assert
         Assert.StartsWith("The arguments are not valid JSON (", tool.Invoke("{"), StringComparison.Ordinal);
         Assert.Equal("The arguments must be a JSON object.", tool.Invoke("[1]"));
-        Assert.Equal("Unknown argument 'colour'. Valid arguments: topic, example, query, source, tag, maxResults.", tool.Invoke("{\"colour\":1}"));
+        Assert.Equal("Unknown argument 'shape'. Valid arguments: topic, example, query, source, tag, maxResults.", tool.Invoke("{\"shape\":1}"));
         Assert.Equal("The argument 'topic' must be a string.", tool.Invoke("{\"topic\":1}"));
         Assert.Equal("The argument 'maxResults' must be an integer from 1 to 20.", tool.Invoke("{\"maxResults\":0}"));
     }

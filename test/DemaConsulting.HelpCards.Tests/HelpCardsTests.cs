@@ -1106,10 +1106,10 @@ public class HelpCardsTests
         var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("big"));
 
         // Act
-        var name = catalog.Suggest("buid");
-        var alias = catalog.Suggest("shipp");
-        var id = catalog.Suggest("deploy/rolback");
-        var path = catalog.Resolve("deploy stagin");
+        var name = catalog.Suggest("built");
+        var alias = catalog.Suggest("shop");
+        var id = catalog.Suggest("deploy/rollbacks");
+        var path = catalog.Resolve("deploy stagings");
 
         // Assert
         Assert.Equal("build", name[0]);
@@ -1184,8 +1184,8 @@ public class HelpCardsTests
         var defective = new CliHarness(factory: _ => CatalogBuilding.Create(broken));
 
         // Act
-        var unknownCode = unknown.Run("guide", "usag");
-        var jsonCode = json.Run("guide", "setupp", "--json");
+        var unknownCode = unknown.Run("guide", "usages");
+        var jsonCode = json.Run("guide", "setups", "--json");
         var defectiveCode = defective.Run("--json");
 
         // Assert

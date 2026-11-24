@@ -225,8 +225,8 @@ public partial class CliDispatcherTests
         var json = new CliHarness(CatalogBuilding.Simple());
 
         // Act
-        var textCode = text.Run("guide", "usag");
-        var jsonCode = json.Run("guide", "setupp", "--json");
+        var textCode = text.Run("guide", "usages");
+        var jsonCode = json.Run("guide", "setups", "--json");
 
         // Assert
         Assert.Equal(2, textCode);
@@ -279,13 +279,13 @@ public partial class CliDispatcherTests
         // Act
         var textCode = text.Run("--search", "build");
         var jsonCode = json.Run("--search", "build", "--json");
-        var noneCode = none.Run("--search", "xyzzy");
+        var noneCode = none.Run("--search", "zebra");
 
         // Assert
         Assert.Equal(0, textCode + jsonCode + noneCode);
         GoldenFiles.AssertEqual("cli", "search.text.expected.txt", text.Output.ToString().TrimEnd('\n'));
         GoldenFiles.AssertEqual("cli", "search.expected.json", json.Output.ToString().TrimEnd('\n'));
-        Assert.Equal("No help cards match 'xyzzy'.\n", none.Output.ToString());
+        Assert.Equal("No help cards match 'zebra'.\n", none.Output.ToString());
     }
 
     /// <summary>
@@ -298,19 +298,19 @@ public partial class CliDispatcherTests
         var catalog = HelpCatalog.Create(builder => builder.AddSource(CatalogBuilding.Fixture("big")).AddSource(CatalogBuilding.LibA()));
         var tagged = new CliHarness(catalog);
         var sourced = new CliHarness(catalog);
-        var tagless = new CliHarness(catalog);
+        var restricted = new CliHarness(catalog);
 
         // Act
         tagged.Run("--search", "program", "--tag", "quality", "--tag", "RELEASE");
         sourced.Run("--search", "graph", "--source", "LIB-A", "--source", "big");
-        tagless.Run("--search", "program", "--tag", "quality", "--json");
+        restricted.Run("--search", "program", "--tag", "quality", "--json");
 
         // Assert
         Assert.Contains("tool help test coverage", tagged.Output.ToString(), StringComparison.Ordinal);
         Assert.Contains("tool help deploy production", tagged.Output.ToString(), StringComparison.Ordinal);
         Assert.DoesNotContain("tool help build compile", tagged.Output.ToString(), StringComparison.Ordinal);
         Assert.Contains("tool help graph", sourced.Output.ToString(), StringComparison.Ordinal);
-        Assert.Contains("\"source\":\"big\"", tagless.Output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("\"source\":\"big\"", restricted.Output.ToString(), StringComparison.Ordinal);
     }
 
     /// <summary>

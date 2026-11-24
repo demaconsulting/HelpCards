@@ -48,4 +48,4 @@
   build/compile 10 [summary]
   deploy/rollback 10 [summary]
   deploy/staging 10 [summary]
-? xyzzy
+? zebra

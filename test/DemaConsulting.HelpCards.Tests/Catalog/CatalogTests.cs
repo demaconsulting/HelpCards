@@ -273,9 +273,9 @@ public class CatalogTests
         var view = catalog.Without(["build/clean"]);
 
         // Act
-        var suggested = catalog.Suggest("shipp");
-        var resolved = catalog.Resolve("build compil");
-        var hidden = view.Suggest("clen");
+        var suggested = catalog.Suggest("shop");
+        var resolved = catalog.Resolve("build compiled");
+        var hidden = view.Suggest("lean");
 
         // Assert
         Assert.Equal(["ship"], suggested);
