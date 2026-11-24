@@ -85,10 +85,10 @@ supporting types in the unit that owns them. Subsystem and unit boundaries follo
 namespace structure of the source code.
 
 The diagram below complements the structure view by showing the library in its run-time context:
-how the calling application uses the library's subsystems and units, and which inputs, outputs,
-and dependencies they involve.
+which consumers use which subsystems, how the cards flow through Loading, Composition, and Catalog, and what
+Presentation, Integration, and Testing add. The arrows show who uses whom; the SysML2 model is authoritative.
 
-![Architecture of HelpCards: help cards flow through the Loading, Composition, and Catalog subsystems, and Presentation and Testing serve the application](architecture.svg)
+![Architecture of HelpCards: consumers use six subsystems that turn Markdown cards into a catalog](architecture.svg)
 
 ## Folder Layout
 
