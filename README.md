@@ -41,7 +41,7 @@ Presentation, Integration, and Testing build on that catalog.
   JSON schema and output budgets
 - **Testing Helpers**: `HelpCardValidator` and example helpers prove in your own tests that your cards are valid
 - **API Reference**: A generated Markdown API reference in the package's `api/` folder, organized for gradual
-  disclosure
+  disclosure so a developer or a coding agent reads one small page at a time
 - **Dependency-Free**: Built only on the .NET Base Class Library, with its own restricted front-matter parser
 - **Continuous Compliance**: Requirements, design, verification, and a SysML2 model, following the
   [Continuous Compliance][link-continuous-compliance] methodology
@@ -311,9 +311,13 @@ The HelpCards User Guide is available on the
 ## API Reference
 
 The package ships its API reference as Markdown in the package's `api/` folder, generated from the XML doc comments by
-[ApiMark](https://github.com/demaconsulting/ApiMark) and organized for gradual disclosure, so a developer or a coding
-agent can read a small targeted page instead of one large document. Start at `api/api.md` (the index), open a namespace
-page, then follow the links to type and member pages. When building from source, the same files are written to
+[ApiMark][link-apimark] and organized for gradual disclosure, so a developer or a coding agent can read a small targeted
+page instead of one large document. Start at `api/api.md` (the index, one row per namespace), open a namespace page for
+an overview, the common usage steps, and a complete usage example, then follow the links to type and member pages. For
+example, the `DemaConsulting.HelpCards.Integration` namespace page shows how to wire `HelpCli` into a command-line tool
+and how to expose the cards to an AI agent with `HelpAgentTools`; the `DemaConsulting.HelpCards.Loading` page shows how
+a library exposes its embedded cards as a `HelpSource`. To read it from a restored package, open the package folder in
+the NuGet global-packages cache, or unzip the `.nupkg`. When building from source, the same files are written to
 `src/DemaConsulting.HelpCards/api/`.
 
 ## Contributing
@@ -354,4 +358,5 @@ By contributing to this project, you agree that your contributions will be licen
 [link-security]: https://sonarcloud.io/dashboard?id=demaconsulting_HelpCards
 [link-nuget]: https://www.nuget.org/packages/DemaConsulting.HelpCards
 [link-continuous-compliance]: https://github.com/demaconsulting/ContinuousCompliance
+[link-apimark]: https://github.com/demaconsulting/ApiMark
 [link-contributing]: https://github.com/demaconsulting/HelpCards/blob/main/CONTRIBUTING.md

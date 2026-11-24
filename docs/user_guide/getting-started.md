@@ -119,8 +119,11 @@ and line, not only the first one. See the chapter *Composing Sources* for the pr
 
 The package ships a Markdown API reference in its `api/` folder, generated from the XML doc comments on every build
 and organized for gradual disclosure: `api/api.md` is the index (one row per namespace), each namespace has a page,
-each type has a page, and each member has its own page. Read the namespace page first, then follow the links to the
-types and members you need.
+each type has a page, and each member has its own page. Read the namespace page first: it opens with an overview, the
+common usage steps and a complete example, then follow the links to the types and members you need. The
+`DemaConsulting.HelpCards.Integration` page, for example, shows how to wire `HelpCli` into a command-line tool and how
+to expose the cards to an AI agent, and the `DemaConsulting.HelpCards.Loading` page shows how a library exposes its
+embedded cards as a `HelpSource`.
 
 To read it from a restored package, open the HelpCards package folder in the NuGet global-packages cache and read
 `api/api.md`, or unzip the `.nupkg`. When building this
