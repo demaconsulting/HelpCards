@@ -226,11 +226,31 @@ tests:
           - query: "//*[local-name()='svg']"
             count: 1
 
+  - name: SysML2Tools_IntegrationViewSvg
+    description: "Integration View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/IntegrationView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
   - name: SysML2Tools_TestingViewSvg
     description: "Testing View diagram was rendered by SysML2Tools"
     tags: [design]
     files:
       - pattern: "docs/design/generated/TestingView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_OtsViewSvg
+    description: "OTS View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/OtsView.svg"
         count: 1
         xml:
           - query: "//*[local-name()='svg']"

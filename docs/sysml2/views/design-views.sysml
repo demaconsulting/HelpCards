@@ -37,4 +37,9 @@ package HelpCardsDesignViews {
     view TestingView {
         expose TestingSubsystem;
     }
+
+    view OtsView : GeneralView {
+        expose OtsDependencies::*;
+        filter not (@SysML::Documentation);
+    }
 }

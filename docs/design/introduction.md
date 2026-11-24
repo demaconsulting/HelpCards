@@ -116,8 +116,8 @@ Throughout this document:
 
 - Class names, method names, property names, and file names appear in `monospace` font.
 - The word **shall** denotes a design constraint that the implementation must satisfy.
-- Section headings within each unit chapter follow a consistent structure: overview, data model,
-  methods/algorithms, and interactions with other units.
+- Section headings within each unit chapter follow a consistent structure: purpose, data model, key methods,
+  error handling, dependencies, and callers.
 - Text tables are used in preference to diagrams, which may not render in all PDF viewers.
 
 ## Companion Artifact Structure

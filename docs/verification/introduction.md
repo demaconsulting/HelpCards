@@ -53,6 +53,7 @@ The following OTS items are also covered:
 - **ReviewMark** — file review enforcement tool
 - **SarifMark** — SARIF report conversion tool
 - **SonarMark** — SonarCloud quality report tool
+- **SysML2Tools** — architecture model lint and diagram rendering tool
 - **VersionMark** — tool-version documentation tool
 - **WeasyPrint** — HTML-to-PDF conversion tool
 - **xUnit** — unit-testing framework
@@ -65,6 +66,7 @@ HelpCards.
 The following topics are explicitly excluded from this verification documentation:
 
 - Build pipeline and CI/CD process testing
+- Test projects and test infrastructure
 - Infrastructure and hosting environment testing
 
 ## Companion Artifact Structure

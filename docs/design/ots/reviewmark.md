@@ -21,11 +21,10 @@ than relying on manual sign-off.
 
 ### Integration Pattern
 
-ReviewMark is invoked as a `dotnet tool` from three places: `lint.ps1` runs
-`dotnet reviewmark --lint` as an early-detection configuration check, and
-`.github/workflows/build.yaml` runs ReviewMark to generate
-`docs/code_review_plan/generated/plan.md` and `docs/code_review_report/generated/report.md`, and
-to enforce review currency against the evidence store published on the repository's `reviews`
-branch. It is a stateless CLI invocation — each run reads `.reviewmark.yaml` and the evidence
-source, produces its output or exit code, and exits; there is no initialization, configuration
-object, or disposal step.
+ReviewMark is invoked as a `dotnet tool` from two places: `lint.ps1` runs `dotnet reviewmark --lint` as an
+early-detection configuration check, and `.github/workflows/build.yaml` runs ReviewMark to generate
+`docs/code_review_plan/generated/plan.md` and `docs/code_review_report/generated/report.md`. The workflow does not yet
+pass `--enforce`: enforcement of review currency against the evidence store published on the repository's `reviews`
+branch is pending until that branch holds the review evidence and its `index.json` (a marked TODO in the workflow). It
+is a stateless CLI invocation — each run reads `.reviewmark.yaml` and the evidence source, produces its output or exit
+code, and exits; there is no initialization, configuration object, or disposal step.

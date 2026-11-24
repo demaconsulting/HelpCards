@@ -13,7 +13,7 @@ sections:
             justification: |
               DemaConsulting.PandocTool converts Markdown source documents to HTML as part of the
               documentation build pipeline. FileAssert validates that each generated HTML file
-              exists, has a non-trivial size, contains a valid HTML title element, and includes
+              exists, contains a valid HTML title element, and includes
               expected document content. Passing FileAssert assertions for each document type
               proves Pandoc executed correctly and produced meaningful output.
             tags: [ots]
