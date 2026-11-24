@@ -78,6 +78,11 @@ $ProjectAliases = @{}
 # and tools/ (for example demo, samples, benchmarks); leave out folders of fixture projects that are test inputs.
 $ProjectRoots = @('src', 'test', 'tools')
 
+# [PROJECT-SPECIFIC] Fixture libraries under test/ that contain no tests: a scoped run builds them but does not
+# pass them to 'dotnet test' (which fails on a project without tests). Their changes still select the test
+# projects that reference them.
+$BuildOnly = @('DemaConsulting.HelpCards.Tests.EmbeddingDefault')
+
 # Test platform: global.json selects Microsoft.Testing.Platform with "test": { "runner": "Microsoft.Testing.Platform" };
 # otherwise VSTest is used. The platform decides the 'dotnet test' arguments (see Invoke-DotnetTest).
 $UseTestingPlatform = $false
@@ -178,10 +183,10 @@ if (-not $All) {
     } else {
         Expand-ReferencingProjects -Graph $graph -Selected $selected
 
-        # Test projects are built and tested; other leaf projects (tools/) are built only
-        $tests = @($graph.Values | Where-Object { $selected.Contains($_.Name) -and $_.Directory -like 'test/*' })
-        $tools = @($graph.Values | Where-Object { $selected.Contains($_.Name) -and $_.Directory -like 'tools/*' })
-        $skipped = @($graph.Values | Where-Object { $_.Directory -like 'test/*' -and -not $selected.Contains($_.Name) })
+        # Test projects are built and tested; other leaf projects (tools/) and $BuildOnly fixtures are built only
+        $tests = @($graph.Values | Where-Object { $selected.Contains($_.Name) -and $_.Directory -like 'test/*' -and $_.Name -notin $BuildOnly })
+        $tools = @($graph.Values | Where-Object { $selected.Contains($_.Name) -and ($_.Directory -like 'tools/*' -or $_.Name -in $BuildOnly) })
+        $skipped = @($graph.Values | Where-Object { $_.Directory -like 'test/*' -and $_.Name -notin $BuildOnly -and -not $selected.Contains($_.Name) })
         if ($tests.Count -eq 0 -and $tools.Count -eq 0) {
             Write-Host "Nothing to build: no changed file is read by the build."
             exit 0
