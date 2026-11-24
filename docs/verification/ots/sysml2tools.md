@@ -18,13 +18,13 @@ exercises the tool's built-in self-test suite against known-good and known-bad m
 and writes a TRX file consumed by `reqstream --enforce`.
 
 Second, `lint.ps1` runs `dotnet sysml2tools lint --strict-unresolved 'docs/sysml2/**/*.sysml'` against the actual
-HelpCards model and fails the build on any syntax or reference error. The build-docs
-job runs `dotnet sysml2tools render` to produce one SVG file per declared view under
-`docs/design/generated/`. FileAssert then directly asserts that each declared view's SVG file
-exists and is well-formed XML with an `<svg>` root element (`SysML2Tools_SoftwareStructureViewSvg`,
-`SysML2Tools_HelpCardsViewSvg`), before Pandoc compiles `docs/design/*.md`, which embed
-those SVG files by filename. A CI build failure at any of these steps is evidence that SysML2Tools
-did not produce the required model validation or diagrams against the real model.
+HelpCards model and fails the build on any syntax or reference error. The build-docs job runs
+`dotnet sysml2tools render` to produce one SVG file per declared view under `docs/design/generated/`. FileAssert then
+directly asserts that each declared view's SVG file exists and is well-formed XML with an `<svg>` root element
+(`SysML2Tools_SoftwareStructureViewSvg`, `SysML2Tools_HelpCardsViewSvg`, one for each subsystem view, and
+`SysML2Tools_OtsViewSvg`), before Pandoc compiles `docs/design/*.md`, which embed those SVG files by filename. A CI
+build failure at any of these steps is evidence that SysML2Tools did not produce the required model validation or
+diagrams against the real model.
 
 ### Test Scenarios
 
@@ -69,8 +69,87 @@ named `svg`.
 
 **Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
 
+#### SysML2Tools_LoadingViewSvg
+
+**Scenario**: The build-docs CI job runs `dotnet sysml2tools render` against the real HelpCards
+model, then FileAssert checks the resulting file at
+`docs/design/generated/LoadingView.svg`.
+
+**Expected**: Exactly one file exists at that path, and it is well-formed XML with a root element
+named `svg`.
+
+**Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
+
+#### SysML2Tools_CompositionViewSvg
+
+**Scenario**: The build-docs CI job runs `dotnet sysml2tools render` against the real HelpCards
+model, then FileAssert checks the resulting file at
+`docs/design/generated/CompositionView.svg`.
+
+**Expected**: Exactly one file exists at that path, and it is well-formed XML with a root element
+named `svg`.
+
+**Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
+
+#### SysML2Tools_CatalogViewSvg
+
+**Scenario**: The build-docs CI job runs `dotnet sysml2tools render` against the real HelpCards
+model, then FileAssert checks the resulting file at
+`docs/design/generated/CatalogView.svg`.
+
+**Expected**: Exactly one file exists at that path, and it is well-formed XML with a root element
+named `svg`.
+
+**Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
+
+#### SysML2Tools_PresentationViewSvg
+
+**Scenario**: The build-docs CI job runs `dotnet sysml2tools render` against the real HelpCards
+model, then FileAssert checks the resulting file at
+`docs/design/generated/PresentationView.svg`.
+
+**Expected**: Exactly one file exists at that path, and it is well-formed XML with a root element
+named `svg`.
+
+**Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
+
+#### SysML2Tools_IntegrationViewSvg
+
+**Scenario**: The build-docs CI job runs `dotnet sysml2tools render` against the real HelpCards
+model, then FileAssert checks the resulting file at
+`docs/design/generated/IntegrationView.svg`.
+
+**Expected**: Exactly one file exists at that path, and it is well-formed XML with a root element
+named `svg`.
+
+**Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
+
+#### SysML2Tools_TestingViewSvg
+
+**Scenario**: The build-docs CI job runs `dotnet sysml2tools render` against the real HelpCards
+model, then FileAssert checks the resulting file at
+`docs/design/generated/TestingView.svg`.
+
+**Expected**: Exactly one file exists at that path, and it is well-formed XML with a root element
+named `svg`.
+
+**Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
+
+#### SysML2Tools_OtsViewSvg
+
+**Scenario**: The build-docs CI job runs `dotnet sysml2tools render` against the real HelpCards
+model, then FileAssert checks the resulting file at
+`docs/design/generated/OtsView.svg`.
+
+**Expected**: Exactly one file exists at that path, and it is well-formed XML with a root element
+named `svg`.
+
+**Requirement coverage**: `HelpCards-OTS-SysML2Tools-Render`.
+
 ### Requirements Coverage
 
 - **`HelpCards-OTS-SysML2Tools-Lint`**: SysML2Tools_LintSelfTest
 - **`HelpCards-OTS-SysML2Tools-Render`**: SysML2Tools_RenderSvgSelfTest,
-  SysML2Tools_SoftwareStructureViewSvg, SysML2Tools_HelpCardsViewSvg
+  SysML2Tools_SoftwareStructureViewSvg, SysML2Tools_HelpCardsViewSvg, SysML2Tools_LoadingViewSvg,
+  SysML2Tools_CompositionViewSvg, SysML2Tools_CatalogViewSvg, SysML2Tools_PresentationViewSvg,
+  SysML2Tools_IntegrationViewSvg, SysML2Tools_TestingViewSvg, SysML2Tools_OtsViewSvg

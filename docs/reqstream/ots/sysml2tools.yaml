@@ -27,3 +27,10 @@ sections:
               - SysML2Tools_RenderSvgSelfTest
               - SysML2Tools_SoftwareStructureViewSvg
               - SysML2Tools_HelpCardsViewSvg
+              - SysML2Tools_LoadingViewSvg
+              - SysML2Tools_CompositionViewSvg
+              - SysML2Tools_CatalogViewSvg
+              - SysML2Tools_PresentationViewSvg
+              - SysML2Tools_IntegrationViewSvg
+              - SysML2Tools_TestingViewSvg
+              - SysML2Tools_OtsViewSvg

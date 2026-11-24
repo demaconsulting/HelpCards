@@ -14,6 +14,10 @@ these tools are linked into, or shipped with, the compiled NuGet package.
 
 ## OTS Items
 
+The OTS items are modeled in SysML2 (docs/sysml2/model/ots.sysml) and rendered by SysML2Tools as the OTS view below.
+
+![OTS Items](OtsView.svg)
+
 | OTS Item | Purpose |
 | --- | --- |
 | BuildMark | Generates build-notes documentation from GitHub Actions metadata |
