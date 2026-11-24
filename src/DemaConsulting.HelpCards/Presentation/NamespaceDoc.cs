@@ -27,14 +27,17 @@ namespace DemaConsulting.HelpCards.Presentation;
 ///         </description></item>
 ///     </list>
 ///     <para>
-///         <b>The JSON contract (<c>helpSchemaVersion</c> 1).</b> Every JSON document is one line of ASCII (a
-///         character outside ASCII is written as <c>\uXXXX</c>) that starts with the envelope
-///         <c>{"helpSchemaVersion":1,"ok":true,"kind":"..."}</c> and continues with the fields of its kind. The keys are
-///         always in the order below, an optional value is left out (there is never a JSON <c>null</c>), and an array is
-///         always present, possibly empty. <c>ok</c> is <c>false</c> only for an <c>error</c> document. The field
-///         <c>command</c> (the command that prints a card) is written only when the link style is <c>Command</c>, as it
-///         is for the command-line helper. A
-///         <c>JsonEnvelope</c> callback replaces the envelope, and then you own the top-level object.
+///         <b>The JSON contract (<c>helpSchemaVersion</c> 1).</b> A JSON document is one object. With the default
+///         envelope it is one line of ASCII (a character outside ASCII is written as <c>\uXXXX</c>) that starts with
+///         <c>{"helpSchemaVersion":1,"ok":...,"kind":"..."}</c> and continues with the fields of its kind. <c>ok</c> is
+///         <c>true</c> for every kind except <c>error</c>, whose document has <c>"ok":false</c>. The fields of a kind
+///         are always in the order below, an optional value is left out (there is never a JSON <c>null</c>), and an
+///         array is always present, possibly empty. The field <c>command</c> (the command that prints a card) is
+///         written only when the link style is <c>Command</c>, as it is for the command-line helper. A
+///         <c>JsonEnvelope</c> callback replaces the whole envelope: it receives only the kind and writes its own
+///         members, so <c>helpSchemaVersion</c> and <c>ok</c> are present only if the callback writes them, the
+///         library writes the fields of the kind after the members of the callback, and the one-line layout is the
+///         callback's to keep (the library still escapes non-ASCII characters).
 ///     </para>
 ///     <list type="table">
 ///         <listheader><term>kind (made by)</term><description>Fields after the envelope</description></listheader>

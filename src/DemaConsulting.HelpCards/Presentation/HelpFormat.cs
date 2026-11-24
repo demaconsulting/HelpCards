@@ -21,8 +21,10 @@ public enum HelpFormat
     /// <remarks>
     ///     The document kinds (<c>index</c>, <c>card</c>, <c>examples</c>, <c>example</c>, <c>search</c>, <c>cards</c>, and
     ///     <c>error</c>) and the fields of each are listed in the table on the page of the
-    ///     <c>DemaConsulting.HelpCards.Presentation</c> namespace. Every document starts with
-    ///     <c>{"helpSchemaVersion":1,"ok":true,"kind":"..."}</c>.
+    ///     <c>DemaConsulting.HelpCards.Presentation</c> namespace. With the default envelope every document starts with
+    ///     <c>{"helpSchemaVersion":1,"ok":...,"kind":"..."}</c>, where <c>ok</c> is <c>true</c> except for the
+    ///     <c>error</c> kind (<c>"ok":false</c>); a <c>HelpRenderOptions.JsonEnvelope</c> callback replaces that
+    ///     envelope.
     /// </remarks>
     Json
 }

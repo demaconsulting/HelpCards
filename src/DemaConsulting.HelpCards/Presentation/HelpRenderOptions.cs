@@ -170,10 +170,12 @@ public sealed class HelpRenderOptions
     ///     Gets a callback that writes the top-level JSON object around the fields of a document.
     /// </summary>
     /// <remarks>
-    ///     The callback receives the kind of the document and an action that writes the fields into a JSON writer,
-    ///     and returns the complete document. It must write its own members first and then call the action while the
-    ///     object is open. When it is not set, the default envelope with <c>helpSchemaVersion</c>, <c>ok</c>, and
-    ///     <c>kind</c> is used.
+    ///     The callback receives the kind of the document (not <c>ok</c>) and an action that writes the fields of that kind
+    ///     into a JSON writer, and returns the complete document. It must write its own members first and then call the
+    ///     action while the object is open. It replaces the whole default envelope, so <c>helpSchemaVersion</c>,
+    ///     <c>ok</c> and <c>kind</c> appear only if the callback writes them. When it is not set, the default envelope
+    ///     <c>{"helpSchemaVersion":1,"ok":...,"kind":"..."}</c> is used, with <c>ok</c> <c>false</c> for the <c>error</c>
+    ///     kind and <c>true</c> for every other kind. The library escapes non-ASCII characters in the result.
     /// </remarks>
     public Func<string, Action<Utf8JsonWriter>, string>? JsonEnvelope { get; init; }
 }

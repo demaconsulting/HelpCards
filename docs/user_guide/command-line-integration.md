@@ -165,8 +165,9 @@ help command and removed the verb.
 ## JSON Output
 
 `--json` and `HelpRenderOptions.Format = HelpFormat.Json` produce one document per call on a single line, with ASCII
-characters only, a fixed key order, and no `null`: an absent value is left out and a list is always present. Every
-document starts with the keys `helpSchemaVersion` (now 1), `ok`, and `kind`. New keys appear only at the end of an
+characters only, a fixed key order, and no `null`: an absent value is left out and a list is always present. With the
+default envelope every document starts with the keys `helpSchemaVersion` (now 1), `ok`, and `kind`; `ok` is `true`
+except for an `error` document, which has `"ok": false`. New keys appear only at the end of an
 object in later minor releases; keys are never removed or reordered within version 1.
 
 | `kind` | Content |
@@ -208,8 +209,9 @@ shows the card). A `card` document also has a `links` list of the visible link t
 ```
 
 A tool that must keep an existing JSON envelope sets `HelpRenderOptions.JsonEnvelope`, a callback that receives the
-kind and a function that writes the fields, and returns the whole document. HelpCards then writes the fields of the
-document after the members that the callback wrote itself.
+kind (not `ok`) and a function that writes the fields, and returns the whole document. The callback replaces the
+default envelope, so `helpSchemaVersion`, `ok`, and `kind` appear only if it writes them. HelpCards then writes the
+fields of the document after the members that the callback wrote itself.
 
 ## Rendering Without the Helper
 
