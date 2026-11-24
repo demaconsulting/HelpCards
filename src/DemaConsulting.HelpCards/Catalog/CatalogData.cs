@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Globalization;
 
 namespace DemaConsulting.HelpCards.Catalog;
@@ -56,7 +57,7 @@ internal sealed class CatalogData
         Diagnostics = CardNode.Freeze(diagnostics);
         ToolName = toolName;
         ToolVersion = toolVersion;
-        AllowedTags = allowedTags;
+        AllowedTags = allowedTags is null ? null : new HashSet<string>(allowedTags, StringComparer.Ordinal).ToFrozenSet(StringComparer.Ordinal);
         _search = new Lazy<SearchIndex>(() => SearchIndex.Build(this));
         _byId = cards.ToDictionary(node => node.Id, StringComparer.OrdinalIgnoreCase);
         TagNames = CardNode.Freeze(cards.SelectMany(node => node.Tags).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal));

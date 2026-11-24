@@ -115,7 +115,7 @@ public class HelpProblemTests
             "duplicate-example", "tag-unknown", "tag-required", "roots-mismatch", "source-invalid",
             "source-name-duplicate", "mount-invalid", "import-order", "import-missing", "import-cycle",
             "ambiguous-reference", "schema-unsupported", "translation-orphan", "translation-key",
-            "culture-invalid", "source-read"
+            "culture-invalid", "source-read", "external-source-missing"
         ];
 
         // Act: read the defined constants
@@ -125,6 +125,29 @@ public class HelpProblemTests
             .ToHashSet(StringComparer.Ordinal);
 
         // Assert: every specified rule has a constant
+        Assert.All(expected, rule => Assert.Contains(rule, defined));
+    }
+
+    /// <summary>
+    ///     Proves that the rule identifiers include the informational and warning rules of the failure model.
+    /// </summary>
+    [Fact]
+    public void RuleIds_Constants_CoverInfoAndWarningRules()
+    {
+        // Arrange
+        string[] expected =
+        [
+            "external-source-absent", "overlay-optional-skipped", "summary-length", "card-size", "heading-reserved",
+            "fence-language", "fence-unclosed", "unused-token", "line-length", "command-parse", "resources-mismatch"
+        ];
+
+        // Act
+        var defined = typeof(RuleIds)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Select(field => (string)field.GetRawConstantValue()!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        // Assert
         Assert.All(expected, rule => Assert.Contains(rule, defined));
     }
 

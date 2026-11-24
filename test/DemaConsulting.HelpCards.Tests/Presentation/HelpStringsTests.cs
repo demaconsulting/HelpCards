@@ -19,6 +19,9 @@ public class HelpStringsTests
         Assert.Equal("Examples", HelpStrings.ExamplesHeading);
         Assert.Equal("See also", HelpStrings.SeeAlsoHeading);
         Assert.Equal("Cards below with examples", HelpStrings.ExamplesBelowHeading);
+        Assert.Equal("Examples", HelpStrings.ExampleNamesLabel);
+        Assert.Equal("This card has no examples of its own.", HelpStrings.NoOwnExamples);
+        Assert.Equal("There are no help cards.", HelpStrings.NoCards);
         Assert.Equal("## Cards", HelpStrings.Heading(HelpStrings.CardsHeading));
         Assert.Equal("# Tags: examples", HelpStrings.ExamplesTitle("Tags"));
         Assert.Equal("Also known as:", HelpStrings.Label(HelpStrings.AliasesLabel, false));

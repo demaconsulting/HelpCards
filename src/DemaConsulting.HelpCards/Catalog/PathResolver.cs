@@ -86,6 +86,13 @@ internal static class PathResolver
     /// <returns>The outcome with the visible names of the searched level.</returns>
     private static PathMatch Failure(CatalogScope scope, CardNode? parent, string? segment, IReadOnlyList<CardNode> level)
     {
+        // A hidden card is never pointed at: report the nearest visible ancestor of the failing parent
+        var visibleParentId = parent;
+        while (visibleParentId is not null && !scope.IsVisible(visibleParentId.Id))
+        {
+            visibleParentId = visibleParentId.ParentId is null ? null : scope.Data.Find(visibleParentId.ParentId);
+        }
+
         var visible = level.Where(node => scope.IsVisible(node.Id)).ToList();
         var names = visible.Select(node => node.Name).ToList();
 
@@ -93,7 +100,7 @@ internal static class PathResolver
         var suggestion = segment is null
             ? null
             : SearchIndex.Suggest(segment, visible.SelectMany(node => node.Aliases.Prepend(node.Name)), 1).FirstOrDefault();
-        return new PathMatch(null, parent?.Id, segment, names, suggestion);
+        return new PathMatch(null, visibleParentId?.Id, segment, names, suggestion);
     }
 
     /// <summary>

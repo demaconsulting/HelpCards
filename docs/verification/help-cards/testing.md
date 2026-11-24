@@ -29,7 +29,8 @@ line of the defect, and the helpers must agree with the loader on code and token
 - **Quality rules**: one defective card reports every rule once: a long summary, a large card, a reserved heading with
   its file line, a fence without a language, an unclosed fence with its line, a long line, a command that redirects, and
   an unused token.
-- **Options**: a rule of the product adds its problem, required external sources give errors for absent links, and warnings that fail make the assertion throw for the problem of the rule.
+- **Options**: a rule of the product adds its problem, required external sources give errors for absent links, and
+  warnings that fail make the assertion throw for the problem of the rule.
 - **Examples**: the commands of the `simple` fixture are enumerated with their cards and parse into arguments.
 - **Markdown**: headings, a section, and bullets are read from a card body of a catalog.
 - **Resources**: a directory with one file that is not embedded is reported for that file only.

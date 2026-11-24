@@ -113,6 +113,26 @@ public class PathResolverTests
     }
 
     /// <summary>
+    ///     Proves that a failed segment below a hidden parent never names the hidden parent, and that the names of the
+    ///     level are the visible children of the hidden card.
+    /// </summary>
+    [Fact]
+    public void PathResolver_Resolve_FailureBelowHiddenParent_NamesNearestVisibleAncestor()
+    {
+        // Arrange
+        var scope = TreeScope().Restrict(node => node.Id != "a");
+
+        // Act
+        var match = PathResolver.Resolve(scope, "a x");
+
+        // Assert
+        Assert.Null(match.Card);
+        Assert.Null(match.ParentId);
+        Assert.Equal("x", match.UnknownSegment);
+        Assert.Equal(["b"], match.ValidNames);
+    }
+
+    /// <summary>
     ///     Proves that an alias of a translation is matched in its normalized form, whichever form the path uses.
     /// </summary>
     [Fact]

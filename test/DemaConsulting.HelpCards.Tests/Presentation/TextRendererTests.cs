@@ -322,9 +322,30 @@ public partial class TextRendererTests
                 Assert.DoesNotContain('\r', text);
                 Assert.DoesNotContain('\u001b', text);
                 Assert.False(text.EndsWith('\n'));
+                Assert.DoesNotContain('\t', text);
                 Assert.All(text.Split('\n'), line => Assert.Equal(line.TrimEnd(), line));
             }
         }
+    }
+
+    /// <summary>
+    ///     Proves that the text of an author is copied unchanged, while the lines the renderer generates have no tab and
+    ///     no trailing space.
+    /// </summary>
+    [Fact]
+    public void TextRenderer_RenderCard_AuthoredTabsAndTrailingSpaces_AreCopiedAndGeneratedLinesAreClean()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.FromFiles(("a.md", SourceReading.Card(title: "Authored", body: "One\tTwo  \nThree")));
+        var context = RenderContext.Create(catalog, new HelpRenderOptions { Format = HelpFormat.Text });
+
+        // Act
+        var lines = TextRenderer.RenderCard(context, catalog.Find("a")!).Split('\n');
+
+        // Assert
+        Assert.Contains("One\tTwo  ", lines);
+        Assert.All(lines.Where(line => line.StartsWith('#')), line => Assert.Equal(line.TrimEnd(), line));
+        Assert.All(lines.Where(line => line.StartsWith('#')), line => Assert.DoesNotContain('\t', line));
     }
 
     /// <summary>

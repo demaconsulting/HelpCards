@@ -33,7 +33,9 @@ The class is static and stateless. It reads the options through the `RenderConte
 
 #### Error Handling
 
-Null arguments throw `ArgumentNullException`. A callback that returns null is treated as empty text.
+Null arguments throw `ArgumentNullException`. A callback that returns null is treated as empty text. Titles and display
+text are written as they are: a square bracket in a title is not escaped in the Markdown style, so a title that holds
+one produces a link that a Markdown reader may misread.
 
 #### Dependencies
 

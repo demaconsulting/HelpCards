@@ -33,13 +33,15 @@ sections:
 
               - id: HelpCards-Catalog-PathResolver-HiddenCards
                 title: >-
-                  The resolver shall walk through hidden cards and report a hidden target like an unknown segment,
-                  naming its real parent.
+                  The resolver shall walk through hidden cards, report a hidden target like an unknown segment
+                  naming its real parent, and never name a hidden card as the parent of a failure, naming the
+                  nearest visible ancestor instead.
                 justification: |
                   A view must not reveal a card that it hides.
                 tests:
                   - PathResolver_Resolve_HiddenTarget_IsReportedAsUnknownAndHiddenParentIsWalkedThrough
                   - PathResolver_Resolve_HiddenNestedTarget_ReportsRealParent
+                  - PathResolver_Resolve_FailureBelowHiddenParent_NamesNearestVisibleAncestor
 
               - id: HelpCards-Catalog-PathResolver-Aliases
                 title: >-

@@ -21,10 +21,11 @@ all of its views, so that views cost no copy of the cards and every thread sees 
 | `AllowedTags` | The closed tag vocabulary, or null when tags are free-form |
 
 Supporting types: `CardNode` (a record with the id, local id, name, parent id, source, title, summary, tags, aliases,
-culture, child ids, see-also ids, examples, extensions, and the resolved body), `ResolvedPart` (text or a resolved
-link), and `ResolvedLink` (the global ids of the linked card, example, and example owner, and the source and display
-text of an external link). Lists are read-only collections made by `CardNode.Freeze`, which copies its input. Lookups
-by id ignore case.
+culture, the neutral card file, the body file, the first body line, child ids, see-also ids, examples, extensions, and
+the resolved body; the three file and line members tell a validator where the card was written), `ResolvedPart` (text or
+a resolved link), and `ResolvedLink` (the global ids of the linked card, example, and example owner, and the source and
+display text of an external link). Lists are read-only collections made by `CardNode.Freeze`, which copies its input;
+the closed tag vocabulary is copied into a frozen set when the data is created. Lookups by id ignore case.
 
 #### Key Methods
 

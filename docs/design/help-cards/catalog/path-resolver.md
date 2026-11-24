@@ -19,9 +19,12 @@ the closest name or alias at that level.
   first segment is matched against the names and aliases of the roots, each later one against those of the children of
   the card found so far, with `OrdinalIgnoreCase` after NFC normalization of the segment (text that is not valid Unicode
   is used as it is). The walk goes through hidden cards. A segment that matches nothing, or a final card that is hidden,
-  fails with the parent, the segment, and the names of the visible cards at that level. The closest name or alias of the
-  visible cards at that level is chosen with `SearchIndex.Suggest`. An empty path names nothing, lists the roots, and
-  has no suggestion.
+  fails with the parent, the segment, and the names of the visible cards at that level. A hidden card is never named in
+  the outcome: when the failing parent is hidden, the parent is its nearest visible ancestor (null when there is
+  none), and the names are those of the visible children of the hidden card, because the walk follows the real tree.
+  The closest
+  name or alias of the visible cards at that level is chosen with `SearchIndex.Suggest`. An empty path names nothing,
+  lists the roots, and has no suggestion.
 - **`Find(scope, path)`** returns only the card of `Resolve`.
 
 #### Error Handling

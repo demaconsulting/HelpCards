@@ -69,12 +69,15 @@ sections:
 
               - id: HelpCards-Presentation-TextRenderer-Output
                 title: >-
-                  The renderer shall write LF line endings only, no trailing line feed, no trailing spaces, no tab
-                  characters, and no escape characters, for every card and every format.
+                  The renderer shall write LF line endings only, no trailing line feed, and no escape characters, for
+                  every card and every format, and shall write no trailing spaces and no tab characters in the lines
+                  it generates, while copying the text of authors, such as a body or the content of an example,
+                  unchanged.
                 justification: |
                   Output must be byte-identical on every machine and safe to pipe anywhere.
                 tests:
                   - TextRenderer_RenderCard_EveryCardAndFormat_UsesLfOnlyAndNoTrailingNewline
+                  - TextRenderer_RenderCard_AuthoredTabsAndTrailingSpaces_AreCopiedAndGeneratedLinesAreClean
 
               - id: HelpCards-Presentation-TextRenderer-Arguments
                 title: >-

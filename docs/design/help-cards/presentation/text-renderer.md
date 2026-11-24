@@ -24,6 +24,12 @@ feed; the last line feed is removed when the document is finished.
   printing one alone for commands, and `## Cards below with examples` with a bullet and the example names for each
   descendant that has examples; the content of those examples is not printed.
 - **`RenderExample`** returns exactly the content of the example.
+- **Hints** (command style only) are written as generated text: `PrintExamplesHint` names the command of the card with
+  the suffix `--examples` and `PrintOneExampleHint` with `--example <name>`. They are wrapped like every generated
+  line, so at the default width a long command may break between its words; this is accepted, because a reader copies
+  the words, not the line.
+- **Parameters**: every method takes a non-null `RenderContext` and the non-null card, list, or text it renders;
+  each returns the finished document.
 - **`RenderIndex`**, **`RenderCardList`**, and **`RenderSearch`** write two columns: the label (indented two spaces per
   level in the index), padded to the widest label, two spaces, and the summary wrapped at the hanging indent. An empty
   list writes one sentence.

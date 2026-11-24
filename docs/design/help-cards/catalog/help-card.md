@@ -24,10 +24,11 @@ Supporting types, all immutable and created only by the catalog:
 | `HelpLink` | A link to a visible target: ids, example name, title, display text, and source |
 | `HelpSourceInfo` | Name, mount, title, summary, language, and schema of a source (a record) |
 | `HelpPathResolution` | The card, or the failing parent, segment, valid names, and a suggestion |
-| `HelpSearchResult` | Id, title, summary, source, score, and matched fields; data only |
+| `HelpSearchResult` | Id, title, summary, source, score, and matched fields; compares matched fields by item |
 | `BodyPiece` (internal) | Literal text or a `HelpLink`, after the hiding rules of the view |
 
-The kinds of an example are `command`, `source`, and `snippet`; the suggestion of a path resolution is always empty.
+The kinds of an example are `command`, `source`, and `snippet`. The suggestion of a path resolution is the closest name
+or alias of the failing parent, filled by the path resolver.
 
 `HelpLink` follows these rules: `CardId` is the card the link names (null for `[[#name]]`), `ExampleCardId` is the
 card that owns the linked example, `Title` is the title of the card the link displays (the owner for example links),

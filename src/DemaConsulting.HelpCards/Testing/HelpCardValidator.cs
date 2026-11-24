@@ -58,27 +58,6 @@ public static partial class HelpCardValidator
     }
 
     /// <summary>
-    ///     Adds a source after the sources it imports, depth first, each provider once.
-    /// </summary>
-    /// <param name="source">The source to add.</param>
-    /// <param name="seen">The providers that were already visited; this also ends an import cycle.</param>
-    /// <param name="ordered">Receives the sources, imports before importers.</param>
-    private static void CollectInDependencyOrder(HelpSource source, HashSet<HelpFileProvider> seen, List<HelpSource> ordered)
-    {
-        if (!seen.Add(source.Provider))
-        {
-            return;
-        }
-
-        foreach (var imported in source.ImportedSources)
-        {
-            CollectInDependencyOrder(imported, seen, ordered);
-        }
-
-        ordered.Add(source);
-    }
-
-    /// <summary>
     ///     Validates the catalog that a configuration callback describes.
     /// </summary>
     /// <remarks>
@@ -125,6 +104,27 @@ public static partial class HelpCardValidator
     {
         ArgumentNullException.ThrowIfNull(catalog);
         return Order(CheckCatalog(catalog, options ?? new HelpValidationOptions()), catalog.Sources);
+    }
+
+    /// <summary>
+    ///     Adds a source after the sources it imports, depth first, each provider once.
+    /// </summary>
+    /// <param name="source">The source to add.</param>
+    /// <param name="seen">The providers that were already visited; this also ends an import cycle.</param>
+    /// <param name="ordered">Receives the sources, imports before importers.</param>
+    private static void CollectInDependencyOrder(HelpSource source, HashSet<HelpFileProvider> seen, List<HelpSource> ordered)
+    {
+        if (!seen.Add(source.Provider))
+        {
+            return;
+        }
+
+        foreach (var imported in source.ImportedSources)
+        {
+            CollectInDependencyOrder(imported, seen, ordered);
+        }
+
+        ordered.Add(source);
     }
 
     /// <summary>

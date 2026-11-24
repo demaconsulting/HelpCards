@@ -118,9 +118,10 @@ sections:
 
               - id: HelpCards-Presentation-JsonDocumentWriter-Arguments
                 title: >-
-                  The writer shall reject null arguments with an argument null exception and an example that does not
-                  exist with an argument exception.
+                  The writer shall reject null arguments with an argument null exception, and an example that does not
+                  exist or an envelope callback that returns null with an argument exception.
                 justification: |
                   Programming mistakes must fail loudly.
                 tests:
                   - JsonDocumentWriter_NullArguments_ThrowArgumentNullException
+                  - JsonDocumentWriter_WriteError_EnvelopeReturningNull_ThrowsDescriptiveArgumentException
