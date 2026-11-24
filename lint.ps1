@@ -71,6 +71,7 @@ $checks = [ordered]@{
     reviewmark  = @{ Title = 'reviewmark';       Skip = 'no reviewed files changed' }
     sysml2tools = @{ Title = 'sysml2tools';      Skip = 'no SysML2 model files changed' }
     format      = @{ Title = 'dotnet format';    Skip = 'no C# or project files changed' }
+    herobanner  = @{ Title = 'hero banner';      Skip = 'no hero banner files changed' }
 }
 
 # ==============================================================================
@@ -159,6 +160,17 @@ if ($Changed) {
         $formatInclude = $formatScope.Include
 
         # [PROJECT-SPECIFIC] Add input filters for repository-specific checks here.
+
+        # Hero banner: the banner source, its embedded files, the render script, or the rendered PNG
+        $inputsChanged.herobanner = $toolManifest -or (Test-AnyMatch $files '^docs/images/(hero\.(svg|png)|hero/|render-hero\.ps1$)')
+
+        # A change to this script or the shared module changes the selection logic itself, so every selected
+        # check runs over the whole repository (no input filter could say what it affects)
+        if (Test-AnyMatch $files '^(lint\.ps1|scripts/ProjectScripts\.psm1)$') {
+            Write-Host "Running all selected checks over the whole repository: lint.ps1 or scripts/ProjectScripts.psm1 changed."
+            foreach ($name in $checks.Keys) { $inputsChanged[$name] = $true }
+            $formatInclude = @()
+        }
     }
 }
 
@@ -219,7 +231,7 @@ if ($run.yamllint) {
 # --- DOTNET TOOLS RESTORE ---
 # Restores the local dotnet tools; required by TextLint, LintMark, and the compliance tools.
 $skipDotnetTools = $true
-if ($run.textlint -or $run.lintmark -or $run.reqstream -or $run.versionmark -or $run.reviewmark -or $run.sysml2tools) {
+if ($run.textlint -or $run.lintmark -or $run.reqstream -or $run.versionmark -or $run.reviewmark -or $run.sysml2tools -or $run.herobanner) {
     $skipDotnetTools = $false
     dotnet tool restore > $null
     if ($LASTEXITCODE -ne 0) { $lintError = $true; $skipDotnetTools = $true }
@@ -293,12 +305,16 @@ if ($run.sysml2tools) {
     Write-Skipped 'sysml2tools'
 }
 
-# [PROJECT-SPECIFIC] Add additional dotnet tool lint checks here.
-# Example:
-#   if (-not $skipDotnetTools) {
-#       dotnet custom-tool --lint
-#       if ($LASTEXITCODE -ne 0) { $lintError = $true }
-#   }
+# [PROJECT-SPECIFIC] Hero banner: the committed docs/images/hero.png must match a fresh drawing of hero.svg.
+if ($run.herobanner) {
+    Write-Host "Linting: hero banner..."
+    if (-not $skipDotnetTools) {
+        pwsh docs/images/render-hero.ps1 -Check
+        if ($LASTEXITCODE -ne 0) { $lintError = $true }
+    }
+} else {
+    Write-Skipped 'herobanner'
+}
 
 # --- DOTNET FORMATTING SECTION ---
 # Verifies C# code formatting matches .editorconfig rules.
