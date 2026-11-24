@@ -1077,7 +1077,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Integration.HelpAgentTools: Create",
             "DemaConsulting.HelpCards.Integration.HelpCli: Create, Footer, Run, TryRun",
             "DemaConsulting.HelpCards.Integration.HelpCliAnswer: .ctor, ExitCode, Text",
-            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, DefaultWidth, EnableLanguageOption, Error, FallbackResolver, IndexPreamble, IndexSections, Output, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
+            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, ConfigureCatalog, DefaultWidth, EnableLanguageOption, Error, ErrorProvider, FallbackResolver, GetCatalogConfiguration, IndexPreamble, IndexSections, Output, OutputProvider, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
             "DemaConsulting.HelpCards.Integration.HelpCliSection: .ctor, Heading, Lines",
             "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromFiles, Imports, WithName, WithTokens",
             "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
@@ -1528,6 +1528,78 @@ public class HelpCardsTests
         GoldenFiles.AssertEqual("cli", "notfound.text.expected.txt", unknown.Error.ToString().TrimEnd('\n'));
         GoldenFiles.AssertEqual("cli", "notfound.expected.json", json.Output.ToString().TrimEnd('\n'));
         Assert.Contains("\"code\":\"catalog-error\"", defective.Output.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the tool name and the version are set once in the options of the help command, reach the cards and
+    ///     the JSON documents, and that the tests of the tool can validate exactly the catalog that the command builds.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_Configuration_ToolNameAndVersionAreSetOnce()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var options = new HelpCliOptions
+        {
+            ToolName = "mytool",
+            Version = "3.1",
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            Output = output,
+        };
+        var cli = HelpCli.Create(options);
+
+        // Act
+        var card = cli.Run(["guide"]);
+        var json = cli.Run(["--json"]);
+        var problems = HelpCardValidator.Validate(options.GetCatalogConfiguration());
+
+        // Assert: one setting is the token of the cards, the command of the links, and the version of the JSON
+        Assert.Equal((0, 0), (card, json));
+        Assert.Contains("Version 3.1 of mytool accepts", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Start with `mytool help guide setup`", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("\"version\":\"3.1\"", output.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain(problems, problem => problem.Severity == HelpSeverity.Error);
+        Assert.Throws<ArgumentException>(() => HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = "mytool",
+            ConfigureCatalog = options.ConfigureCatalog,
+            CatalogFactory = _ => CatalogBuilding.Simple(),
+        }));
+    }
+
+    /// <summary>
+    ///     Proves that a tool can route the output and the errors of the help command when the command writes, which
+    ///     follows a quiet mode that is read after the command was created.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var errors = new StringWriter();
+        var silent = false;
+        var cli = HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = "tool",
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            OutputProvider = () => silent ? TextWriter.Null : output,
+            ErrorProvider = () => silent ? TextWriter.Null : errors,
+        });
+
+        // Act
+        var first = cli.Run(["guide"]);
+        var second = cli.Run(["nothing"]);
+        var written = (output.ToString().Length, errors.ToString().Length);
+        silent = true;
+        cli.Run(["reference"]);
+        cli.Run(["nothing"]);
+
+        // Assert: the first two commands wrote to their writers, and the silent ones wrote nothing more
+        Assert.Equal((0, 2), (first, second));
+        Assert.True(written.Item1 > 0 && written.Item2 > 0);
+        Assert.Equal(written, (output.ToString().Length, errors.ToString().Length));
     }
 
     /// <summary>

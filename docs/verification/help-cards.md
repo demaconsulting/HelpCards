@@ -364,6 +364,17 @@ asserts the sections, the answer and exit code of the resolver, and the culture 
 usage lines, a preamble, and a command template and asserts the layout of the index and the commands in the topics and
 the links.
 
+### Command Line: Configuration and Writers
+
+**Tests**: `HelpCards_Cli_Configuration_ToolNameAndVersionAreSetOnce`,
+`HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime`
+
+Creates a helper whose options hold the tool name, the version, and a catalog configuration, and asserts that the cards,
+the commands of the links, and the JSON index show the one name and the one version, that the validator accepts the
+catalog of `GetCatalogConfiguration`, and that options with both a configuration and a factory are rejected. Creates a
+helper with writer providers, runs a card and an unknown card, switches a flag that makes the providers return a silent
+writer, runs two more commands, and asserts that the silent ones wrote nothing.
+
 ### Agent Tool: Calls, Schema, and Resilience
 
 **Tests**: `HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch`,

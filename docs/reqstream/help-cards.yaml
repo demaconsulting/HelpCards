@@ -563,6 +563,34 @@ sections:
         tests:
           - HelpCards_Cli_Extensions_FallbackSectionsWidthAndLanguage
 
+      - id: HelpCards-Cli-Configuration
+        title: >-
+          A tool shall give its name and its version once, in the options of the help command, and the help command
+          shall use them for the catalog it builds, and the tests of the tool shall be able to validate exactly the
+          catalog that the command builds.
+        tags: [system]
+        justification: |
+          Setting the name and the version twice, in the options and in the builder of the catalog, let them differ,
+          and a test that composed the catalog by hand could pass while the shipped composition was wrong.
+        children:
+          - HelpCards-Integration-CliExtensions
+        tests:
+          - HelpCards_Cli_Configuration_ToolNameAndVersionAreSetOnce
+
+      - id: HelpCards-Cli-Writers
+        title: >-
+          A tool shall be able to choose the writers for the output and the errors of the help command when the command
+          writes, instead of when the command is created, so that a quiet mode that is read from its own arguments can
+          silence help.
+        tags: [system]
+        justification: |
+          A tool creates its help command once, before it has read its own arguments, so a fixed writer cannot follow
+          an option such as --silent.
+        children:
+          - HelpCards-Integration-CliExtensions
+        tests:
+          - HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime
+
       - id: HelpCards-AgentTool-Knowledge
         title: >-
           A catalog shall be available to an AI agent as one provider-neutral tool that answers the index, a card with

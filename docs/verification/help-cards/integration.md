@@ -38,6 +38,9 @@ wrong argument of the tool must be answered with text; and no answer may be long
   exit with 2 and name the valid names or the closest name; one example prints as exactly its content.
 - **Extensions**: a preamble and sections in the index, a fallback answer with its exit code, the width of the console,
   the culture passed to the factory, and a command template.
+- **Catalog configuration and writers**: the tool name and the version set once in the options reach the cards, the
+  commands, and the JSON documents, and the same configuration validates the catalog of the tests; output and error
+  providers route the writes of a command and a silent provider writes nothing.
 - **Tool creation**: the default name and a name chosen by a host, the schema text, the generated description, and
   options that are checked at once (a bad name, a limit out of range, null catalog).
 - **Tool calls**: over a catalog of two sources, the index with one block for each source, a card, an example, and a

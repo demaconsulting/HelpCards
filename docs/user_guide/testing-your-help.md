@@ -24,6 +24,9 @@ public class HelpTests
 }
 ```
 
+For a command-line tool, pass `options.GetCatalogConfiguration()` of its `HelpCliOptions`: it is the composition that
+the helper builds (see *Command-Line Integration*), so the test validates what users get.
+
 The validator has three groups of overloads, each with a `Validate` method that returns the problems and an
 `AssertValid` method that throws:
 

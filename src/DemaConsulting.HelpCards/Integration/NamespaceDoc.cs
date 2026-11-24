@@ -13,8 +13,10 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     <list type="number">
 ///         <item><description>
 ///             Create one <c>HelpCli</c> with <c>HelpCli.Create(new HelpCliOptions { ... })</c>. <c>ToolName</c> and
-///             <c>CatalogFactory</c> are required; the factory receives the culture the user asked for, or
-///             <c>null</c>, and returns a <c>HelpCatalog</c>.
+///             <c>ConfigureCatalog</c> are required: the action receives the catalog builder, on which the helper
+///             has already set the tool name and the <c>Version</c>, and the culture the user asked for (or
+///             <c>null</c>); it adds the sources. The older <c>CatalogFactory</c>, which builds the whole catalog and
+///             receives the culture, is accepted instead of <c>ConfigureCatalog</c>, never both.
 ///         </description></item>
 ///         <item><description>
 ///             Call <c>TryRun(args, out int exitCode)</c> before the tool's own argument parser, and return
@@ -46,8 +48,8 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         that card, from <c>HelpCliOptions.CommandTemplate</c>), a link to an example of the same card
 ///         (<c>[[#load]]</c>) reads the full command <c>`tool help this-card --example load`</c>, like a link to an
 ///         example of another card, <c>`tool help other-card --example load`</c>, so every link can be run as written. Markdown output
-///         (<c>--format markdown</c>) keeps the command style. In contrast, <c>HelpAgentTool</c> and <c>HelpCatalog.Render</c> without options write
-///         <c>the card `id`</c> and <c>the example `name`</c>, and a Markdown link style exists only through
+///         (<c>--format markdown</c>) keeps the command style. In contrast, <c>HelpAgentTool</c> and
+///         <c>HelpCatalog.Render</c> without options write <c>the card `id`</c> and <c>the example `name`</c>, and a Markdown link style exists only through
 ///         <c>HelpRenderOptions</c>.
 ///     </para>
 ///     <para>
@@ -59,10 +61,20 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         sample answers are in the remarks of <c>HelpAgentTool.Invoke</c> and in the three-library example below.
 ///     </para>
 ///     <para>
+///         <b>One setting for the name and the version, and the tests.</b> <c>ToolName</c> and <c>Version</c> of the
+///         options are the tool name and the version of the catalog as well, so you set each once. The same
+///         configuration serves the tests of the tool: <c>options.GetCatalogConfiguration()</c> returns the action
+///         that <c>HelpCardValidator.AssertValid</c> and <c>Validate</c> take, so the cards are validated in exactly
+///         the composition that users get. <c>Output</c> and <c>Error</c> are fixed writers; <c>OutputProvider</c> and
+///         <c>ErrorProvider</c> are functions that are called each time the helper writes, so the writer can depend on
+///         the state of the tool at that moment (for example <c>OutputProvider = () => silent ? TextWriter.Null : null</c>;
+///         <c>null</c> means the console). A writer and its provider are not combined.
+///     </para>
+///     <para>
 ///         Key rules: <c>TryRun</c> answers only when the first argument equals the verb (<c>help</c> by default,
 ///         ignoring case) and otherwise returns <c>false</c> at once without building the catalog, so a normal run of
 ///         the tool pays nothing. The helper prints a card, the index, examples, search results or tagged cards and
-///         writes usage errors to the error writer; if the catalog factory throws a <c>HelpCatalogException</c>, it
+///         writes usage errors to the error writer; if building the catalog throws a <c>HelpCatalogException</c>, it
 ///         prints <c>Help is unavailable</c> and exits with 70 (the usual cause is a card defect, for example a source
 ///         without a name: every source needs a <c>name:</c> in its <c>_source.md</c>, or <c>HelpSource.WithName</c>, or the
 ///         rule <c>source-invalid</c> fails the catalog). Exit codes: 0 success, 2 wrong arguments or a name that
@@ -85,8 +97,6 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     <code language="csharp">
 /// using System;
 /// using System.Collections.Generic;
-/// using System.Globalization;
-/// using DemaConsulting.HelpCards.Catalog;
 /// using DemaConsulting.HelpCards.Integration;
 /// using DemaConsulting.HelpCards.Loading;
 ///
@@ -98,17 +108,13 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     }, name: "tool");
 ///
 ///     // Created once, before the tool's own argument parser. Nothing is read until the first 'help' command.
-///     // Version is informational only: the version that the help shows ({{version}} and the JSON field) is the
-///     // ToolVersion of the catalog builder, so set both to the same value.
+///     // ToolName and Version are set once: the helper gives them to the catalog builder, so they are also the
+///     // {{tool}} and {{version}} of the cards and the version of the JSON documents.
 ///     private static readonly HelpCli Help = HelpCli.Create(new HelpCliOptions
 ///     {
 ///         ToolName = "tool",
 ///         Version = "1.4.0",
-///         CatalogFactory = culture => HelpCatalog.Create(builder => builder
-///             .AddSource(Cards)
-///             .ToolName("tool")
-///             .ToolVersion("1.4.0")
-///             .Culture(culture ?? CultureInfo.InvariantCulture)),
+///         ConfigureCatalog = (builder, culture) => builder.AddSource(Cards),
 ///     });
 ///
 ///     public static int Main(string[] args)

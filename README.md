@@ -121,19 +121,13 @@ Create a `HelpCli` once, before your own argument parser. The catalog is built o
 `help` verb, so every other command pays nothing:
 
 ```csharp
-using System.Globalization;
-using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Integration;
 
 static readonly HelpCli Help = HelpCli.Create(new HelpCliOptions
 {
     ToolName = "tool",
     Version = "1.4.0",
-    CatalogFactory = culture => HelpCatalog.Create(builder => builder
-        .AddSource(MyLibHelp.Source)
-        .ToolName("tool")
-        .ToolVersion("1.4.0")
-        .Culture(culture ?? CultureInfo.InvariantCulture))
+    ConfigureCatalog = (builder, culture) => builder.AddSource(MyLibHelp.Source)
 });
 
 public static int Main(string[] args)
@@ -147,6 +141,11 @@ public static int Main(string[] args)
     return 0;
 }
 ```
+
+The tool name and the version are set once: the helper gives them (and the culture of `--lang`) to the catalog builder.
+In your tests, `options.GetCatalogConfiguration()` returns the same configuration for `HelpCardValidator`, so the
+cards are validated in the composition that users get. `OutputProvider` and `ErrorProvider` choose the writers when a
+command writes, for example to silence help.
 
 Then `tool help` prints the topics, `tool help getting-started` prints a card, `tool help --search install`
 searches, and `tool help getting-started --json` writes the card as JSON.
@@ -294,6 +293,7 @@ release must reference at least that version in its `PackageReference`.
 | `exit`, `expect` (command examples) | 0.1.0-beta.3 |
 | `save-as` (examples), with `schema: 2` | 0.1.0-beta.3 |
 | Same example name in several cards of one source (per-card names) | 0.1.0-beta.3 |
+| `HelpCliOptions.ConfigureCatalog`, `GetCatalogConfiguration`, `OutputProvider`, `ErrorProvider` (API) | 0.1.0-beta.3 |
 
 Omitting `schema` means schema 1. Schema 2 splits the `file` key of an example into `save-as` (the name to save it as)
 and `file` (a companion data file); schema 1 is still read exactly as before and stays supported. A source that declares

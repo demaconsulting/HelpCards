@@ -31,24 +31,34 @@ The subsystem contains these units:
 | --- | --- | --- |
 | `HelpCli.Create(options)` | Inbound (tools) | Create the helper without creating the catalog |
 | `HelpCli.TryRun`, `Run`, `Footer` | Inbound (tools) | Answer a help command |
-| `HelpCliOptions.CatalogFactory` | Outbound (tools) | Create the catalog, only after the verb was recognized |
+| `HelpCliOptions.ConfigureCatalog`, `CatalogFactory` | Outbound (tools) | Configure or create the catalog |
+| `HelpCliOptions.GetCatalogConfiguration` | Inbound (tools) | Give the same configuration to the tests |
+| `HelpCliOptions.OutputProvider`, `ErrorProvider` | Outbound (tools) | Choose the writers at command time |
+| `HelpCatalogBuilder` members | Outbound (Composition) | Set name, version, and culture of the catalog |
 | `HelpCliOptions.FallbackResolver` | Outbound (tools) | Let a tool answer subjects of its own |
 | `HelpAgentTools.Create(catalog, options)` | Inbound (hosts) | Create the knowledge tool for a catalog |
 | `HelpAgentTool.Name`, `Description`, `ParametersSchema` | Outbound (hosts) | Register the tool with a framework |
 | `HelpAgentTool.Invoke(json)` | Inbound (hosts) | Answer one call |
 | `HelpCatalog` members | Outbound (Catalog, Presentation) | Look up, search, suggest, and render the help |
 
-The Integration subsystem depends on the Catalog subsystem for lookup, views, search, and suggestions, and on the
-Presentation subsystem for every document it writes (it calls the `Render` members and the error document writer of the
-JSON writer). No other subsystem depends on it.
+The Integration subsystem depends on the Catalog subsystem for lookup, views, search, and suggestions, on the
+Composition subsystem only for the public `HelpCatalogBuilder` that `ConfigureCatalog` receives (the helper sets the
+tool name, the version, and the culture on it), and on the Presentation subsystem for every document it writes (it calls
+the `Render` members and the error document writer of the JSON writer). No other subsystem depends on it.
 
 ### Design
 
-**Deferred catalog.** The helper holds a catalog factory instead of a catalog. `TryRun` compares the first argument with
-the verb and returns false at once for anything else, so a tool pays nothing for its ordinary commands; `Footer` is a
-constant. The factory is called once for each help command, after the arguments were read, so a usage error never
-creates the catalog. A tool may offer the words of a card command to a fallback resolver first, which also runs before
-the factory.
+**Deferred catalog.** The helper holds a catalog configuration (or factory) instead of a catalog. `TryRun` compares the
+first argument with the verb and returns false at once for anything else, so a tool pays nothing for its ordinary
+commands; `Footer` is a constant. The catalog is built once for each help command, after the arguments were read, so a
+usage error never creates it. A tool may offer the words of a card command to a fallback resolver first, which also runs
+before the catalog is built.
+
+**One setting for the name and the version.** `ConfigureCatalog` receives a builder on which the helper has set the tool
+name, the version, and the culture, so a tool states each once in `HelpCliOptions`, and `GetCatalogConfiguration` gives
+the tests the same action. **Writers at command time.** `OutputProvider` and `ErrorProvider` are called when the helper
+writes, so a quiet mode that the tool reads from its own arguments (after the helper was created) can send help
+nowhere; a provider that returns null means the console.
 
 **One grammar.** The parser is the only reader of the command line. It reads words as one path, options anywhere, a
 value as the next argument only, and reports the first usage error in a fixed order, so the same mistake always gives

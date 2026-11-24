@@ -17,7 +17,7 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     <para>
 ///         The dispatcher holds only the options it was created with, so one dispatcher serves any number of commands,
 ///         including concurrent ones. The writers are read from the options on each command, so a tool may change the
-///         console writers between commands. This part holds the flow of a command; the other parts select the answer of
+///         console writers between commands, and a writer provider is called each time the dispatcher writes. This part holds the flow of a command; the other parts select the answer of
 ///         each mode and look up cards and examples.
 ///     </para>
 /// </remarks>
@@ -102,17 +102,17 @@ internal sealed partial class CliDispatcher
     }
 
     /// <summary>
-    ///     Gets the writer for output.
+    ///     Gets the writer for output: the fixed writer, else the result of the provider now, else the console.
     /// </summary>
-    private TextWriter Output => _options.Output ?? Console.Out;
+    private TextWriter Output => _options.Output ?? _options.OutputProvider?.Invoke() ?? Console.Out;
 
     /// <summary>
-    ///     Gets the writer for errors.
+    ///     Gets the writer for errors: the fixed writer, else the result of the provider now, else the console.
     /// </summary>
-    private TextWriter Error => _options.Error ?? Console.Error;
+    private TextWriter Error => _options.Error ?? _options.ErrorProvider?.Invoke() ?? Console.Error;
 
     /// <summary>
-    ///     Creates the catalog with the factory of the tool.
+    ///     Creates the catalog with the configuration or the factory of the tool.
     /// </summary>
     /// <param name="request">The request, which holds the culture.</param>
     /// <param name="failure">Receives the failure when no catalog could be created.</param>
@@ -122,7 +122,9 @@ internal sealed partial class CliDispatcher
         failure = null;
         try
         {
-            var catalog = _options.CatalogFactory(request.Culture);
+            var catalog = _options.ConfigureCatalog is not null
+                ? HelpCatalog.Create(_options.GetCatalogConfiguration(request.Culture))
+                : _options.CatalogFactory!(request.Culture);
             if (catalog is not null)
             {
                 return catalog;
@@ -207,7 +209,7 @@ internal sealed partial class CliDispatcher
     /// <returns>The width, or <see langword="null"/> when there is none.</returns>
     private int? ConsoleWidth()
     {
-        if (_options.Output is not null || Console.IsOutputRedirected)
+        if (_options.Output is not null || _options.OutputProvider is not null || Console.IsOutputRedirected)
         {
             return null;
         }
