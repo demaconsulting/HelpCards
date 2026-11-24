@@ -74,10 +74,19 @@ option can appear once, except `--tag` and `--source`, which can repeat and comb
 | `--lang` | culture name | all | Chooses the culture; exists only when `EnableLanguageOption` is set |
 
 The helper works in one of six modes: the **index** (no path, no mode option), a **card** (a path), **examples**
-(`--examples`), one **example** (`--example`), **search** (`--search`), and **tags** (`--tag`). These combinations are
-usage errors: two mode options together, `--search` with a path, `--examples` or `--example` without a path, and a
-path together with `--tag`, `--source`, or `--all`. `--tag` with `--all` is also a usage error. With `--width auto`,
+(`--examples`), one **example** (`--example`), **search** (`--search`), and **tags** (`--tag`). These combinations are usage errors: two mode options together (`--examples`, `--example`, `--search`), `--examples` or
+`--example` with `--tag` or `--all`, `--search` with `--all`, `--search` with a path, `--examples` or `--example`
+without a path, and a path together with `--tag`, `--source`, or `--all`. `--search` may be combined with `--tag` and
+`--source`. `--tag` with `--all` is also a usage error: this is an intentional addition to the option table of the
+specification (6.12), because `--all` widens the index to the whole tree while `--tag` lists the cards that have a tag,
+and the two cannot both apply. With `--width auto`,
 the console width is clamped to 40 to 120 columns, and 78 is used when the output is redirected.
+
+`--lang` takes a culture name of 2 or 3 letters followed by subtags of 2 to 8 letters or digits, such as `de` or
+`de-DE`; any other value is a usage error. A well-formed name for which no card has a translation is not an error: the
+neutral files are shown. The name is not checked against the operating system, so the answer does not depend on the
+machine (on a machine whose runtime has no culture data, for example with invariant globalization, translations cannot
+be selected and the neutral files are shown).
 
 ## What Is Printed
 
