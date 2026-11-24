@@ -41,7 +41,8 @@ The examples of a JSON card always carry their content, because a JSON reader as
 
 #### Error Handling
 
-Null arguments throw `ArgumentNullException`; an unknown error code and an unknown example throw `ArgumentException`.
+Null arguments throw `ArgumentNullException`; an unknown error code, an unknown example, and a `JsonEnvelope` callback
+that returns null throw `ArgumentException`.
 
 #### Dependencies
 
@@ -50,5 +51,5 @@ Null arguments throw `ArgumentNullException`; an unknown error code and an unkno
 
 #### Callers
 
-The `Render*` members of `HelpCatalog` when the format is `Json`, and later the command-line helper and the agent tool
-for the error document and the usage lines.
+The `Render*` members of `HelpCatalog` when the format is `Json` (used by `HelpCli` and `HelpAgentTool`), and the
+command-line dispatcher of `HelpCli` for the error document and the usage lines.

@@ -28,21 +28,33 @@ namespace DemaConsulting.HelpCards.Testing;
 public static partial class HelpCardValidator
 {
     /// <summary>
-    ///     Validates a help source on its own.
+    ///     Validates a help source together with the sources it imports.
     /// </summary>
     /// <remarks>
-    ///     The source is composed as the only source of a catalog. This release composes one source, so a source
-    ///     that imports another source is an argument error here too.
+    ///     The sources are composed as a flat catalog: every source that the given source imports, directly or
+    ///     transitively, followed by the source itself, in dependency order. A source that is reached more than
+    ///     once is added once. Because the imports are added by the validator, a source with imports never reports
+    ///     <c>import-missing</c> here; use <see cref="Validate(Action{HelpCatalogBuilder}, HelpValidationOptions?)"/>
+    ///     to check a composition of the product, such as one with mounted sources.
     /// </remarks>
     /// <param name="source">The source. Must not be null.</param>
     /// <param name="options">The limits and switches, or <see langword="null"/> for the defaults.</param>
     /// <returns>Every problem found, errors first.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when the source cannot be composed on its own.</exception>
     public static IReadOnlyList<HelpProblem> Validate(HelpSource source, HelpValidationOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return Validate(builder => builder.AddSource(source), options);
+        var ordered = new List<HelpSource>();
+        CollectInDependencyOrder(source, new HashSet<HelpFileProvider>(), ordered);
+        return Validate(
+            builder =>
+            {
+                foreach (var item in ordered)
+                {
+                    builder.AddSource(item);
+                }
+            },
+            options);
     }
 
     /// <summary>
@@ -92,6 +104,27 @@ public static partial class HelpCardValidator
     {
         ArgumentNullException.ThrowIfNull(catalog);
         return Order(CheckCatalog(catalog, options ?? new HelpValidationOptions()), catalog.Sources);
+    }
+
+    /// <summary>
+    ///     Adds a source after the sources it imports, depth first, each provider once.
+    /// </summary>
+    /// <param name="source">The source to add.</param>
+    /// <param name="seen">The providers that were already visited; this also ends an import cycle.</param>
+    /// <param name="ordered">Receives the sources, imports before importers.</param>
+    private static void CollectInDependencyOrder(HelpSource source, HashSet<HelpFileProvider> seen, List<HelpSource> ordered)
+    {
+        if (!seen.Add(source.Provider))
+        {
+            return;
+        }
+
+        foreach (var imported in source.ImportedSources)
+        {
+            CollectInDependencyOrder(imported, seen, ordered);
+        }
+
+        ordered.Add(source);
     }
 
     /// <summary>

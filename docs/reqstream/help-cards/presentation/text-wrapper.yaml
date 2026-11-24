@@ -12,8 +12,9 @@ sections:
             requirements:
               - id: HelpCards-Presentation-TextWrapper-Wrap
                 title: >-
-                  The wrapper shall break text between words so that no line is longer than the width, count the
-                  prefix toward the width, and start every later line with the hanging indent.
+                  The wrapper shall break text between words so that no line is longer than the width (except a single
+                  word that is longer than the width), count the prefix toward the width, and start every later line
+                  with the hanging indent.
                 justification: |
                   Generated lines must fit a terminal and keep their list structure when they continue.
                 tests:

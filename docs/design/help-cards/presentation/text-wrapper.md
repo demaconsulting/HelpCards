@@ -9,8 +9,9 @@ on the others. It never touches authored text.
 
 #### Data Model
 
-The class is static and stateless. Words are the runs of characters between spaces; runs of spaces collapse to one
-space. Every line is appended to a `StringBuilder` and ends with a line feed.
+The class is static and stateless. Words are the runs of characters between space characters (U+0020); no other white
+space separates words, so a tab or line feed inside a text stays inside its word. Runs of spaces collapse to one space.
+Every line is appended to a `StringBuilder` and ends with a line feed.
 
 #### Key Methods
 

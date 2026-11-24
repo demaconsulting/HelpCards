@@ -51,12 +51,14 @@ sections:
 
               - id: HelpCards-Presentation-LinkFormatter-Callback
                 title: >-
-                  The formatter shall let a callback of the caller write every link instead of the style, and pass it
-                  the link with its global ids, title, display text, and source.
+                  The formatter shall let a callback of the caller write every link instead of the style, pass it
+                  the link with its global ids, title, display text, and source, and treat a null result as empty
+                  text.
                 justification: |
                   Tools have link syntax of their own that no built-in style can know.
                 tests:
                   - LinkFormatter_FormatLink_Callback_OverridesLinkStyle
+                  - LinkFormatter_FormatLinkAndLabel_CallbackReturnsNull_WritesEmptyText
 
               - id: HelpCards-Presentation-LinkFormatter-Labels
                 title: >-

@@ -20,7 +20,8 @@ All tests in the four test files pass.
 - **Entry points**: a valid source has no problems; a source, a callback, and a catalog agree; a defective source
   returns its errors in order without throwing; a summary that tries to span lines is an error of the build; the tag
   vocabulary of a callback is applied.
-- **Order**: errors come first and each severity is ordered by file, line, and rule.
+- **Order**: errors come first and each severity is ordered by source, file, line, and rule; a first source with a later
+  file name is listed before a second source.
 - **Summary and size**: summaries at and over the limits for roots and other cards; a card over the card limit; a root
   with children over the index limit only.
 - **Body rules**: the reserved headings with their file lines and not inside a fence; a fence without a language and
@@ -35,4 +36,6 @@ All tests in the four test files pass.
   warnings fail only with the option.
 - **Options**: defaults, stored values with a copy of the rules, limits that are not positive, and null rules.
 - **Directory**: the same files; files on one side only in path order; invalid arguments.
-- **Arguments**: null arguments, a builder without a source, and a source with imports.
+- **Arguments**: null arguments and a builder without a source.
+- **Imports**: a source that imports a library is composed after it without errors, a callback that leaves the import
+  out reports import-missing, and a library that is reached twice is composed once.

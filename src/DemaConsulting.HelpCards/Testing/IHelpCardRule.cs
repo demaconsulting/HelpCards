@@ -24,6 +24,9 @@ public interface IHelpCardRule
     ///     Checks one card and returns every problem found.
     /// </summary>
     /// <param name="card">The card to check.</param>
-    /// <returns>The problems of the card; empty or <see langword="null"/> when the card satisfies the rule.</returns>
+    /// <returns>
+    ///     The problems of the card; empty when the card satisfies the rule. A <see langword="null"/> result is
+    ///     tolerated and treated as empty, although the signature does not declare it, and is the only supported null.
+    /// </returns>
     IEnumerable<HelpProblem> Check(HelpCard card);
 }

@@ -27,9 +27,10 @@ of the adopting product).
 #### Key Methods
 
 - **`Validate(source | callback | catalog, options)`** composes the source or the configuration with
-  `HelpCatalogBuilder.Compose`, returns the errors alone when there are any, and otherwise checks every visible card
-  of the catalog and the tokens of the sources. A `HelpSource` is added to a new builder, so a source that imports
-  another source throws `ArgumentException` in this release.
+  `HelpCatalogBuilder.Compose`, returns the errors alone when there are any, and otherwise checks every visible card of
+  the catalog and the tokens of the sources. A `HelpSource` is added to a new builder together with the sources it
+  imports, directly or transitively, each provider once and imports before importers (a depth-first walk of the
+  imports), so a source with imports does not report `import-missing`; a callback adds exactly what it adds.
 - **Quality rules** (private, in the `Rules` part): summary length, card size (the length of
   `HelpCatalog.Render(card)`), reserved headings (level one, and level two `Cards`, `Examples`, and `See also`),
   fences without a language, an unclosed fence, long lines, unused tokens (every file of the source is scanned for
@@ -44,7 +45,7 @@ of the adopting product).
 #### Error Handling
 
 Defects of cards are returned as problems. Null arguments throw `ArgumentNullException`; a builder without a source, a
-source with imports, a white-space directory, and a directory that does not exist throw `ArgumentException`; limits
+white-space directory, and a directory that does not exist throw `ArgumentException`; limits
 that are not positive throw `ArgumentOutOfRangeException` where they are set. `AssertValid` is the only member that
 throws for a defect.
 

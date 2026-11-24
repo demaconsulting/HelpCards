@@ -27,13 +27,18 @@ the internal `RenderContext`, which resolves the options against a catalog view 
 
 - **Property setters** check their value when they are set: an enumeration value that is not defined, a width outside
   zero and 20 to 500, and a command template of white space throw an argument exception.
-- **`RenderContext.Create(catalog, options)`** resolves the tool name: the name given to the builder, else the name of
-  the first source, else `tool`.
-- **`Own(card)`** returns the card of the catalog view with the id of the given card, so that a card of another view is
-  rendered with the rules of this one, and throws for a card the view does not show.
-- **`Flatten(maxDepth)`** lists the visible cards depth first with their depth, down to a depth.
-- **`DescendantsWithExamples(card)`** lists the cards below a card that have examples of their own.
-- **`RequireExample(card, name)`** finds an example in a card or the cards below it, or throws.
+- **`RenderContext.Create(catalog, options)`** (a catalog and options that may be null; returns the context) resolves
+  the tool name: the name given to the builder, else the name of the first source, else `tool`.
+- **`Own(card)`** (a non-null `HelpCard`; returns a `HelpCard`) returns the card of the catalog view with the id of the
+  given card, so that a card of another view is rendered with the rules of this one, and throws for a card the view does
+  not show.
+- **`Flatten(maxDepth)`** (an `int`; returns a list of card and depth) lists the visible cards depth first with their
+  depth, down to a depth. It does not validate the depth: a negative depth lists the roots only, and the check that
+  rejects a negative depth lives in `HelpCatalog.RenderIndex`.
+- **`DescendantsWithExamples(card)`** (a visible `HelpCard`) lists the cards below a card that have examples of their
+  own.
+- **`RequireExample(card, name)`** (a card and a non-null name; returns the `HelpExample`) finds an example in a card or
+  the cards below it, or throws.
 
 #### Error Handling
 

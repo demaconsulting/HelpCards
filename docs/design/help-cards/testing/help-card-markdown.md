@@ -20,8 +20,9 @@ and, for the line that opens a fence, the language that follows the fence charac
   indent, one to six `#`, a space, the text, and an optional closing run of `#`.
 - **`GetSection(body, heading)`** returns the lines from the first heading with that text to the next heading of the
   same or a higher level, without blank lines at its ends, or null when the heading does not exist.
-- **`Bullets(body, heading)`** returns the bullets of that section: a line that starts with `-`, `*`, or `+` and a
-  space, joined with the indented lines that follow it with single spaces; a fence or other text ends a bullet.
+- **`Bullets(body, heading)`** returns the bullets of that section, including the bullets under its deeper subsections:
+  a line that starts with `-`, `*`, or `+` and a space, joined with the indented lines that follow it with single
+  spaces; a fence or other text ends a bullet.
 - **`Scan(body, out unclosedFenceLine)`** (internal) splits the body at line feeds, ignores carriage returns, and
   classifies each line with the fence rule of `BodyParser`; it reports the line of a fence that is never closed.
 - **`TryParseHeading`** (internal) reads the level and text of a heading line for the validator.

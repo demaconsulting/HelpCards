@@ -336,6 +336,22 @@ public partial class JsonDocumentWriterTests
     }
 
     /// <summary>
+    ///     Proves that an envelope callback that returns null is reported with a descriptive argument error.
+    /// </summary>
+    [Fact]
+    public void JsonDocumentWriter_WriteError_EnvelopeReturningNull_ThrowsDescriptiveArgumentException()
+    {
+        // Arrange
+        var options = new HelpRenderOptions { Format = HelpFormat.Json, JsonEnvelope = (_, _) => null! };
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() => JsonDocumentWriter.WriteError(options, "usage-error", "m"));
+
+        // Assert
+        Assert.Contains("JsonEnvelope", exception.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that the documents do not depend on the current culture of the machine.
     /// </summary>
     [Fact]

@@ -12,8 +12,9 @@ sections:
             requirements:
               - id: HelpCards-Presentation-HelpStrings-Chrome
                 title: >-
-                  The unit shall provide every heading, label, and hint sentence that a rendering writes around
-                  authored content in English, with the Markdown labels in bold.
+                  The unit shall provide every heading text, label, and hint or empty-list sentence that a rendering
+                  writes around authored content in English, with the Markdown labels in bold; the literal heading
+                  markers (number signs) are layout and stay with the renderer.
                 justification: |
                   Chrome in one place is the seam for later localization and keeps the layout consistent.
                 tests:

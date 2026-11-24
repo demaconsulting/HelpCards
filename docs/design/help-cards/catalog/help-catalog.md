@@ -48,7 +48,7 @@ subsystem. All lists are read-only collections.
   and **`FormatBody`** create a `RenderContext` for the catalog view and the options, map the card to the card of this
   view (rejecting a null card with `ArgumentNullException` and a card the view does not show with `ArgumentException`),
   and call `TextRenderer` or, for the JSON format, `JsonDocumentWriter`. `RenderIndex` rejects a negative depth. Two
-  internal overloads add the usage lines to the JSON index and the filter to the JSON card list for later callers.
+  internal overloads add the usage lines to the JSON index and the filter to the JSON card list for `HelpCli`.
   `RenderSearch` renders results, usually those of `Search`.
 
 #### Error Handling
@@ -64,5 +64,5 @@ that find nothing return `null` or an empty list. No member throws `InvalidOpera
 
 #### Callers
 
-Adopters, the Presentation subsystem (it reads the catalog it renders), the Testing subsystem (validation), and later
-the command-line helper and the agent tool, which also use `Search` and `Suggest`.
+Adopters, the Presentation subsystem (it reads the catalog it renders), the Testing subsystem (validation), and the
+Integration subsystem (`HelpCli` and `HelpAgentTool`), which also use `Search` and `Suggest`.

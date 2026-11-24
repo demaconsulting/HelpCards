@@ -1,5 +1,6 @@
 using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Loading;
+using DemaConsulting.HelpCards.Presentation;
 using DemaConsulting.HelpCards.Tests.TestSupport;
 
 namespace DemaConsulting.HelpCards.Tests.Catalog;
@@ -108,6 +109,19 @@ public partial class HelpCatalogTests
         _ = catalog.Resolve("a x");
         _ = catalog.Where(_ => true).Filter(["x"]).Cards.Select(card => card.Body).ToList();
         _ = catalog.Cards.Select(card => card.Body).ToList();
+        _ = catalog.Search("a");
+        _ = catalog.Suggest("b");
+        _ = catalog.FindExamples("run");
+        _ = catalog.RenderIndex();
+        _ = catalog.RenderCardList(catalog.Cards);
+        _ = catalog.RenderSearch("a", catalog.Search("a"));
+        foreach (var format in new[] { HelpFormat.Text, HelpFormat.Markdown, HelpFormat.Json })
+        {
+            var options = new HelpRenderOptions { Format = format };
+            _ = catalog.Cards.Select(card => catalog.Render(card, options)).ToList();
+            _ = catalog.Cards.Select(card => catalog.RenderExamples(card, options)).ToList();
+            _ = catalog.Cards.Select(card => catalog.FormatBody(card, options)).ToList();
+        }
 
         // Assert
         Assert.Equal(1, listed);

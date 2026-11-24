@@ -36,9 +36,9 @@ sections:
 
               - id: HelpCards-Testing-HelpCardMarkdown-Bullets
                 title: >-
-                  The helper shall return the bullets of a section, each with its indented continuation lines
-                  joined by single spaces, with every bullet marker accepted, ignoring fenced blocks, and ending a
-                  bullet at any other text.
+                  The helper shall return the bullets of a section, including those under its deeper subsections,
+                  each with its indented continuation lines joined by single spaces, with every bullet marker
+                  accepted, ignoring fenced blocks, and ending a bullet at any other text.
                 justification: |
                   Option lists are written as bullets and compared item by item.
                 tests:

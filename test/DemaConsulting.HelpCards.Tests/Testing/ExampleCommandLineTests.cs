@@ -184,6 +184,7 @@ public class ExampleCommandLineTests
         Assert.Contains("'$'", dollar);
         Assert.Contains("column 9", dollar);
         Assert.Contains("'`'", tick);
+        Assert.Contains("column 9", tick);
         Assert.Contains("may only escape", escape);
         Assert.Contains("column 8", escape);
     }

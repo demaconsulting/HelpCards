@@ -150,6 +150,24 @@ public class LinkFormatterTests
     }
 
     /// <summary>
+    ///     Proves that a callback that returns null is written as empty text, for a link and for a label.
+    /// </summary>
+    [Fact]
+    public void LinkFormatter_FormatLinkAndLabel_CallbackReturnsNull_WritesEmptyText()
+    {
+        // Arrange
+        var context = Context(new HelpRenderOptions { LinkFormatter = _ => null! });
+
+        // Act
+        var link = LinkFormatter.FormatLink(context, CardLink(), Containing);
+        var label = LinkFormatter.FormatLabel(context, "a/b", "Bee", "lib");
+
+        // Assert
+        Assert.Equal(string.Empty, link);
+        Assert.Equal(string.Empty, label);
+    }
+
+    /// <summary>
     ///     Proves that the command template is filled in with the tool and the path with spaces for slashes.
     /// </summary>
     [Fact]
@@ -244,6 +262,7 @@ public class LinkFormatterTests
 
         // Act / Assert
         Assert.Throws<ArgumentNullException>(() => LinkFormatter.FormatBody(null!, null!));
+        Assert.Throws<ArgumentNullException>(() => LinkFormatter.FormatBody(context, null!));
         Assert.Throws<ArgumentNullException>(() => LinkFormatter.FormatLink(context, null!, Containing));
         Assert.Throws<ArgumentNullException>(() => LinkFormatter.FormatLabel(null!, "a", "A", "s"));
         Assert.Throws<ArgumentNullException>(() => LinkFormatter.Command(context, null!));

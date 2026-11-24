@@ -31,8 +31,8 @@ The subsystem contains these units:
 | `HelpRenderOptions` | Inbound (adopters) | Choose format, link style, template, width, and callbacks |
 | `HelpCatalog.Render*`, `FormatBody` | Inbound (adopters) | Render a card, index, examples, or list |
 | `HelpCard.BodyPieces`, `HelpCatalog.Scope` | Outbound (Catalog) | Read body pieces and the visible tree |
-| `JsonDocumentWriter.WriteError` | Inbound (later callers) | Write the error document; no public member exists |
-| Internal `Render*` overloads | Inbound (later: CLI) | Add usage lines and list filter |
+| `JsonDocumentWriter.WriteError` | Inbound (`HelpCli`) | Write the error document; no public member exists |
+| Internal `Render*` overloads | Inbound (`HelpCli`) | Add usage lines and list filter |
 
 The Presentation subsystem depends only on the Catalog subsystem and the Base Class Library (`System.Text.Json` for
 JSON). The Catalog subsystem calls it only from the partial `HelpCatalog.Render.cs`; the plain-style body of a card
@@ -40,10 +40,13 @@ JSON). The Catalog subsystem calls it only from the partial `HelpCatalog.Render.
 
 ### Design
 
-**One context per call.** Every `Render` member creates a `RenderContext` from the catalog view and the options, maps
-the card to the card of that view (so a card of another view is rendered with the rules of this one and a hidden card is
-rejected), and hands the context to a renderer. The context holds the tool name (the one given to the builder, else the
-name of the first source), the effective wrapping width (zero for Markdown), and the tree walks.
+**One context per call.** Every `Render` member creates a `RenderContext` from the catalog view and the options. The
+members that take one card (`Render`, `RenderExamples`, `RenderExample`, and `FormatBody`) map the card to the card of
+that view (so a card of another view is rendered with the rules of this one and a hidden card is rejected). The list
+members `RenderCardList` and `RenderSearch` do not map or validate their cards or results: they label them as given, so
+a caller passes cards found in the same view. The context is then handed to a renderer. The context holds the tool name
+(the one given to the builder, else the name of the first source), the effective wrapping width (zero for Markdown), and
+the tree walks.
 
 **Layout.** The text layout is fixed: title, summary, aliases, tags, body, then the sections Cards, Examples, and See
 also, each left out when empty. Markdown is the same layout without wrapping and with bold labels. Examples are listed
@@ -64,9 +67,9 @@ envelope `helpSchemaVersion`, `ok`, and `kind` or the envelope of the caller. Op
 always written, and every character outside printable ASCII is replaced by a `\uXXXX` escape after the document is
 written, so the rule holds for the default envelope and for a callback envelope alike.
 
-**Failure model.** A null argument throws `ArgumentNullException`; a card the view does not show, an unknown example, a
-negative depth, an invalid option, and an unknown error code throw `ArgumentException` or a subclass. Options are
-checked where they are set. Rendering never throws for the content of cards.
+**Failure model.** A null argument throws `ArgumentNullException`; a single card that the view does not show, an unknown
+example, a negative depth, an invalid option, and an unknown error code throw `ArgumentException` or a subclass. Options
+are checked where they are set. Rendering never throws for the content of cards.
 
 The unit design documents describe each unit in detail; the verification design describes how the subsystem is tested
 through the options and the `Render` members.

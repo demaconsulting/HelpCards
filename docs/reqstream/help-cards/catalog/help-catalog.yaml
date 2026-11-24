@@ -65,13 +65,15 @@ sections:
               - id: HelpCards-Catalog-HelpCatalog-Resolve
                 title: >-
                   The catalog shall resolve a path to its card, or report the card whose children were searched, the
-                  segment that matched nothing, and the valid names at that level, without a suggestion.
+                  segment that matched nothing, the valid names at that level, and the closest name or alias there as a
+                  suggestion.
                 justification: |
                   A failed lookup is only useful when it tells the caller what would have worked.
                 tests:
                   - HelpCatalog_Resolve_ValidPath_ReturnsCardOnly
                   - HelpCatalog_Resolve_UnknownChild_ReportsParentSegmentAndValidNames
                   - HelpCatalog_Resolve_UnknownRoot_HasNoParentAndListsRoots
+                  - HelpCatalog_Resolve_UnknownSegment_SuggestsClosestNameOrAlias
 
               - id: HelpCards-Catalog-HelpCatalog-Relations
                 title: >-
@@ -277,4 +279,3 @@ sections:
                   - HelpCatalog_Suggest_NamesAliasesAndIds_AreCandidates
                   - HelpCatalog_Suggest_View_NeverSuggestsHiddenCards
                   - HelpCatalog_Suggest_InvalidArguments_Throw
-                  - HelpCatalog_Resolve_UnknownSegment_SuggestsClosestNameOrAlias

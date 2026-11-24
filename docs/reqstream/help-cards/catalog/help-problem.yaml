@@ -41,6 +41,7 @@ sections:
                 tests:
                   - RuleIds_Constants_AreDistinctKebabCaseNames
                   - RuleIds_Constants_CoverSpecifiedErrorRules
+                  - RuleIds_Constants_CoverInfoAndWarningRules
 
               - id: HelpCards-Catalog-HelpProblem-InfoFactory
                 title: >-

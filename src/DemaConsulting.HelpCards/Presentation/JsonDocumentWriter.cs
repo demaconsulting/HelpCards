@@ -68,7 +68,10 @@ internal static partial class JsonDocumentWriter
     /// <param name="hint">A hint for the reader, or <see langword="null"/> to leave it out.</param>
     /// <param name="candidates">The global ids that could have been meant, or <see langword="null"/> for none.</param>
     /// <returns>The document.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="code"/> is not a defined error code.</exception>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <paramref name="code"/> is not a defined error code, or when the <c>JsonEnvelope</c> callback of
+    ///     the options returns null.
+    /// </exception>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is null.</exception>
     public static string WriteError(
         HelpRenderOptions? options,
@@ -116,7 +119,9 @@ internal static partial class JsonDocumentWriter
         var envelope = options.JsonEnvelope;
         if (envelope is not null)
         {
-            return EscapeNonAscii(envelope(kind, writeFields));
+            var custom = envelope(kind, writeFields)
+                ?? throw new ArgumentException("The JsonEnvelope callback returned null instead of a document.", nameof(options));
+            return EscapeNonAscii(custom);
         }
 
         // The relaxed encoder leaves quotes, backticks, and angle brackets readable; non-ASCII is escaped below

@@ -233,6 +233,12 @@ public class HelpCardTests
         Assert.Equal(matched, result.MatchedOn);
         Assert.Equal(result, result with { });
         Assert.NotEqual(result, result with { Score = 1 });
+
+        // Equal values held in different list instances are equal; a different list is not
+        var same = new HelpSearchResult("a/b", "Title", "Summary.", "src", 90, new List<string> { "id", "title" });
+        Assert.Equal(result, same);
+        Assert.Equal(result.GetHashCode(), same.GetHashCode());
+        Assert.NotEqual(result, result with { MatchedOn = new[] { "id" } });
     }
 
     /// <summary>
