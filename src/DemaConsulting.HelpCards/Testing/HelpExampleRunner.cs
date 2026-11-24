@@ -44,7 +44,7 @@ namespace DemaConsulting.HelpCards.Testing;
 ///
 /// HelpSource cards = HelpSource.FromFiles(new System.Collections.Generic.Dictionary&lt;string, string&gt;
 /// {
-///     ["_source.md"] = "---\nname: mytool\n---\n",
+///     ["_source.md"] = "---\nname: mytool\nschema: 2\n---\n",
 ///     ["check.md"] = "---\n"
 ///         + "title: Check\n"
 ///         + "summary: Check a file.\n"
@@ -53,7 +53,7 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         + "    kind: source\n"
 ///         + "    language: yaml\n"
 ///         + "    content: 'limit: 10'\n"
-///         + "    file: config.yaml\n"
+///         + "    save-as: config.yaml\n"
 ///         + "    description: A configuration file.\n"
 ///         + "  - name: ok\n"
 ///         + "    kind: command\n"

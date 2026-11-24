@@ -81,14 +81,30 @@ sections:
       - id: HelpCards-FrontMatter-ExtensionsAndSchema
         title: >-
           Cards shall be able to carry extension keys that start with "x-", which the catalog keeps as extensions of the
-          card, and a source shall declare a schema that is 1 when omitted and rejected when higher than the library
-          supports.
+          card, and a source shall declare a schema that is 1 when omitted, that is read when it is 1 or 2, and that is
+          rejected when higher than the library supports.
         tags: [system]
         justification: |
           Tools attach their own metadata to cards without a change of the library, and a source written for a newer
           schema must fail clearly instead of being read wrongly.
         tests:
           - HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced
+
+      - id: HelpCards-Examples-SaveAs
+        title: >-
+          A source that declares schema 2 shall name the file a source or snippet example is saved as with the key
+          save-as and name a companion data file with the key file, a source of schema 1 shall be read exactly as
+          before, and mixing the two shall be reported with a message that says what to change.
+        tags: [system]
+        justification: |
+          Schema 1 gave the key file two meanings; splitting them is a change of meaning, so it is a new schema, and
+          every library that already ships cards must keep working without a change.
+        children:
+          - HelpCards-Loading-Cards
+          - HelpCards-Composition-Failures
+          - HelpCards-Testing-QualityRules
+        tests:
+          - HelpCards_Examples_SaveAsAndFile_Schema2SplitsAndSchema1StillReads
 
       - id: HelpCards-Tokens-Substitution
         title: >-

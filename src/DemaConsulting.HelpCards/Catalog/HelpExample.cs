@@ -8,11 +8,12 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     normalized to LF, trailing line feeds are removed, and tokens are replaced. The type is immutable and
 ///     therefore safe for concurrent use. Instances are created by the catalog and cannot be created by callers.
 ///     In a card file an example is an item of the front-matter key <c>examples</c> with the keys <c>name</c>,
-///     <c>kind</c>, <c>language</c>, <c>description</c>, <c>file</c>, <c>content</c>, <c>exit</c> and <c>expect</c>
-///     (the <c>file</c> key is
-///     <see cref="FileName"/>; it is required for the kinds <c>source</c> and <c>snippet</c> and not allowed for a
-///     <c>command</c>; <c>exit</c> is <see cref="ExitCode"/> and <c>expect</c> is <see cref="Expect"/>, and only a
-///     <c>command</c> has them). The complete grammar is on the page of the <c>DemaConsulting.HelpCards.Loading</c> namespace.
+///     <c>kind</c>, <c>language</c>, <c>description</c>, <c>file</c>, <c>content</c>, <c>save-as</c> (schema 2),
+///     <c>exit</c> and <c>expect</c>. <see cref="FileName"/> is the name to save a <c>source</c> or <c>snippet</c> as: the
+///     <c>save-as</c> of schema 2 (by default the last segment of its <c>file</c>), or the <c>file</c> of schema 1; a
+///     <c>command</c> has none. <c>exit</c> is <see cref="ExitCode"/> and <c>expect</c> is <see cref="Expect"/>, and only
+///     a <c>command</c> has them. The complete grammar is on the page of the <c>DemaConsulting.HelpCards.Loading</c>
+///     namespace.
 /// </remarks>
 public sealed class HelpExample
 {
@@ -37,7 +38,7 @@ public sealed class HelpExample
     /// <param name="name">The example name, a segment.</param>
     /// <param name="kind">The kind, one of the three kind constants.</param>
     /// <param name="language">The language of the content, one lower-case word.</param>
-    /// <param name="fileName">The file name to save the content as, or <see langword="null"/> for a command.</param>
+    /// <param name="fileName">The save-as name of a source or snippet, or <see langword="null"/> for a command.</param>
     /// <param name="description">The one-line description.</param>
     /// <param name="content">The normalized content.</param>
     /// <param name="sourceName">The name of the source the example comes from.</param>
@@ -81,7 +82,7 @@ public sealed class HelpExample
     public string Language { get; }
 
     /// <summary>
-    ///     Gets the file name to save a source or snippet as, or <see langword="null"/> for a command.
+    ///     Gets the file name to save a source or snippet as (the save-as name), or <see langword="null"/> for a command.
     /// </summary>
     public string? FileName { get; }
 

@@ -30,6 +30,8 @@ All tests in the four test files pass.
   file with invalid UTF-8 is reported as a `source-read` error at its path instead of throwing.
 - **Commands**: a pipe and another tool name are reported with the tool name of the builder; the name of the source
   is used without a tool name; other kinds are not checked.
+- **Save-as names**: two source examples with the same file name give one `save-as-duplicate` warning at the card file
+  that names both examples; different names, and a snippet that shares the name of a source, give none.
 - **Product rules**: a rule adds its problems, an error of a rule fails the assertion, and a rule that returns nothing
   is accepted.
 - **External sources**: absent sources are errors only with the option, with the file and the source name.

@@ -196,4 +196,4 @@ sections:
             tests:
               - Composition_Failures_SeveralDefects_AreCollectedOnceAndInOrder
               - Composition_Failures_SeveralSources_CollectAllInOrder
-              - Composition_Schema_OmittedAndExplicitOne_AreSupportedPerSource
+              - Composition_Schema_OmittedOneAndTwo_AreSupportedPerSource

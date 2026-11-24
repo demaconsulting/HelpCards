@@ -65,12 +65,15 @@ sections:
               - HelpCards-Loading-CardReader-Overlays
               - HelpCards-Loading-CardReader-Examples
               - HelpCards-Loading-CardReader-ExampleExpectations
+              - HelpCards-Loading-CardReader-ExampleSaveAs
+              - HelpCards-Loading-CardReader-SchemaCompatibility
               - HelpCards-Loading-CardReader-SourceFile
             tests:
               - Loading_MemorySource_ReadsCardsLinksTokensAndExamples
               - Loading_DirectorySource_ReadsSameCardsAsMemorySource
               - Loading_AssemblySource_ReadsEmbeddedFixtureCards
               - Loading_ExpectedResults_RunnableFixture_ReadsExitAndExpect
+              - Loading_Schema2_RunnableFixture_ReadsSaveAsExitAndExpect
               - Loading_Reading_IsDeterministic
 
           - id: HelpCards-Loading-Tokens

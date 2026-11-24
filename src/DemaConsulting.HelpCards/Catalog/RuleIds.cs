@@ -168,6 +168,9 @@ internal static class RuleIds
     /// <summary>A command example does not parse.</summary>
     public const string CommandParse = "command-parse";
 
+    /// <summary>Two source examples of one card are saved under the same name.</summary>
+    public const string SaveAsDuplicate = "save-as-duplicate";
+
     /// <summary>Files on disk and in the assembly differ.</summary>
     public const string ResourcesMismatch = "resources-mismatch";
 

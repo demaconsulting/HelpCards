@@ -292,9 +292,11 @@ release must reference at least that version in its `PackageReference`.
 | `schema`, `name`, `language` (`_source.md`) | 0.1.0 |
 | `x-*` (extensions) | 0.1.0 |
 | `exit`, `expect` (command examples) | 0.1.0-beta.3 |
+| `save-as` (examples), with `schema: 2` | 0.1.0-beta.3 |
 
-Omitting `schema` means schema 1. A source that declares a schema newer than the library supports fails with the rule
-`schema-unsupported`.
+Omitting `schema` means schema 1. Schema 2 splits the `file` key of an example into `save-as` (the name to save it as)
+and `file` (a companion data file); schema 1 is still read exactly as before and stays supported. A source that declares
+a schema newer than the library supports fails with the rule `schema-unsupported`.
 
 ## Target frameworks
 

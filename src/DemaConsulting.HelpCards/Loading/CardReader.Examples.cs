@@ -29,9 +29,20 @@ internal sealed partial class CardReader
     private const int MaximumExitCode = 255;
 
     /// <summary>
-    ///     The keys an example may have.
+    ///     The key of schema 2 that names the file an example is saved as.
     /// </summary>
-    private static readonly string[] ExampleKeys = ["name", "kind", "language", "description", "file", "content", "exit", "expect"];
+    private const string SaveAsKey = "save-as";
+
+    /// <summary>
+    ///     The keys an example may have in schema 1.
+    /// </summary>
+    private static readonly string[] ExampleKeysSchema1 = ["name", "kind", "language", "description", "file", "content", "exit", "expect"];
+
+    /// <summary>
+    ///     The keys an example may have in schema 2.
+    /// </summary>
+    private static readonly string[] ExampleKeysSchema2 =
+        ["name", "kind", "language", "description", "file", "content", "save-as", "exit", "expect"];
 
     /// <summary>
     ///     The keys an example of a translation may have.
@@ -111,7 +122,7 @@ internal sealed partial class CardReader
     private ExampleDefinition? ReadExample(FrontMatterItem item, string file)
     {
         var map = item.Map!;
-        CheckKeys(map, file, ExampleKeys, "example", false);
+        CheckExampleKeys(map, file);
         var before = _structureErrors;
 
         var name = ReadExampleName(map, file, item.Line);
@@ -119,17 +130,13 @@ internal sealed partial class CardReader
         var language = ReadExampleLanguage(map, file, item.Line);
         var description = ReadExampleText(map, "description", file, item.Line);
         var fileEntry = Find(map, "file");
-        var fileName = fileEntry is null ? null : ReadExampleFile(fileEntry, file);
-        if (kind == CommandKind && fileEntry is not null)
-        {
-            ReportStructure(RuleIds.ValueInvalid, file, fileEntry.Line, "A command example has no 'file'; its 'content' is the command line.");
-        }
-        else if (kind is SourceKind or SnippetKind && fileEntry is null)
-        {
-            ReportStructure(RuleIds.KeyMissing, file, item.Line, $"A {kind} example needs a 'file'.");
-        }
+        var saveAsEntry = _schema >= 2 ? Find(map, SaveAsKey) : null;
+        var dataFile = fileEntry is null ? null : ReadExampleFile(fileEntry, file);
+        var saveAs = saveAsEntry is null ? null : ReadSaveAs(saveAsEntry, file);
+        CheckFileKeys(map, kind, file, item.Line);
+        var fileName = _schema >= 2 ? saveAs ?? LastSegment(dataFile) : dataFile;
 
-        var content = ReadExampleContent(map, kind, fileName, file, item.Line);
+        var content = ReadExampleContent(map, kind, dataFile, file, item.Line);
         var exitCode = ReadExampleExit(map, kind, file);
         var expect = ReadExampleExpect(map, kind, file);
         if (_structureErrors > before || name is null || kind is null || language is null)
@@ -148,6 +155,136 @@ internal sealed partial class CardReader
             expect,
             file,
             item.Line);
+    }
+
+    /// <summary>
+    ///     Checks the keys of an example against the key set of the schema of the source.
+    /// </summary>
+    /// <remarks>
+    ///     In schema 1 the key <c>save-as</c> does not exist; it gets its own message, which names the schema it needs and
+    ///     what <c>file</c> means in schema 1, instead of the generic list of allowed keys.
+    /// </remarks>
+    /// <param name="map">The entries of the example.</param>
+    /// <param name="file">The path of the file.</param>
+    private void CheckExampleKeys(IReadOnlyList<FrontMatterEntry> map, string file)
+    {
+        if (_schema >= 2)
+        {
+            CheckKeys(map, file, ExampleKeysSchema2, "example", false);
+            return;
+        }
+
+        var saveAs = Find(map, SaveAsKey);
+        CheckKeys(map.Where(entry => entry != saveAs).ToList(), file, ExampleKeysSchema1, "example", false);
+        if (saveAs is not null)
+        {
+            ReportStructure(
+                RuleIds.KeyUnknown,
+                file,
+                saveAs.Line,
+                $"The key '{SaveAsKey}' needs schema 2: add 'schema: 2' to '_source.md'. "
+                + "In schema 1 the 'file' of an example with 'content' is the name to save it as.");
+        }
+    }
+
+    /// <summary>
+    ///     Checks how <c>file</c>, <c>save-as</c>, and <c>content</c> go together for the kind of an example.
+    /// </summary>
+    /// <remarks>
+    ///     A command has neither <c>file</c> nor <c>save-as</c> in any schema. In schema 1 a <c>source</c> or <c>snippet</c>
+    ///     needs a <c>file</c>, which is both the data file and the name to save it as. In schema 2 it needs inline
+    ///     <c>content</c> with <c>save-as</c>, or a <c>file</c> that names a data file next to the card; <c>file</c> cannot be
+    ///     combined with <c>content</c>.
+    /// </remarks>
+    /// <param name="map">The entries of the example.</param>
+    /// <param name="kind">The kind of the example, or <see langword="null"/> when invalid.</param>
+    /// <param name="file">The path of the file.</param>
+    /// <param name="line">The line of the example.</param>
+    private void CheckFileKeys(IReadOnlyList<FrontMatterEntry> map, string? kind, string file, int line)
+    {
+        var fileEntry = Find(map, "file");
+        var saveAsEntry = _schema >= 2 ? Find(map, SaveAsKey) : null;
+        var hasContent = Find(map, "content") is not null;
+        if (kind == CommandKind)
+        {
+            if (fileEntry is not null)
+            {
+                ReportStructure(RuleIds.ValueInvalid, file, fileEntry.Line, "A command example has no 'file'; its 'content' is the command line.");
+            }
+
+            if (saveAsEntry is not null)
+            {
+                ReportStructure(RuleIds.ValueInvalid, file, saveAsEntry.Line, "A command example has no 'save-as'; its 'content' is the command line.");
+            }
+
+            return;
+        }
+
+        if (kind is not (SourceKind or SnippetKind))
+        {
+            return;
+        }
+
+        if (_schema < 2)
+        {
+            if (fileEntry is null)
+            {
+                ReportStructure(RuleIds.KeyMissing, file, line, $"A {kind} example needs a 'file'.");
+            }
+        }
+        else if (hasContent && fileEntry is not null)
+        {
+            ReportStructure(
+                RuleIds.ValueInvalid,
+                file,
+                fileEntry.Line,
+                "In schema 2 'file' names a companion data file and cannot be combined with 'content'; remove 'file', "
+                + "or put the text in the file. To name the file the content is saved as, use 'save-as'.");
+        }
+        else if (hasContent && saveAsEntry is null)
+        {
+            ReportStructure(RuleIds.KeyMissing, file, line, $"A {kind} example with inline 'content' needs 'save-as', the name to save it as.");
+        }
+        else if (!hasContent && fileEntry is null)
+        {
+            ReportStructure(RuleIds.KeyMissing, file, line, $"A {kind} example needs 'content' (inline text) or 'file' (a data file next to the card).");
+        }
+    }
+
+    /// <summary>
+    ///     Reads and validates the <c>save-as</c> of an example.
+    /// </summary>
+    /// <remarks>
+    ///     The name has the grammar of an example file: a <c>/</c>-separated relative path whose parts are data file names,
+    ///     so it cannot contain <c>..</c>, start with <c>/</c>, or name a drive, and it does not end in <c>.md</c>.
+    /// </remarks>
+    /// <param name="entry">The <c>save-as</c> entry.</param>
+    /// <param name="file">The path of the file that contains the example.</param>
+    /// <returns>The name as written, or <see langword="null"/> when invalid.</returns>
+    private string? ReadSaveAs(FrontMatterEntry entry, string file)
+    {
+        var text = entry.Scalar?.Text ?? string.Empty;
+        if (!IsExampleFileName(text))
+        {
+            ReportStructure(
+                RuleIds.ValueInvalid,
+                file,
+                entry.Line,
+                $"'{text}' is not a valid save-as name; use a relative '/'-separated path of data file names without '..' and not ending in '.md'.");
+            return null;
+        }
+
+        return text;
+    }
+
+    /// <summary>
+    ///     Gets the part of a path after its last <c>/</c>.
+    /// </summary>
+    /// <param name="path">The path, or <see langword="null"/>.</param>
+    /// <returns>The last segment, or <see langword="null"/> when there is no path.</returns>
+    private static string? LastSegment(string? path)
+    {
+        return path is null ? null : path[(path.LastIndexOf('/') + 1)..];
     }
 
     /// <summary>
@@ -330,8 +467,7 @@ internal sealed partial class CardReader
     private string? ReadExampleFile(FrontMatterEntry entry, string file)
     {
         var text = entry.Scalar?.Text ?? string.Empty;
-        var parts = text.Split('/');
-        if (text.Length == 0 || parts.Any(part => !DataFilePattern().IsMatch(part)) || text.EndsWith(".md", StringComparison.Ordinal))
+        if (!IsExampleFileName(text))
         {
             ReportStructure(
                 RuleIds.ValueInvalid,
@@ -345,11 +481,24 @@ internal sealed partial class CardReader
     }
 
     /// <summary>
+    ///     Tells whether a text is a valid example file name: a relative <c>/</c>-separated path of data file names that
+    ///     does not end in <c>.md</c>.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <returns><see langword="true"/> when the text is valid.</returns>
+    private static bool IsExampleFileName(string text)
+    {
+        return text.Length > 0
+            && !text.EndsWith(".md", StringComparison.Ordinal)
+            && text.Split('/').All(part => DataFilePattern().IsMatch(part));
+    }
+
+    /// <summary>
     ///     Reads the content of an example from its inline text or from its file.
     /// </summary>
     /// <param name="map">The entries of the example.</param>
     /// <param name="kind">The kind of the example, or <see langword="null"/> when invalid.</param>
-    /// <param name="fileName">The valid example file, or <see langword="null"/>.</param>
+    /// <param name="fileName">The valid data file named by <c>file</c>, or <see langword="null"/>.</param>
     /// <param name="file">The path of the file that contains the example.</param>
     /// <param name="line">The line of the example.</param>
     /// <returns>The normalized content; empty when it cannot be determined.</returns>

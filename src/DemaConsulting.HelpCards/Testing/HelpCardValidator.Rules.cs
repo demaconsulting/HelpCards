@@ -31,6 +31,7 @@ public static partial class HelpCardValidator
             CheckSize(catalog, card, options, problems);
             CheckBody(card, options, problems);
             CheckCommands(card, tool, problems);
+            CheckSaveAs(card, problems);
             foreach (var rule in options.Rules)
             {
                 problems.AddRange(rule.Check(card) ?? []);
@@ -314,6 +315,33 @@ public static partial class HelpCardValidator
                     0,
                     $"The command example '{example.Name}' of '{card.Id}' cannot be run as written: {error}."));
             }
+        }
+    }
+
+    /// <summary>
+    ///     Checks that no two source examples of a card are saved under the same name.
+    /// </summary>
+    /// <remarks>
+    ///     The example runner saves the source examples of a card in order, so a later one would overwrite an earlier one with
+    ///     the same name and the command that reads the file would see only the last text.
+    /// </remarks>
+    /// <param name="card">The card.</param>
+    /// <param name="problems">Receives one warning for every name that is used more than once.</param>
+    private static void CheckSaveAs(HelpCard card, List<HelpProblem> problems)
+    {
+        var duplicates = card.Examples
+            .Where(example => example.Kind == HelpExample.SourceKind && example.FileName is not null)
+            .GroupBy(example => example.FileName!, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1);
+        foreach (var group in duplicates)
+        {
+            problems.Add(Warning(
+                RuleIds.SaveAsDuplicate,
+                card.SourceName,
+                card.File,
+                0,
+                $"The source examples {string.Join(", ", group.Select(example => $"'{example.Name}'"))} of '{card.Id}' are all saved as "
+                + $"'{group.Key}'; the example runner would keep only the last one. Give each a different 'save-as' name."));
         }
     }
 

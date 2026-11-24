@@ -36,7 +36,9 @@ of the adopting product).
   without a language, an unclosed fence, long lines, unused tokens (every file of the source is scanned for `{{name}}`;
   a file that cannot be listed or read is reported as a `source-read` error with its path, the scan continues, and no
   token is reported as unused while a file is unreadable), command examples (parsed with `ExampleCommandLine` for the
-  tool name of the builder, else the name of the first source), and the rules of the options.
+  tool name of the builder, else the name of the first source), two source examples of one card that are saved under the
+  same name (`save-as-duplicate`, at the card file, because the example runner would keep only the last one), and the
+  rules of the options.
 - **`Order`** sorts by severity descending, source index, file, line, and rule, with a stable sort.
 - **`AssertValid(...)`** validates and throws `HelpCatalogException` with the errors, plus the warnings when
   `WarningsAreErrors` is set.

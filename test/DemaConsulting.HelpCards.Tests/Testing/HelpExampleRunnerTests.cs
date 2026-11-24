@@ -51,7 +51,8 @@ public class HelpExampleRunnerTests
     [Fact]
     public void HelpExampleRunner_Materialize_SourceExamples_WritesFilesWithTrailingLfAndFolders()
     {
-        // Arrange: the check card has a file-backed source in a folder and an inline source
+        // Arrange: the check card has two file-backed sources (one saved under its folder, one under its last segment)
+        // and an inline source
         using var directory = new TemporaryDirectory();
         var card = CatalogBuilding.Runnable().Find("check")!;
 
@@ -59,10 +60,11 @@ public class HelpExampleRunnerTests
         var written = HelpExampleRunner.Materialize(card, directory.FullPath);
 
         // Assert
-        Assert.Equal(["check/config.yaml", "notes.txt"], written);
+        Assert.Equal(["check/config.yaml", "limits.yaml", "notes.txt"], written);
         var config = File.ReadAllBytes(Path.Combine(directory.FullPath, "check", "config.yaml"));
         Assert.Equal("---\nname: demo\nlimit: 10\n", System.Text.Encoding.UTF8.GetString(config));
         Assert.NotEqual(0xEF, config[0]);
+        Assert.Equal("---\nlimit: 10\nmode: strict\n", File.ReadAllText(Path.Combine(directory.FullPath, "limits.yaml")));
         Assert.Equal("first line\nsecond line\n", File.ReadAllText(Path.Combine(directory.FullPath, "notes.txt")));
     }
 

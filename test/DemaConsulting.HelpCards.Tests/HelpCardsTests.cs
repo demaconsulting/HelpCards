@@ -231,7 +231,7 @@ public class HelpCardsTests
 
     /// <summary>
     ///     Proves that the extension keys that start with <c>x-</c> are kept as extensions of the card and that the
-    ///     schema of a source is 1 when omitted and rejected when higher.
+    ///     schema of a source is 1 when omitted, 1 and 2 are read, and a higher one is rejected.
     /// </summary>
     [Fact]
     public void HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced()
@@ -241,8 +241,9 @@ public class HelpCardsTests
             ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 1\n---\n"),
             ("card.md", SourceReading.Card(extraFrontMatter: "x-owner: docs\nx-review: 2026\n")));
         var higher = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
-            ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 2\n---\n"),
+            ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 3\n---\n"),
             ("card.md", SourceReading.Card())));
+        var schemaTwo = CatalogBuilding.FromFiles(("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 2\n---\n"), ("card.md", SourceReading.Card()));
         var omitted = CatalogBuilding.FromFiles(("_source.md", "---\ntitle: Source\nsummary: A source.\n---\n"), ("card.md", SourceReading.Card()));
 
         // Assert
@@ -251,7 +252,43 @@ public class HelpCardsTests
         Assert.Equal("docs", extensions["x-owner"]);
         Assert.Equal(1, catalog.Sources.Single().Schema);
         Assert.Equal(1, omitted.Sources.Single().Schema);
+        Assert.Equal(2, schemaTwo.Sources.Single().Schema);
         Assert.Equal("schema-unsupported", Assert.Single(higher.Problems).RuleId);
+    }
+
+    /// <summary>
+    ///     Proves that schema 2 separates <c>save-as</c> (the name to save a source as) from <c>file</c> (a companion data
+    ///     file), that schema 1 sources still read as before, and that mixing the two is reported with a message that says what
+    ///     to change.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Examples_SaveAsAndFile_Schema2SplitsAndSchema1StillReads()
+    {
+        // Arrange: a schema 2 fixture, a schema 1 fixture, and defective in-memory sources
+        var two = CatalogBuilding.Runnable();
+        var one = CatalogBuilding.Simple();
+        const string Inline = "  - name: x\n    kind: source\n    language: yaml\n    content: 'a: b'\n    description: D.\n";
+        static IReadOnlyList<HelpProblem> Errors(string schema, string examples) => CatalogBuilding.Errors(
+            ("_source.md", $"---\nname: test\n{schema}---\n"),
+            ("a.md", SourceReading.Card(extraFrontMatter: "examples:\n" + examples)));
+
+        // Act
+        var twoNames = two.Find("check")!.Examples.Where(example => example.Kind == HelpExample.SourceKind).Select(example => example.FileName);
+        var oneNames = one.Find("guide")!.Examples.Where(example => example.Kind != HelpExample.CommandKind).Select(example => example.FileName);
+        var missingSaveAs = Assert.Single(Errors("schema: 2\n", Inline));
+        var both = Assert.Single(Errors("schema: 2\n", Inline.Replace("    content", "    file: a.yaml\n    save-as: a.yaml\n    content", StringComparison.Ordinal)));
+        var schema1 = Assert.Single(Errors(string.Empty, Inline.Replace("    content", "    file: a.yaml\n    save-as: a.yaml\n    content", StringComparison.Ordinal)));
+
+        // Assert: schema 2 names, schema 1 names (the whole path of the file), and the three messages
+        Assert.Equal(["check/config.yaml", "limits.yaml", "notes.txt"], twoNames);
+        Assert.Equal(["guide/settings.yaml", "fragment.yaml"], oneNames);
+        Assert.Equal((2, 1), (two.Sources.Single().Schema, one.Sources.Single().Schema));
+        Assert.Equal("key-missing", missingSaveAs.RuleId);
+        Assert.Contains("'save-as'", missingSaveAs.Message, StringComparison.Ordinal);
+        Assert.Equal("value-invalid", both.RuleId);
+        Assert.Contains("companion data file", both.Message, StringComparison.Ordinal);
+        Assert.Equal("key-unknown", schema1.RuleId);
+        Assert.Contains("schema 2", schema1.Message, StringComparison.Ordinal);
     }
 
     /// <summary>

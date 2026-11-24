@@ -24,9 +24,9 @@ to case.
 
 ## The Card File
 
-A card file is a line with three hyphens, the front matter, another line with three hyphens, an optional blank line,
-and the body. Line endings can be LF or CRLF, and a byte order mark is ignored. This card uses every construct that
-the front matter accepts:
+A card file is a line with three hyphens, the front matter, another line with three hyphens, an optional blank line, and
+the body. Line endings can be LF or CRLF, and a byte order mark is ignored. This card uses every construct that the
+front matter accepts (the examples use `save-as`, so the source declares `schema: 2` in `_source.md`; see *Examples*):
 
 ```yaml
 ---
@@ -57,7 +57,7 @@ examples:
   - name: config
     kind: source
     language: yaml
-    file: settings.yaml
+    save-as: settings.yaml
     content: |
       title: Demo
       sections:
@@ -86,7 +86,7 @@ that is not allowed is the error `key-unknown`, and its message lists the allowe
 | `examples` | List of examples | O | O | O (`name`, `description`) | - |
 | `extends` | One reference | - | R | - | - |
 | `optional` | `true` or `false` | - | O | - | - |
-| `schema` | Integer, default 1 | - | - | - | O |
+| `schema` | Integer, default 1; 1 and 2 are read, use 2 | - | - | - | O |
 | `name` | Segment | - | - | - | R (or `HelpSource.WithName`) |
 | `language` | Culture name, default `en` | - | - | - | O |
 | `x-` followed by a name | One-line scalar | O | O | - | O |
@@ -213,18 +213,32 @@ An example is a named, ready-to-use piece of text attached to a card. Each item 
 | `kind` | `command`, `source`, or `snippet` |
 | `language` | One lower-case word such as `shell`, `yaml`, or `csharp` |
 | `description` | One line that says what the example shows |
-| `file` | The name of a data file next to the card; the name to save a source as |
+| `file` | A data file next to the card that holds the text (schema 1: also the name to save it as) |
+| `save-as` | Schema 2 only: the name to save the text of a `source` or `snippet` as |
 | `content` | The text itself, a single line or a literal block |
 | `exit` | A `command` only: the exit code the command is expected to end with, from 0 to 255 (default 0) |
 | `expect` | A `command` only: text that the output must contain, a single line or a literal block |
 
-The kinds differ in how they use `file` and `content`:
+The kinds differ in how they use `file`, `save-as`, and `content` (schema 2):
 
-| Kind | `file` | `content` | Meaning |
-| --- | --- | --- | --- |
-| `command` | Not allowed | Required, one line | One command line that starts with the tool name, as `{{tool}} ...` |
-| `source` | Required | Optional | A complete file; inline with `content`, otherwise the file is read |
-| `snippet` | Required | Optional | A fragment that is shown but never claimed to work alone |
+| Kind | `content` | `save-as` | `file` | Meaning |
+| --- | --- | --- | --- | --- |
+| `command` | Required, one line | Not allowed | Not allowed | One command line that starts with the tool name |
+| `source` | Inline text | Required with `content` | Not with `content` | A complete file; inline, or read from `file` |
+| `snippet` | Inline text | Required with `content` | Not with `content` | A fragment that never claims to work alone |
+
+A `source` or `snippet` has inline `content` with `save-as`, or a `file` (and then an optional `save-as`, which defaults
+to the last segment of `file`). `file` together with `content` is `value-invalid`, and so is a `save-as` or `file` on a
+command; an example with neither `content` nor `file` is `key-missing`. Two source examples of one card that are
+saved under the same name are the validator warning `save-as-duplicate`.
+
+**Schema 1.** A source without a `schema` key (or with `schema: 1`) is read as it always was: there is no `save-as`, and
+a `source` or `snippet` needs a `file`, which is the name to save the text as (the whole path, with its folders) and the
+data file to read when there is no `content`. The key `save-as` in such a source is `key-unknown` and the message tells
+you to add `schema: 2` to `_source.md`. Schema 1 stays supported by every 0.x and 1.x release; to migrate a source, add
+`schema: 2`, rename `file` to `save-as` in each example that has both `file` and `content`, and give an example that
+has only `file` a `save-as` with its old path when the folders of the old name matter (the new default is the last
+segment of `file`). The schema belongs to one source, so a library migrates on its own.
 
 The data file of a `source` or `snippet` without `content` is read from the folder of the card and must exist and be
 valid, otherwise the catalog reports `example-file-missing` or `example-invalid`. File names use letters, digits,

@@ -12,11 +12,19 @@ Library in their signatures, so exposing a source never forces another package o
 
 The `schema` key of `_source.md` is the major version of the card format. Omitting it means schema 1.
 
-- HelpCards 1.x reads schema 1. A loader supports every schema ever released until a major release removes one, after
-  at least two minor releases that announced the removal in the release notes.
+- HelpCards reads schema 1 and schema 2. Schema 2 (introduced in 0.1.0-beta.3) separates the key `save-as`, the name
+  to save an example as, from the key `file`, a companion data file; in schema 1 the key `file` meant both. Use schema 2
+  for new sources. Schema 1 is supported by every 0.x and 1.x release: a loader supports every schema ever released
+  until a major release removes one, after at least two minor releases that announced the removal in the release
+  notes, and no removal is planned.
+- To move a source to schema 2, add `schema: 2` to its `_source.md`; in each example that has `file` and `content`
+  rename `file` to `save-as`; an example with only `file` keeps working but is now saved under the last segment of
+  `file` (add `save-as` with the old path to keep its folders). Sources that import or mount each other may use
+  different schemas.
 - A source with a schema newer than the loader's maximum fails with the rule `schema-unsupported`; the message names the
   source, its schema, and the highest supported schema.
-- New keys never change the schema. An unknown key without the prefix `x-` is an error inside a schema, so a library
+- New keys that add to the format never change the schema; a change of what an existing key means does (as `save-as` and
+  `file` did). An unknown key without the prefix `x-` is an error inside a schema, so a library
   that uses a key introduced in a later release must reference at least that release of HelpCards in its package
   reference. The README lists the release that introduced each key.
 

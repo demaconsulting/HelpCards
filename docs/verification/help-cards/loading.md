@@ -46,4 +46,7 @@ provider must show no calls before reading, one listing, and one read per file u
 - **Reading is deterministic**: two reads give identical cards and problems in the same order.
 - **Expected results are read**: the embedded `runnable` fixture is read without problems; the exit code and the
   fragments of a block and of a plain value come out with tokens replaced.
+- **Schema 2 and schema 1 examples**: the embedded `runnable` fixture (schema 2) gives the save-as names, with the last
+  segment of a file-only example, and its exit codes; the `simple` fixture (schema 1) still gives the whole path of the
+  file as the name, with and without inline content.
 - **Body file is recorded**: the file that supplied the body is the neutral file, or the selected translation file.

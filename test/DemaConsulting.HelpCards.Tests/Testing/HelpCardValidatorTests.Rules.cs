@@ -31,6 +31,32 @@ public partial class HelpCardValidatorTests
     }
 
     /// <summary>
+    ///     Proves that two source examples of one card with the same save-as name are a warning that names both, at the card
+    ///     file, and that different names and a snippet with the same name are not.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_SameSaveAsTwice_WarnsSaveAsDuplicate()
+    {
+        // Arrange: two sources saved as data.yaml, a snippet with the same name, and two different names in another card
+        var duplicated = SourceReading.Card(extraFrontMatter: "examples:\n"
+            + "  - name: one\n    kind: source\n    language: yaml\n    file: data.yaml\n    content: 'a: 1'\n    description: D.\n"
+            + "  - name: two\n    kind: source\n    language: yaml\n    file: data.yaml\n    content: 'a: 2'\n    description: D.\n"
+            + "  - name: three\n    kind: snippet\n    language: yaml\n    file: data.yaml\n    content: 'a: 3'\n    description: D.\n");
+        var distinct = SourceReading.Card(extraFrontMatter: "examples:\n"
+            + "  - name: one\n    kind: source\n    language: yaml\n    file: one.yaml\n    content: 'a: 1'\n    description: D.\n"
+            + "  - name: two\n    kind: source\n    language: yaml\n    file: two.yaml\n    content: 'a: 2'\n    description: D.\n");
+
+        // Act
+        var problems = ValidateFiles(null, ("a.md", duplicated), ("b.md", distinct));
+
+        // Assert
+        var problem = Assert.Single(problems);
+        Assert.Equal((HelpSeverity.Warning, RuleIds.SaveAsDuplicate, "a.md", 0), (problem.Severity, problem.RuleId, problem.File, problem.Line));
+        Assert.Contains("'one', 'two'", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("'data.yaml'", problem.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that a summary over the limit for roots or for other cards is reported, and one at the limit is not.
     /// </summary>
     [Fact]

@@ -64,6 +64,7 @@ The quality rules, each reported as a warning with the rule id, are:
 | `unused-token` | A token that is defined but never used |
 | `line-length` | A body line that is longer than `MaxLineLength` |
 | `command-parse` | A `command` example that `ExampleCommandLine` cannot parse |
+| `save-as-duplicate` | Two `source` examples of one card that are saved under the same name |
 | `resources-mismatch` | A file that exists on disk or in the assembly but not on the other side |
 
 A domain rule implements `IHelpCardRule`, which has one method that receives a `HelpCard` and returns problems. A

@@ -6,11 +6,17 @@ examples:
     kind: source
     language: yaml
     file: check/config.yaml
+    save-as: check/config.yaml
     description: A configuration file that passes the check.
+  - name: limits
+    kind: source
+    language: yaml
+    file: check/limits.yaml
+    description: A file whose save-as name is the last segment of its file.
   - name: notes
     kind: source
     language: text
-    file: notes.txt
+    save-as: notes.txt
     content: |
       first line
       second line

@@ -93,7 +93,8 @@ rule, the file, and the line, and that the key problem names the key and the all
 
 Creates a catalog whose card has two extension keys and a source description with schema 1, and asserts the extensions
 of the card and the schema of the source. Creates a catalog from a source description that omits the schema and asserts
-that the schema is 1, and one with schema 2 and asserts the single `schema-unsupported` problem.
+that the schema is 1, one with schema 2 and asserts that the schema is 2, and one with schema 3 and asserts the single
+`schema-unsupported` problem.
 
 ### Tokens: Replacement and Unknown Tokens
 
@@ -222,6 +223,16 @@ with its golden file exactly. A golden file holds the output followed by one lin
 Formats the guide body in the plain, command, and Markdown styles and with a callback, and asserts one link of each.
 Renders the examples document of the guide card in the command style and compares it with its golden file, and prints
 one example of a card below it alone, asserting that the result is exactly its content.
+
+### Examples: Save-As and File
+
+**Test**: `HelpCards_Examples_SaveAsAndFile_Schema2SplitsAndSchema1StillReads`
+
+Reads the schema 2 `runnable` fixture and asserts the save-as names of its source examples, including the name that
+defaults to the last segment of a file, and reads the schema 1 `simple` fixture and asserts that the whole path of the
+file is still the name. Composes three defective sources and asserts the rule and the message of each: inline content
+in schema 2 without `save-as` (`key-missing`), `file` together with `content` in schema 2 (`value-invalid`), and
+`save-as` in a source of schema 1 (`key-unknown` with the hint about schema 2).
 
 ### Examples: Expected Results
 

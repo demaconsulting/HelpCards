@@ -54,9 +54,9 @@ A read runs in the order below; every step adds problems to one list and never t
 1. **List and classify.** `CardReader` asks the provider for the files and sorts them: `_source.md` and its
    translations at the root, card files, translation files, overlays (decided later by the `extends` key),
    and data files. A name that fits no pattern is a `file-name` problem.
-2. **Read the source file.** `_source.md` is decoded first because the name of the source decides the token
-   scope. A name set with `HelpSource.WithName` wins over the `name` in the file. A schema newer than the
-   highest supported ends the read with a `schema-unsupported` problem and no cards.
+2. **Read the source file.** `_source.md` is decoded first because the name of the source decides the token scope. A
+   name set with `HelpSource.WithName` wins over the `name` in the file. A schema newer than the highest supported (2)
+   ends the read with a `schema-unsupported` problem and no cards; schema 1 and schema 2 are both read.
 3. **Build the token scope.** The caller supplies a factory that turns the resolved name into a
    `TokenResolver`; Composition builds it from the tokens of the source, of its imports, and the built-ins.
 4. **Read each card and overlay file** in ordinal id order: decode the front matter, check the key matrix,

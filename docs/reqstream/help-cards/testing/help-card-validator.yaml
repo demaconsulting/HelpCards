@@ -110,6 +110,17 @@ sections:
                   - HelpCardValidator_Validate_CommandExamples_ReportCommandParse
                   - HelpCardValidator_Validate_CommandWithoutToolName_UsesSourceName
 
+              - id: HelpCards-Testing-HelpCardValidator-SaveAsDuplicate
+                title: >-
+                  The validator shall report a "save-as-duplicate" warning at the file of a card, naming the
+                  examples and the name, when two source examples of the card are saved under the same name, and
+                  shall not report different names or a snippet that shares the name of a source.
+                justification: |
+                  The example runner saves the source examples of a card in order, so a second example with the
+                  same name would silently replace the first one that a command is meant to read.
+                tests:
+                  - HelpCardValidator_Validate_SameSaveAsTwice_WarnsSaveAsDuplicate
+
               - id: HelpCards-Testing-HelpCardValidator-Rules
                 title: >-
                   The validator shall apply every rule of the options to every card and include the problems they

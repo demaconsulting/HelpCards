@@ -58,8 +58,8 @@ order of the problems or files in the input.
   global id and a missing card is an error, links to an absent library degrade to their display text.
 - **Collisions**: the same global id, mount, source name, or root alias in two sources, and a card under a card of
   another source, are each one problem that names both sources, and the later card or source is left out silently.
-- **Failures across sources**: problems of several sources come in registration order with no duplicates; an
-  unsupported schema in one source does not hide the defects of the others; omitted and explicit schema 1 are supported.
+- **Failures across sources**: problems of several sources come in registration order with no duplicates; an unsupported
+  schema in one source does not hide the defects of the others; omitted, explicit 1, and 2 are supported side by side.
 - **Vocabulary and roots across sources**: expected roots count mount roots and flat roots; the tag vocabulary applies
   to the cards of every source but not to the generated roots (also checked at the builder unit).
 - **Failed targets and unnamed sources**: an overlay of a card that failed to load, and a mounted source without a

@@ -15,7 +15,7 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         first (found in stages: see <see cref="HelpProblem"/>; a front-matter error hides the link checks of its
 ///         file, so repeat after fixing), followed by the quality warnings (<c>summary-length</c>, <c>card-size</c>,
 ///         <c>heading-reserved</c>, <c>fence-language</c>, <c>fence-unclosed</c>, <c>unused-token</c>,
-///         <c>line-length</c>, and <c>command-parse</c>), the problems of the rules in
+///         <c>line-length</c>, <c>command-parse</c>, and <c>save-as-duplicate</c>), the problems of the rules in
 ///         <see cref="HelpValidationOptions.Rules"/>, and, when requested, an error for each absent external
 ///         source. Within a severity the order is source, file, line, and rule. When a source has errors there is
 ///         no catalog to inspect, so only the errors are returned.

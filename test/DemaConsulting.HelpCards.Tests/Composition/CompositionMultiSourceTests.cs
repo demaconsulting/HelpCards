@@ -466,7 +466,7 @@ public class CompositionMultiSourceTests
         // Arrange: a syntax error in the first source, a token and a link error in the second, a schema in the third
         var first = CatalogBuilding.Named("first", ("a.md", "---\ntitle: [x]\n---\n"));
         var second = CatalogBuilding.Named("second", ("b.md", SourceReading.Card(body: "{{nope}} and [[missing]].")));
-        var third = CatalogBuilding.Named("third", ("_source.md", "---\nschema: 2\n---\n"));
+        var third = CatalogBuilding.Named("third", ("_source.md", "---\nschema: 3\n---\n"));
 
         // Act
         var result = CatalogBuilding.Compose(builder => builder.AddSource(third).AddSource(second).AddSource(first));
@@ -480,20 +480,21 @@ public class CompositionMultiSourceTests
     }
 
     /// <summary>
-    ///     Proves that the schema of <c>_source.md</c> is handled per source: omitted and 1 are supported.
+    ///     Proves that the schema of <c>_source.md</c> is handled per source: omitted, 1, and 2 are supported side by side.
     /// </summary>
     [Fact]
-    public void Composition_Schema_OmittedAndExplicitOne_AreSupportedPerSource()
+    public void Composition_Schema_OmittedOneAndTwo_AreSupportedPerSource()
     {
         // Arrange
         var omitted = CatalogBuilding.Named("omitted", ("a.md", SourceReading.Card()));
         var explicitOne = CatalogBuilding.Named("explicit", ("_source.md", "---\nschema: 1\n---\n"), ("b.md", SourceReading.Card()));
+        var two = CatalogBuilding.Named("two", ("_source.md", "---\nschema: 2\n---\n"), ("c.md", SourceReading.Card()));
 
         // Act
-        var catalog = HelpCatalog.Create(builder => builder.AddSource(omitted).AddMountedSource(explicitOne));
+        var catalog = HelpCatalog.Create(builder => builder.AddSource(omitted).AddMountedSource(explicitOne).AddMountedSource(two));
 
         // Assert
-        Assert.Equal([1, 1], catalog.Sources.Select(info => info.Schema));
+        Assert.Equal([1, 1, 2], catalog.Sources.Select(info => info.Schema));
     }
 
     /// <summary>

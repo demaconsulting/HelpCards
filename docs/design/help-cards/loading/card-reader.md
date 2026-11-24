@@ -30,7 +30,8 @@ All definitions are immutable records:
 - `LocatedValue`: a string value with the file and line it was written at.
 
 Titles and summaries of the source have their defaults applied (the name, and `Help cards of {name}.`). The
-language of a source defaults to `en` and the schema to 1.
+language of a source defaults to `en` and the schema to 1. The reader remembers the schema of the source for the files
+it reads afterwards, because the keys of an example depend on it.
 
 #### Key Methods
 
@@ -50,8 +51,17 @@ grammars, values and the key matrix, examples, cards and translations, and the s
   with name and description only, and report other keys as `translation-key`.
 - **Values.** Names, tags, aliases, and children are segments; `order` is an integer of at most seven digits;
   references are `[source:]localId`; examples follow the kind matrix (command: one-line content, no file;
-  source and snippet: a file and optional content). Example files are resolved relative to the folder of the
-  card or overlay file and are read only when no inline content is given.
+  source and snippet: see the schemas below). Data files are resolved relative to the folder of the card or overlay
+  file and are read only when no inline content is given.
+- **Schemas of an example.** Schema 1 (and a source without `schema`) is read exactly as before: a source or snippet
+  needs `file`, which is both the data file to read when there is no `content` and the name to save the text as (the
+  whole path, so `ExampleDefinition.FileName` keeps its folders). Schema 2 splits the two: `save-as` is the name to
+  save as and `file` is a companion data file. A source or snippet has either inline `content` with a required
+  `save-as`, or a `file` with an optional `save-as` that defaults to the last segment of `file`; `file` together with
+  `content`, and neither of them, are errors, and a command has neither key. Both names use the grammar of data file
+  names (relative, `/`-separated, no `..`, not ending in `.md`). In schema 1 the key `save-as` is `key-unknown`
+  with a message that names schema 2 and what `file` means in schema 1; the generic list of allowed keys of an
+  unknown key is the list of the schema in force. The rules apply to the examples of cards and overlays alike.
 - **Expected results.** A command may have `exit` (an integer from 0 to 255, default 0) and `expect` (one line, or a
   literal block of which every non-blank line is one fragment). Line endings become LF and tokens are replaced in
   `expect` as in the content. `exit` or `expect` on a source or snippet, an `exit` outside 0 to 255, and an empty
@@ -60,7 +70,7 @@ grammars, values and the key matrix, examples, cards and translations, and the s
 - **Cultures.** All translations are read and validated; `CultureSelector` picks one per file; title, summary,
   and example descriptions fall back individually; a translation without a body is ignored completely.
 - **Source name.** A name given with `WithName` wins over `name` in `_source.md`; a missing or malformed name
-  is `source-invalid`. A schema above `HighestSchema` (1) is `schema-unsupported` and no card is read. A name given
+  is `source-invalid`. A schema above `HighestSchema` (2) is `schema-unsupported` and no card is read. A name given
   with `WithName` is not checked against the `name` of `_source.md`, which is ignored in that case.
 - **Source language.** The `language` of `_source.md` must be a culture name of the grammar of 6.1 (a 2 or 3 letter
   language and subtags of 2 to 8 letters or digits). A value that is not is the problem `culture-invalid` at the
