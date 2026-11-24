@@ -65,6 +65,7 @@ public class HelpExamplesTests
         var examples = HelpExamples.Enumerate(catalog).ToList();
 
         // Assert
+        Assert.NotEmpty(examples);
         Assert.DoesNotContain(examples, pair => pair.Card.Id == "guide");
     }
 

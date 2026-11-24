@@ -36,6 +36,7 @@ sections:
                   A stable order makes the output of a failed test comparable between runs and machines.
                 tests:
                   - HelpCardValidator_Validate_ErrorsAndWarnings_ErrorsFirstThenFileLineRule
+                  - HelpCardValidator_Validate_SeveralSourcesWithWarnings_OrdersBySourceBeforeFile
 
               - id: HelpCards-Testing-HelpCardValidator-SummaryLength
                 title: >-
@@ -166,12 +167,12 @@ sections:
               - id: HelpCards-Testing-HelpCardValidator-Arguments
                 title: >-
                   The validator shall reject a null source, callback, catalog, or directory with an argument null
-                  exception, a builder without a source and a directory that does not exist with an argument
-                  exception, and report a source whose import is not added as a problem.
+                  exception, and a builder without a source and a directory that does not exist with an argument
+                  exception.
                 justification: |
                   A mistake of the caller must be told apart from a defect of the help.
                 tests:
-                  - HelpCardValidator_Validate_InvalidBuilder_ThrowsArgumentExceptionAndReportsImports
+                  - HelpCardValidator_Validate_BuilderWithoutSource_ThrowsArgumentException
                   - HelpCardValidator_Members_NullArguments_ThrowArgumentNullException
                   - HelpCardValidator_CompareToDirectory_InvalidArguments_Throw
 
@@ -183,3 +184,16 @@ sections:
                   A token of a library is often used only by the application that imports it.
                 tests:
                   - HelpCardValidator_Validate_SeveralSources_ChecksCompositionAndTokenUseAcrossSources
+
+              - id: HelpCards-Testing-HelpCardValidator-Imports
+                title: >-
+                  The validator shall compose a source that it is given together with the sources it imports,
+                  directly or transitively, each once and in dependency order, so that a source with imports does
+                  not report "import-missing", and shall still report "import-missing" for a callback that leaves an
+                  import out.
+                justification: |
+                  An adopter asserts its own source in one line; the imports that the source declares are part of
+                  what it is.
+                tests:
+                  - HelpCardValidator_Validate_SourceWithImports_ComposesImportsInDependencyOrder
+                  - HelpCardValidator_Validate_SharedAndNestedImports_AreComposedOnceInOrder

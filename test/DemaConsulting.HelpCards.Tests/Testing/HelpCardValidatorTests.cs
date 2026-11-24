@@ -137,6 +137,24 @@ public partial class HelpCardValidatorTests
     }
 
     /// <summary>
+    ///     Proves that problems of several sources are ordered by the position of the source before the file.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_SeveralSourcesWithWarnings_OrdersBySourceBeforeFile()
+    {
+        // Arrange: the first source has the later file name
+        var longSummary = SourceReading.Card(summary: new string('x', 120));
+        var first = CatalogBuilding.Named("first", ("z.md", longSummary));
+        var second = CatalogBuilding.Named("second", ("a.md", longSummary));
+
+        // Act
+        var problems = HelpCardValidator.Validate(builder => builder.AddSource(first).AddSource(second));
+
+        // Assert
+        Assert.Equal(["first", "second"], problems.Where(problem => problem.RuleId == RuleIds.SummaryLength).Select(problem => problem.SourceName));
+    }
+
+    /// <summary>
     ///     Proves that the builder callback of a product is validated with its tag vocabulary and tool name.
     /// </summary>
     [Fact]
@@ -154,22 +172,53 @@ public partial class HelpCardValidatorTests
     }
 
     /// <summary>
-    ///     Proves that a callback that adds no source is an argument error, and that a source whose import is not
-    ///     added is a problem and not an exception.
+    ///     Proves that a callback that adds no source is an argument error.
     /// </summary>
     [Fact]
-    public void HelpCardValidator_Validate_InvalidBuilder_ThrowsArgumentExceptionAndReportsImports()
+    public void HelpCardValidator_Validate_BuilderWithoutSource_ThrowsArgumentException()
+    {
+        // Act and Assert
+        Assert.Throws<ArgumentException>(() => HelpCardValidator.Validate(_ => { }));
+    }
+
+    /// <summary>
+    ///     Proves that validating a source composes its transitive imports before it, so a source with imports
+    ///     is not reported as missing them, and that a callback that leaves the import out still reports it.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_SourceWithImports_ComposesImportsInDependencyOrder()
     {
         // Arrange
-        var inner = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card())), "inner");
-        var outer = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card())), "outer").Imports(inner);
+        var libA = CatalogBuilding.LibA();
+        var app = CatalogBuilding.App(libA);
 
         // Act
-        var problems = HelpCardValidator.Validate(outer);
+        var problems = HelpCardValidator.Validate(app);
+        var withoutImport = HelpCardValidator.Validate(builder => builder.AddSource(app));
 
         // Assert
-        Assert.Throws<ArgumentException>(() => HelpCardValidator.Validate(_ => { }));
-        Assert.Equal(["import-missing"], problems.Select(problem => problem.RuleId));
+        Assert.DoesNotContain(problems, problem => problem.Severity == HelpSeverity.Error);
+        Assert.DoesNotContain(problems, problem => problem.RuleId == RuleIds.ImportMissing);
+        Assert.Contains(withoutImport, problem => problem.RuleId == RuleIds.ImportMissing);
+        HelpCardValidator.AssertValid(app);
+    }
+
+    /// <summary>
+    ///     Proves that a source reached through several imports is composed once, and imports of imports come first.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_SharedAndNestedImports_AreComposedOnceInOrder()
+    {
+        // Arrange: top imports lib-a directly and again through middle
+        var libA = CatalogBuilding.LibA();
+        var middle = CatalogBuilding.Named("middle", ("m.md", SourceReading.Card())).Imports(libA);
+        var top = CatalogBuilding.Named("top", ("t.md", SourceReading.Card())).Imports(libA).Imports(middle);
+
+        // Act
+        var problems = HelpCardValidator.Validate(top);
+
+        // Assert
+        Assert.DoesNotContain(problems, problem => problem.Severity == HelpSeverity.Error);
     }
 
     /// <summary>

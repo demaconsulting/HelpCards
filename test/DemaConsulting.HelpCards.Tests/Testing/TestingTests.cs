@@ -101,26 +101,47 @@ public class TestingTests
     }
 
     /// <summary>
-    ///     Proves that a product rule, the option for external sources, and warnings that fail the assertion work together.
+    ///     Proves that a product rule, the option for external sources, and warnings that fail the assertion each
+    ///     change the result of the validation.
     /// </summary>
     [Fact]
     public void Testing_Options_RulesExternalSourcesAndWarnings_ChangeTheResult()
     {
         // Arrange
         var source = CatalogBuilding.Fixture("simple", SimpleTokens);
-        var options = new HelpValidationOptions { RequireExternalSources = true, WarningsAreErrors = true };
+        var ruleOptions = new HelpValidationOptions { Rules = [new GuideRule()] };
+        var strictRuleOptions = new HelpValidationOptions { Rules = [new GuideRule()], WarningsAreErrors = true };
+        var externalOptions = new HelpValidationOptions { RequireExternalSources = true };
 
         // Act
         var lenient = HelpCardValidator.Validate(source);
-        var strict = HelpCardValidator.Validate(source, options);
-        var exception = Assert.Throws<HelpCatalogException>(() => HelpCardValidator.AssertValid(source, options));
+        var withRule = HelpCardValidator.Validate(source, ruleOptions);
+        var external = HelpCardValidator.Validate(source, externalOptions);
+        HelpCardValidator.AssertValid(source, ruleOptions);
+        var exception = Assert.Throws<HelpCatalogException>(() => HelpCardValidator.AssertValid(source, strictRuleOptions));
 
         // Assert
         Assert.Empty(lenient);
-        Assert.All(strict, problem => Assert.Equal(RuleIds.ExternalSourceMissing, problem.RuleId));
-        Assert.Equal(strict, exception.Problems);
+        var ruleProblem = Assert.Single(withRule);
+        Assert.Equal((HelpSeverity.Warning, "guide-rule"), (ruleProblem.Severity, ruleProblem.RuleId));
+        Assert.NotEmpty(external);
+        Assert.All(external, problem => Assert.Equal(RuleIds.ExternalSourceMissing, problem.RuleId));
+        Assert.Equal(withRule, exception.Problems);
     }
 
+    /// <summary>
+    ///     A rule of a product that flags the guide card.
+    /// </summary>
+    private sealed class GuideRule : IHelpCardRule
+    {
+        /// <inheritdoc />
+        public IEnumerable<HelpProblem> Check(HelpCard card)
+        {
+            return card.Id == "guide"
+                ? [new HelpProblem(HelpSeverity.Warning, "guide-rule", card.SourceName, card.File, 1, "The guide is flagged.")]
+                : [];
+        }
+    }
     /// <summary>
     ///     Proves that the commands of the simple fixture are enumerated and parse into the arguments after the tool name.
     /// </summary>

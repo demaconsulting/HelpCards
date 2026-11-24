@@ -72,8 +72,7 @@ word must equal the tool name; the rest are the arguments.
 
 **Failure model.** Defects of cards are returned, never thrown, except by `AssertValid`, which throws one
 `HelpCatalogException`. A null argument throws `ArgumentNullException`; an invalid argument, a builder without a
-source, and a directory that does not exist throw `ArgumentException`. A source whose import is not added is a problem,
-not an exception. An exception thrown by a rule of a product is a defect of that rule and is not caught.
+source, and a directory that does not exist throw `ArgumentException`. A source whose import is not added by a callback is\na problem, not an exception; validating a `HelpSource` adds its imports itself. An exception thrown by a rule of a product is a defect of that rule and is not caught.
 
 The unit design documents describe each unit in detail; the verification design describes how the subsystem is
 tested with the embedded `simple` fixture and in-memory sources.
