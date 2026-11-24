@@ -8,7 +8,7 @@ package HelpCards_CardReader {
     private import HelpCards_HelpProblem::*;
 
     part def CardReader {
-        doc /* Reads one help source completely: classifies its files (cards, overlays, translations, _source.md, and data files), decodes them, checks the key matrix and the value grammars, replaces tokens, reads examples, parses bodies, applies the translation the culture chain selects for each file, and returns definitions together with every problem found. Supporting types: SourceDefinition, CardDefinition, OverlayDefinition, TranslationDefinition, ExampleDefinition, ReferenceDefinition, and LocatedValue. */
+        doc /* Reads one help source completely: classifies its files (cards, overlays, translations, _source.md, and data files), decodes them, checks the key matrix and the value grammars, replaces tokens, reads examples (the save-as and file keys of schema 2 and schema 1, and the expected exit code and output of a command), parses bodies, applies the translation the culture chain selects for each file, and returns definitions together with every problem found. Supporting types: SourceDefinition, CardDefinition, OverlayDefinition, TranslationDefinition, ExampleDefinition, ReferenceDefinition, and LocatedValue. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (
@@ -29,6 +29,7 @@ package HelpCards_CardReader {
             testFiles = (
                 "test/DemaConsulting.HelpCards.Tests/Loading/CardReaderTests.cs",
                 "test/DemaConsulting.HelpCards.Tests/Loading/CardReaderTests.Examples.cs",
+                "test/DemaConsulting.HelpCards.Tests/Loading/CardReaderTests.SaveAs.cs",
                 "test/DemaConsulting.HelpCards.Tests/Loading/CardReaderTests.Cultures.cs",
                 "test/DemaConsulting.HelpCards.Tests/Loading/CardReaderTests.Source.cs",
                 "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs",

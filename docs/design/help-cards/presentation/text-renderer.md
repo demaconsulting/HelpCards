@@ -20,10 +20,14 @@ feed; the last line feed is removed when the document is finished.
   formatted, and the sections `## Cards`, `## Examples`, and `## See also`, each only when it has entries. Examples are
   one bullet each, `- name [kind] file: description`, or `### name [kind] file` sections with the description and the
   fenced content when the options ask for it. With the command style, the hint sentence follows the examples.
+- **Expected results.** After the fence of a command example, in `RenderExamples` and in the example sections of
+  `RenderCard`, `AppendExpectedResult` writes `Expected exit code: N` when the exit code is not 0 and one line
+  `Expected output contains: fragment` per fragment, from `HelpStrings`, wrapped like other generated lines. An example
+  that states no result gets nothing, so existing documents do not change.
 - **`RenderExamples`** writes `# {Title}: examples`, each own example in full under `## name [kind] file`, the hint for
   printing one alone for commands, and `## Cards below with examples` with a bullet and the example names for each
   descendant that has examples; the content of those examples is not printed.
-- **`RenderExample`** returns exactly the content of the example.
+- **`RenderExample`** returns exactly the content of the example; the expected result is never part of it.
 - **Hints** (command style only) are written as generated text: `PrintExamplesHint` names the command of the card with
   the suffix `--examples` and `PrintOneExampleHint` with `--example <name>`. They are wrapped like every generated
   line, so at the default width a long command may break between its words; this is accepted, because a reader copies

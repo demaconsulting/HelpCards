@@ -12,15 +12,17 @@ namespace DemaConsulting.HelpCards.Composition;
 ///         Resolution runs once over the finished tree, so a forward reference is as good as a backward one. A
 ///         bare <c>[[id]]</c> link and a see-also entry name a card of the source the text is written in, or of a
 ///         source it imports; <c>[[source:id|text]]</c> names a card of that source; <c>[[id#name]]</c> must name
-///         an example in the subtree of that card; <c>[[#name]]</c> must name an example in the subtree of the card
-///         the link ends up in, which for an overlay body is the card the overlay extends. A link to a source that
+///         an example of that card, or of one card below it if the card has none of that name; <c>[[#name]]</c> names
+///         an example of the card the link ends up in (for an overlay body, the card the overlay extends) in the
+///         same way. A card's own example wins; otherwise the example must exist in exactly one card of the subtree
+///         and a name that two cards below it use is an ambiguous reference. A link to a source that
 ///         is not part of the catalog degrades to its display text and leaves an informational problem; a link to
 ///         a present source with no such card is an error. A reference to a file that failed to load, or to a card
 ///         that had no place in the tree, is not reported again.
 ///     </para>
 ///     <para>
-///         The validator also checks that example names are unique within a scope (the source and the first
-///         segment of the id of the card the example belongs to, counting the examples that overlays add) and that
+///         The validator also checks that example names are unique within a card (counting the examples that
+///         overlays add) and that
 ///         the names and aliases of siblings are unique, ignoring case. A validator belongs to one build and is not
 ///         safe for concurrent use.
 ///     </para>
@@ -146,23 +148,23 @@ internal sealed class ReferenceValidator
     }
 
     /// <summary>
-    ///     Checks that example names are unique within each scope.
+    ///     Checks that example names are unique within each card.
     /// </summary>
     /// <remarks>
-    ///     The scope of an example is the source of the card that owns it and the first segment of the local id of
-    ///     that card; examples that overlays add count for the card they extend. The second use of a name in a scope
-    ///     is reported at its own file and line.
+    ///     The scope of an example name is the card that owns it, in the source that defines the card; examples that
+    ///     overlays add count for the card they extend. The second use of a name in a card is reported at its own
+    ///     file and line.
     /// </remarks>
     /// <param name="builds">The cards, in the order that decides which use of a name is the first.</param>
     public void CheckExampleNames(IEnumerable<CardBuild> builds)
     {
-        var first = new Dictionary<(string Source, string Scope, string Name), ExampleDefinition>();
+        var first = new Dictionary<(string Source, string Card, string Name), ExampleDefinition>();
         foreach (var build in builds)
         {
-            var scope = build.Definition.LocalId.Split('/')[0];
+            var card = build.Definition.LocalId;
             foreach (var (example, entry) in build.Examples.Select(item => (item.Definition, item.Entry)))
             {
-                var key = (build.Entry.Name, scope, example.Name);
+                var key = (build.Entry.Name, card, example.Name);
                 if (first.TryGetValue(key, out var original))
                 {
                     Report(
@@ -171,7 +173,7 @@ internal sealed class ReferenceValidator
                         example.File,
                         example.Line,
                         $"The example name '{example.Name}' is already used at line {original.Line} of '{original.File}'; "
-                        + $"example names must be unique within '{scope}' and the cards below it.");
+                        + $"example names must be unique within the card '{card}'.");
                 }
                 else
                 {
@@ -299,8 +301,8 @@ internal sealed class ReferenceValidator
             return new ResolvedPart(null, new ResolvedLink(target.Id, null, null, link.SourceName, link.Text));
         }
 
-        var found = ExampleResolver.FindInSubtree(target, link.ExampleName, ChildrenOf);
-        if (found is null)
+        var matches = ExampleResolver.FindCandidates(target, link.ExampleName, ChildrenOf);
+        if (matches.Count == 0)
         {
             Report(
                 entry,
@@ -311,6 +313,22 @@ internal sealed class ReferenceValidator
             return null;
         }
 
+        // A name used twice in one card is reported as duplicate-example; it is not an ambiguous link as well
+        if (matches.Select(match => match.CardId).Distinct(StringComparer.Ordinal).Count() > 1)
+        {
+            var names = matches.Select(match => $"'{match.CardId}'").ToList();
+            var owners = names.Count == 2 ? $"{names[0]} and {names[1]}" : $"{string.Join(", ", names.Take(names.Count - 1))}, and {names[^1]}";
+            Report(
+                entry,
+                RuleIds.AmbiguousReference,
+                file,
+                link.Line,
+                $"The link '{Describe(link)}' is ambiguous: the example '{link.ExampleName}' exists in {owners}; "
+                + $"write '[[{matches[0].CardId}#{link.ExampleName}]]' to choose.");
+            return null;
+        }
+
+        var found = matches[0];
         var cardId = link.CardId is null ? null : target.Id;
         return new ResolvedPart(null, new ResolvedLink(cardId, found.Example.Name, found.CardId, link.SourceName, link.Text));
     }

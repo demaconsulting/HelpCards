@@ -231,7 +231,7 @@ public class HelpCardsTests
 
     /// <summary>
     ///     Proves that the extension keys that start with <c>x-</c> are kept as extensions of the card and that the
-    ///     schema of a source is 1 when omitted and rejected when higher.
+    ///     schema of a source is 1 when omitted, 1 and 2 are read, and a higher one is rejected.
     /// </summary>
     [Fact]
     public void HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced()
@@ -241,8 +241,9 @@ public class HelpCardsTests
             ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 1\n---\n"),
             ("card.md", SourceReading.Card(extraFrontMatter: "x-owner: docs\nx-review: 2026\n")));
         var higher = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
-            ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 2\n---\n"),
+            ("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 3\n---\n"),
             ("card.md", SourceReading.Card())));
+        var schemaTwo = CatalogBuilding.FromFiles(("_source.md", "---\ntitle: Source\nsummary: A source.\nschema: 2\n---\n"), ("card.md", SourceReading.Card()));
         var omitted = CatalogBuilding.FromFiles(("_source.md", "---\ntitle: Source\nsummary: A source.\n---\n"), ("card.md", SourceReading.Card()));
 
         // Assert
@@ -251,7 +252,43 @@ public class HelpCardsTests
         Assert.Equal("docs", extensions["x-owner"]);
         Assert.Equal(1, catalog.Sources.Single().Schema);
         Assert.Equal(1, omitted.Sources.Single().Schema);
+        Assert.Equal(2, schemaTwo.Sources.Single().Schema);
         Assert.Equal("schema-unsupported", Assert.Single(higher.Problems).RuleId);
+    }
+
+    /// <summary>
+    ///     Proves that schema 2 separates <c>save-as</c> (the name to save a source as) from <c>file</c> (a companion data
+    ///     file), that schema 1 sources still read as before, and that mixing the two is reported with a message that says what
+    ///     to change.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Examples_SaveAsAndFile_Schema2SplitsAndSchema1StillReads()
+    {
+        // Arrange: a schema 2 fixture, a schema 1 fixture, and defective in-memory sources
+        var two = CatalogBuilding.Runnable();
+        var one = CatalogBuilding.Simple();
+        const string Inline = "  - name: x\n    kind: source\n    language: yaml\n    content: 'a: b'\n    description: D.\n";
+        static IReadOnlyList<HelpProblem> Errors(string schema, string examples) => CatalogBuilding.Errors(
+            ("_source.md", $"---\nname: test\n{schema}---\n"),
+            ("a.md", SourceReading.Card(extraFrontMatter: "examples:\n" + examples)));
+
+        // Act
+        var twoNames = two.Find("check")!.Examples.Where(example => example.Kind == HelpExample.SourceKind).Select(example => example.FileName);
+        var oneNames = one.Find("guide")!.Examples.Where(example => example.Kind != HelpExample.CommandKind).Select(example => example.FileName);
+        var missingSaveAs = Assert.Single(Errors("schema: 2\n", Inline));
+        var both = Assert.Single(Errors("schema: 2\n", Inline.Replace("    content", "    file: a.yaml\n    save-as: a.yaml\n    content", StringComparison.Ordinal)));
+        var schema1 = Assert.Single(Errors(string.Empty, Inline.Replace("    content", "    file: a.yaml\n    save-as: a.yaml\n    content", StringComparison.Ordinal)));
+
+        // Assert: schema 2 names, schema 1 names (the whole path of the file), and the three messages
+        Assert.Equal(["check/config.yaml", "limits.yaml", "notes.txt"], twoNames);
+        Assert.Equal(["guide/settings.yaml", "fragment.yaml"], oneNames);
+        Assert.Equal((2, 1), (two.Sources.Single().Schema, one.Sources.Single().Schema));
+        Assert.Equal("key-missing", missingSaveAs.RuleId);
+        Assert.Contains("'save-as'", missingSaveAs.Message, StringComparison.Ordinal);
+        Assert.Equal("value-invalid", both.RuleId);
+        Assert.Contains("companion data file", both.Message, StringComparison.Ordinal);
+        Assert.Equal("key-unknown", schema1.RuleId);
+        Assert.Contains("schema 2", schema1.Message, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -540,6 +577,43 @@ public class HelpCardsTests
     }
 
     /// <summary>
+    ///     Proves that an example name is unique within a card, not within a family of cards, that a link finds the
+    ///     card's own example first, and that a name that several cards below a card use is an ambiguous reference.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Examples_Names_AreUniquePerCardAndResolveOwnCardFirst()
+    {
+        // Arrange: p and its child both have the example same; q has none, and its children r and s both have it
+        const string example = "examples:\n  - name: same\n    kind: command\n    language: shell\n    content: run {0}\n    description: Run it.\n";
+        string Own(string text) => string.Format(System.Globalization.CultureInfo.InvariantCulture, example, text);
+        var catalog = CatalogBuilding.FromFiles(
+            ("p.md", SourceReading.Card(extraFrontMatter: Own("p"), body: "Run [[#same]] or [[p/child#same]].")),
+            ("p/child.md", SourceReading.Card(extraFrontMatter: Own("child"))),
+            ("q/r.md", SourceReading.Card(extraFrontMatter: Own("r"))),
+            ("q/s.md", SourceReading.Card(extraFrontMatter: Own("s"))),
+            ("q.md", SourceReading.Card()));
+        var repeated = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(extraFrontMatter: Own("one") + Own("two").Replace("examples:\n", string.Empty, StringComparison.Ordinal)))));
+        var ambiguous = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("q.md", SourceReading.Card(body: "Run [[#same]].")),
+            ("q/r.md", SourceReading.Card(extraFrontMatter: Own("r"))),
+            ("q/s.md", SourceReading.Card(extraFrontMatter: Own("s")))));
+        var json = new HelpRenderOptions { Format = HelpFormat.Json };
+
+        // Act
+        var own = catalog.Render(catalog.Find("p")!, json);
+
+        // Assert: the same name in related cards is valid and the links name their owners
+        Assert.Contains("\"exampleName\":\"same\",\"exampleCardId\":\"p\"", own, StringComparison.Ordinal);
+        Assert.Contains("\"cardId\":\"p/child\",\"exampleName\":\"same\",\"exampleCardId\":\"p/child\"", own, StringComparison.Ordinal);
+        Assert.Equal(["p", "p/child", "q/r", "q/s"], catalog.FindExamples("same").Select(reference => reference.CardId));
+        Assert.Equal(["p"], catalog.FindExamples("same", "p").Select(reference => reference.CardId));
+        Assert.Equal(["q/r", "q/s"], catalog.FindExamples("same", "q").Select(reference => reference.CardId));
+        Assert.Equal("duplicate-example", Assert.Single(repeated.Problems).RuleId);
+        Assert.Equal("ambiguous-reference", Assert.Single(ambiguous.Problems).RuleId);
+    }
+
+    /// <summary>
     ///     Proves that paths, aliases, and example names find cards and examples and failures say what was valid.
     /// </summary>
     [Fact]
@@ -798,6 +872,11 @@ public class HelpCardsTests
         Assert.Contains("Start with `simple help guide setup`", command, StringComparison.Ordinal);
         Assert.Contains("Start with [Setup](guide/setup)", markdown, StringComparison.Ordinal);
         Assert.Contains("Start with <guide/setup> and then read <guide/usage>.", custom, StringComparison.Ordinal);
+
+        // Assert: an example of the card that holds the link is the full command or a link that names the card
+        Assert.Contains("Run it with the example `run` or", plain, StringComparison.Ordinal);
+        Assert.Contains("Run it with `simple help guide --example run` or", command, StringComparison.Ordinal);
+        Assert.Contains("Run it with [run](guide#run) or", markdown, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -819,6 +898,38 @@ public class HelpCardsTests
         // Assert
         GoldenFiles.AssertEqual("examples.guide.expected.txt", examples);
         Assert.Equal("simple --version", alone);
+    }
+
+    /// <summary>
+    ///     Proves that a command example can state the exit code and the output it expects, that the catalog exposes
+    ///     them, and that the examples document and the JSON document show them, while printing one example alone still
+    ///     gives exactly its content.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Examples_ExpectedResults_AreReadExposedAndShown()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var check = catalog.Find("check")!;
+
+        // Act
+        var ok = check.Examples.Single(example => example.Name == "ok");
+        var missing = check.Examples.Single(example => example.Name == "missing");
+        var text = catalog.RenderExamples(check);
+        var json = catalog.RenderExample(check, "missing", new HelpRenderOptions { Format = HelpFormat.Json });
+        var alone = catalog.RenderExample(check, "missing");
+        var invalid = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(extraFrontMatter: "examples:\n  - name: x\n    kind: command\n    language: shell\n    content: run\n    exit: 300\n    description: D.\n"))));
+
+        // Assert
+        Assert.Equal(0, ok.ExitCode);
+        Assert.Equal(["Checked 1 file", "No problems"], ok.Expect);
+        Assert.Equal(2, missing.ExitCode);
+        Assert.Equal(["Cannot open absent.yaml"], missing.Expect);
+        Assert.Contains("Expected exit code: 2\nExpected output contains: Cannot open absent.yaml", text, StringComparison.Ordinal);
+        Assert.Contains("\"exitCode\":2,\"expect\":[\"Cannot open absent.yaml\"]", json, StringComparison.Ordinal);
+        Assert.Equal("demo check absent.yaml", alone);
+        Assert.Equal("value-invalid", Assert.Single(invalid.Problems).RuleId);
     }
 
     /// <summary>
@@ -951,7 +1062,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Catalog.HelpCard: Aliases, Body, ChildIds, Culture, Examples, Extensions, Id, LocalId, Name, ParentId, SeeAlsoIds, SourceName, Summary, Tags, Title",
             "DemaConsulting.HelpCards.Catalog.HelpCatalog: Cards, Create, Culture, Diagnostics, Filter, FilterSource, Find, FindExample, FindExamples, FormatBody, GetChildren, GetSeeAlso, Render, RenderCardList, RenderExample, RenderExamples, RenderIndex, RenderSearch, Resolve, Roots, Search, Sources, Suggest, TagNames, Where, Without",
             "DemaConsulting.HelpCards.Catalog.HelpCatalogException: Problems",
-            "DemaConsulting.HelpCards.Catalog.HelpExample: CommandKind, Content, Description, FileName, Kind, Language, Name, SnippetKind, SourceKind, SourceName",
+            "DemaConsulting.HelpCards.Catalog.HelpExample: CommandKind, Content, Description, ExitCode, Expect, FileName, Kind, Language, Name, SnippetKind, SourceKind, SourceName",
             "DemaConsulting.HelpCards.Catalog.HelpExampleReference: .ctor, CardId, Example",
             "DemaConsulting.HelpCards.Catalog.HelpLink: CardId, ExampleCardId, ExampleName, SourceName, Text, Title",
             "DemaConsulting.HelpCards.Catalog.HelpPathResolution: Card, ParentId, Suggestion, UnknownSegment, ValidNames",
@@ -966,7 +1077,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Integration.HelpAgentTools: Create",
             "DemaConsulting.HelpCards.Integration.HelpCli: Create, Footer, Run, TryRun",
             "DemaConsulting.HelpCards.Integration.HelpCliAnswer: .ctor, ExitCode, Text",
-            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, DefaultWidth, EnableLanguageOption, Error, FallbackResolver, IndexPreamble, IndexSections, Output, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
+            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, ConfigureCatalog, DefaultWidth, EnableLanguageOption, Error, ErrorProvider, FallbackResolver, GetCatalogConfiguration, IndexPreamble, IndexSections, Output, OutputProvider, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
             "DemaConsulting.HelpCards.Integration.HelpCliSection: .ctor, Heading, Lines",
             "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromFiles, Imports, WithName, WithTokens",
             "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
@@ -975,6 +1086,10 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Testing.ExampleCommandLine: TryParse",
             "DemaConsulting.HelpCards.Testing.HelpCardMarkdown: Bullets, GetSection, Headings",
             "DemaConsulting.HelpCards.Testing.HelpCardValidator: AssertValid, CompareToDirectory, Validate",
+            "DemaConsulting.HelpCards.Testing.HelpExampleInvocation: Arguments, Card, Example, WorkingDirectory",
+            "DemaConsulting.HelpCards.Testing.HelpExampleOutcome: .ctor, ExitCode, Output",
+            "DemaConsulting.HelpCards.Testing.HelpExampleRunReport: AssertSucceeded, CommandsRun, Problems, Succeeded",
+            "DemaConsulting.HelpCards.Testing.HelpExampleRunner: Materialize, Run",
             "DemaConsulting.HelpCards.Testing.HelpExamples: Enumerate",
             "DemaConsulting.HelpCards.Testing.HelpValidationOptions: .ctor, MaxCardChars, MaxLineLength, MaxRootIndexChars, MaxRootSummaryChars, MaxSummaryChars, RequireExternalSources, Rules, WarningsAreErrors",
             "DemaConsulting.HelpCards.Testing.IHelpCardRule: Check"
@@ -1056,9 +1171,9 @@ public class HelpCardsTests
         // Arrange: a valid embedded source and a source with a broken link and a summary that is too long
         var valid = CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" });
         var broken = HelpSource.FromFiles(
-            SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]].")), ("b.md", SourceReading.Card(summary: new string('x', 80)))),
+            SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]].")), ("b.md", SourceReading.Card(summary: new string('x', 90)))),
             "test");
-        var longSummary = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card(summary: new string('x', 80)))), "test");
+        var longSummary = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card(summary: new string('x', 90)))), "test");
 
         // Act
         var validProblems = HelpCardValidator.Validate(valid);
@@ -1099,6 +1214,46 @@ public class HelpCardsTests
         Assert.Equal(["run", "input.txt"], arguments);
         Assert.False(rejected);
         Assert.Contains("shell operator '|'", rejection);
+    }
+
+    /// <summary>
+    ///     Proves that a product can run every command example of its catalog through its own delegate: the source
+    ///     examples are saved, the commands run in order with the arguments after the tool name, the stated exit codes
+    ///     and output are compared, every difference is reported, and the library starts no process itself.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Validation_RunExamples_MaterializesRunsAndReportsMismatches()
+    {
+        // Arrange: the runnable fixture, whose commands state their results
+        var catalog = CatalogBuilding.Runnable();
+        var arguments = new List<string>();
+
+        // Act: a correct run, then a run in which one command exits with another code and another prints other text
+        var correct = HelpExampleRunner.Run(catalog, invocation =>
+        {
+            arguments.Add(string.Join(' ', invocation.Arguments));
+            Assert.True(File.Exists(Path.Combine(invocation.WorkingDirectory, "notes.txt")) || invocation.Card.Id == "check/details");
+            return invocation.Example.Name switch
+            {
+                "ok" => new HelpExampleOutcome(0, "Checked 1 file\r\nNo problems\r\n"),
+                "missing" => new HelpExampleOutcome(2, "Cannot open absent.yaml"),
+                _ => new HelpExampleOutcome(0, "Verbose output for demo"),
+            };
+        });
+        var broken = HelpExampleRunner.Run(catalog, invocation => invocation.Example.Name switch
+        {
+            "ok" => new HelpExampleOutcome(0, "Checked 1 file\nNo problems"),
+            "missing" => new HelpExampleOutcome(0, "Cannot open absent.yaml"),
+            _ => new HelpExampleOutcome(0, "Something else"),
+        });
+
+        // Assert
+        Assert.Equal(3, correct.CommandsRun);
+        correct.AssertSucceeded();
+        Assert.Equal(["check check/config.yaml", "check absent.yaml", "check --verbose check/config.yaml"], arguments);
+        Assert.Equal(["example-exit-code", "example-output"], broken.Problems.Select(problem => problem.RuleId));
+        var exception = Assert.Throws<HelpCatalogException>(broken.AssertSucceeded);
+        Assert.Equal(broken.Problems, exception.Problems);
     }
 
     /// <summary>
@@ -1373,6 +1528,78 @@ public class HelpCardsTests
         GoldenFiles.AssertEqual("cli", "notfound.text.expected.txt", unknown.Error.ToString().TrimEnd('\n'));
         GoldenFiles.AssertEqual("cli", "notfound.expected.json", json.Output.ToString().TrimEnd('\n'));
         Assert.Contains("\"code\":\"catalog-error\"", defective.Output.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the tool name and the version are set once in the options of the help command, reach the cards and
+    ///     the JSON documents, and that the tests of the tool can validate exactly the catalog that the command builds.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_Configuration_ToolNameAndVersionAreSetOnce()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var options = new HelpCliOptions
+        {
+            ToolName = "mytool",
+            Version = "3.1",
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            Output = output,
+        };
+        var cli = HelpCli.Create(options);
+
+        // Act
+        var card = cli.Run(["guide"]);
+        var json = cli.Run(["--json"]);
+        var problems = HelpCardValidator.Validate(options.GetCatalogConfiguration());
+
+        // Assert: one setting is the token of the cards, the command of the links, and the version of the JSON
+        Assert.Equal((0, 0), (card, json));
+        Assert.Contains("Version 3.1 of mytool accepts", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Start with `mytool help guide setup`", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("\"version\":\"3.1\"", output.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain(problems, problem => problem.Severity == HelpSeverity.Error);
+        Assert.Throws<ArgumentException>(() => HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = "mytool",
+            ConfigureCatalog = options.ConfigureCatalog,
+            CatalogFactory = _ => CatalogBuilding.Simple(),
+        }));
+    }
+
+    /// <summary>
+    ///     Proves that a tool can route the output and the errors of the help command when the command writes, which
+    ///     follows a quiet mode that is read after the command was created.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var errors = new StringWriter();
+        var silent = false;
+        var cli = HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = "tool",
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            OutputProvider = () => silent ? TextWriter.Null : output,
+            ErrorProvider = () => silent ? TextWriter.Null : errors,
+        });
+
+        // Act
+        var first = cli.Run(["guide"]);
+        var second = cli.Run(["nothing"]);
+        var written = (output.ToString().Length, errors.ToString().Length);
+        silent = true;
+        cli.Run(["reference"]);
+        cli.Run(["nothing"]);
+
+        // Assert: the first two commands wrote to their writers, and the silent ones wrote nothing more
+        Assert.Equal((0, 2), (first, second));
+        Assert.True(written.Item1 > 0 && written.Item2 > 0);
+        Assert.Equal(written, (output.ToString().Length, errors.ToString().Length));
     }
 
     /// <summary>

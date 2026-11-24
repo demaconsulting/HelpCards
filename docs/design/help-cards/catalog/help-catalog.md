@@ -35,7 +35,8 @@ subsystem. All lists are read-only collections.
 - **`GetChildren(card)`**, **`GetSeeAlso(card)`** match the card by id and map its visible child and see-also ids to
   the cards of this view.
 - **`FindExamples(name, scopeCardId)`**, **`FindExample(card, name)`** use `ExampleResolver`; an unknown or hidden card
-  gives no result.
+  gives no result. An example name is unique within a card, so a limiting card that owns the name gives only its own
+  example from `FindExamples`, and `FindExample` finds a card's own example first.
 - **`Filter`**, **`FilterSource`**, **`Where`**, **`Without`** each restrict the scope and return a new catalog.
   `Filter` and `FilterSource` compare ignoring case, treat an empty include list as no restriction, and reject empty
   entries, tags outside a closed vocabulary, and unknown source names. `Where` calls the predicate once per card, in

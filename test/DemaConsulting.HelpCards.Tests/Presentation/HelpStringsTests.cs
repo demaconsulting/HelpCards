@@ -45,6 +45,18 @@ public class HelpStringsTests
     }
 
     /// <summary>
+    ///     Proves that the lines for the expected result of a command example name the exit code and the fragment.
+    /// </summary>
+    [Fact]
+    public void HelpStrings_ExpectedResult_Text()
+    {
+        // Act / Assert
+        Assert.Equal("Expected exit code: 2", HelpStrings.ExpectedExitCode(2));
+        Assert.Equal("Expected exit code: 255", HelpStrings.ExpectedExitCode(255));
+        Assert.Equal("Expected output contains: No problems", HelpStrings.ExpectedOutputContains("No problems"));
+    }
+
+    /// <summary>
     ///     Proves that the chrome does not depend on the current culture of the machine.
     /// </summary>
     [Fact]

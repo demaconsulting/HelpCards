@@ -24,6 +24,9 @@ All tests in the three files pass; every golden comparison is exact.
 - **Output rules**: LF only, no trailing line feed, no trailing spaces, tabs, or escape characters for every card.
 - **Examples document**: the golden, the exact layout with descendants, the plain style without hint, a source example
   with its file name, and a card without examples.
+- **Expected results**: the lines after the fence of a command in the examples document (the exit code only when it is
+  not 0, one line per fragment, nothing for examples that state no result), wrapped at a narrow width with the hanging
+  indent in the card document with example content, and nothing added when one example is printed alone.
 - **One example**: exactly the content, found ignoring case in the subtree; an unknown example is an argument error.
 - **Index**: the text, Markdown, and command golden files; the padding and indent by depth; the depth limit; a long
   summary; an empty catalog view.

@@ -115,6 +115,7 @@ reviews:
       - "docs/verification/help-cards/loading.md"                   # subsystem verification
       - "src/DemaConsulting.HelpCards/Loading/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Loading/LoadingTests.cs"  # subsystem tests
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/runnable/**"  # fixture cards whose commands state their results
 
   # HelpCards-Loading-HelpSource Review (one per unit)
   - id: HelpCards-Loading-HelpSource
@@ -563,6 +564,7 @@ reviews:
       - "test/DemaConsulting.HelpCards.Tests/Presentation/PresentationTests.cs"   # subsystem tests
       - "test/DemaConsulting.HelpCards.Tests/Fixtures/render/**"   # golden files the renderers are compared with
       - "test/DemaConsulting.HelpCards.Tests/Fixtures/simple/**"   # fixture cards the subsystem tests render
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/runnable/**"   # fixture cards whose commands state their results
 
   # HelpCards-Presentation-HelpRenderOptions Review (one per unit)
   - id: HelpCards-Presentation-HelpRenderOptions
@@ -807,6 +809,7 @@ reviews:
       - "docs/verification/help-cards/testing.md"   # subsystem verification
       - "src/DemaConsulting.HelpCards/Testing/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Testing/TestingTests.cs"   # subsystem tests
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/runnable/**"   # fixture cards whose commands state their results
 
   # HelpCards-Testing-HelpCardValidator Review (one per unit)
   - id: HelpCards-Testing-HelpCardValidator
@@ -859,6 +862,28 @@ reviews:
       - "docs/verification/help-cards/testing/example-command-line.md"   # unit verification
       - "src/DemaConsulting.HelpCards/Testing/ExampleCommandLine.cs"   # unit source
       - "test/DemaConsulting.HelpCards.Tests/Testing/ExampleCommandLineTests.cs"   # unit tests
+
+  # HelpCards-Testing-HelpExampleRunner Review (one per unit)
+  - id: HelpCards-Testing-HelpExampleRunner
+    title: Review that HelpCards Testing HelpExampleRunner Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/help-example-runner.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/help-example-runner.md"   # unit design
+      - "docs/verification/help-cards/testing/help-example-runner.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/HelpExampleRunner.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/HelpExampleInvocation.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/HelpExampleOutcome.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/HelpExampleRunReport.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/HelpExampleRunnerTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/TemporaryDirectory.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/runnable/**"   # fixture cards whose commands state their results
 
   # HelpCards-Testing-HelpCardMarkdown Review (one per unit)
   - id: HelpCards-Testing-HelpCardMarkdown

@@ -69,12 +69,15 @@ sections:
               - id: HelpCards-Presentation-JsonDocumentWriter-OptionalKeys
                 title: >-
                   The writer shall leave out the command unless the link style writes commands, leave out tool,
-                  version, and usage unless they were supplied, and limit the index to the requested depth with
-                  the depth of each card.
+                  version, and usage unless they were supplied, leave out the exit code of an example when it is 0
+                  and its expected output when it is empty (appending them after the content otherwise), and limit
+                  the index to the requested depth with the depth of each card.
                 justification: |
                   Optional values are omitted instead of being null.
                 tests:
                   - JsonDocumentWriter_OptionalKeys_AreLeftOutWhenAbsent
+                  - JsonDocumentWriter_Example_ExitCodeAndExpect_AreAppendedWhenSet
+                  - JsonDocumentWriter_Example_DefaultExitCode_IsOmitted
                   - JsonDocumentWriter_WriteIndex_MaxDepth_LimitsCardsAndReportsDepth
 
               - id: HelpCards-Presentation-JsonDocumentWriter-Links

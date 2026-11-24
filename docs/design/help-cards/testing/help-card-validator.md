@@ -16,7 +16,7 @@ of the adopting product).
 | --- | --- |
 | `MaxCardChars` | Longest text rendering of a card; 6000 by default |
 | `MaxRootIndexChars` | Longest text rendering of a root card that has cards below it; 3500 by default |
-| `MaxSummaryChars`, `MaxRootSummaryChars` | Longest summary of a card and of a root card; 100 and 60 by default |
+| `MaxSummaryChars`, `MaxRootSummaryChars` | Longest summary of a card and of a root card; 100 and 80 by default |
 | `MaxLineLength` | Longest body line, or null for no limit (the default) |
 | `Rules` | The rules of the product, `IHelpCardRule`, applied to every card; none by default |
 | `RequireExternalSources` | Turns every absent external source into an error; off by default |
@@ -36,14 +36,21 @@ of the adopting product).
   without a language, an unclosed fence, long lines, unused tokens (every file of the source is scanned for `{{name}}`;
   a file that cannot be listed or read is reported as a `source-read` error with its path, the scan continues, and no
   token is reported as unused while a file is unreadable), command examples (parsed with `ExampleCommandLine` for the
-  tool name of the builder, else the name of the first source), and the rules of the options.
+  tool name of the builder, else the name of the first source), two source examples of one card that are saved under the
+  same name (`save-as-duplicate`, at the card file, because the example runner would keep only the last one), and the
+  rules of the options.
 - **`Order`** sorts by severity descending, source index, file, line, and rule, with a stable sort.
 - **`AssertValid(...)`** validates and throws `HelpCatalogException` with the errors, plus the warnings when
   `WarningsAreErrors` is set.
 - **`CompareToDirectory(source, directory)`** lists the embedded files and the files of the directory and returns a
   `resources-mismatch` warning for each path that is on one side only, in path order. It only lists file names and
   never reads the content of a file. The directory is the developer's own source folder at test time: paths are
-  validated lexically and links are not resolved, so it must not be a path from the input of a user.
+  validated lexically and links are not resolved, so it must not be a path from the input of a user. It is kept for
+  checks outside the unit tests of a product (a packaging or release check): a requirement-linked test that reads the
+  checked-in files of a repository is not allowed by the testing standard, and `AssertValid` on the embedded source
+  already proves what ships because the packaged targets embed every file below `Help`. The method is not obsolete.
+  The default limit of a root summary is 80 characters: at the default width of 78 and a 32-character command label the
+  summary has 44 columns on each line, so 80 characters take the two lines that an index may spend on one topic.
 
 #### Error Handling
 

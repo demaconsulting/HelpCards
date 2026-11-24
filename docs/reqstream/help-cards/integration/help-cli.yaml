@@ -13,16 +13,20 @@ sections:
             requirements:
               - id: HelpCards-Integration-HelpCli-Creation
                 title: >-
-                  The helper shall be created without calling the catalog factory or doing any I/O, shall give a footer
-                  that is a constant sentence naming the tool and the verb, and shall reject a null option set or
-                  factory, a tool name or verb that is white space, a verb with white space or a leading hyphen, a
-                  tool name with a brace, a white-space command template, and a default width that is not 0 or 20 to
-                  500.
+                  The helper shall be created without building the catalog or doing any I/O, shall give a footer
+                  that is a constant sentence naming the tool and the verb, and shall reject a null option set, options
+                  with neither or both of the catalog configuration and the catalog factory, an output or error writer
+                  given together with its provider, a tool name or verb that is white space, a verb with white space or
+                  a leading hyphen, a tool name with a brace, a white-space command template, and a default width that
+                  is not 0 or 20 to 500.
                 justification: |
                   A helper is kept in a static field and its footer is printed by commands that never need the catalog.
                 tests:
                   - HelpCli_Create_AndFooter_NeverCallTheFactory
                   - HelpCli_Create_InvalidOptions_Throw
+                  - HelpCli_Create_BothFactoryAndConfigure_Throws
+                  - HelpCli_Create_NeitherFactoryNorConfigure_Throws
+                  - HelpCli_Create_OutputAndProvider_Throws
 
               - id: HelpCards-Integration-HelpCli-Gate
                 title: >-
@@ -52,3 +56,32 @@ sections:
                   Tools that already removed the verb call the command directly.
                 tests:
                   - HelpCli_Run_Arguments_AreTheWordsAfterTheVerb
+
+              - id: HelpCards-Integration-HelpCli-Configuration
+                title: >-
+                  The helper shall build the catalog only after the verb is seen, from the configuration of the
+                  options: the tool name, the version when set, and the culture of the language option are set on the
+                  catalog builder first and then the configuration action of the tool runs and may override them, and
+                  the options shall give the same configuration to the tests of the tool, which needs a configuration
+                  action to give.
+                justification: |
+                  The tool name and the version are set once, and the tests of the tool validate exactly the
+                  composition that users get.
+                tests:
+                  - HelpCli_TryRun_ConfigureCatalog_BuildsOnlyAfterVerb
+                  - HelpCli_TryRun_ConfigureCatalog_AppliesToolNameVersionAndCulture
+                  - HelpCliOptions_GetCatalogConfiguration_AppliesTheSettingsOfTheHelper
+                  - HelpCliOptions_GetCatalogConfiguration_WithoutConfigure_Throws
+
+              - id: HelpCards-Integration-HelpCli-Writers
+                title: >-
+                  The helper shall call the output and error providers of the options when it writes, not when it is
+                  created, use the console for a provider that returns null, and not take the width of the console for
+                  automatic width when a provider writes the output.
+                justification: |
+                  A tool decides at command time where help goes, for example to nowhere under a silent option that is
+                  parsed after the helper was created.
+                tests:
+                  - HelpCli_TryRun_OutputProvider_IsCalledAtCommandTime
+                  - HelpCli_TryRun_ProviderReturnsNull_UsesConsole
+                  - HelpCli_TryRun_ProviderAndAutoWidth_IsNotTheConsoleWidth

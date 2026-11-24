@@ -24,9 +24,9 @@ to case.
 
 ## The Card File
 
-A card file is a line with three hyphens, the front matter, another line with three hyphens, an optional blank line,
-and the body. Line endings can be LF or CRLF, and a byte order mark is ignored. This card uses every construct that
-the front matter accepts:
+A card file is a line with three hyphens, the front matter, another line with three hyphens, an optional blank line, and
+the body. Line endings can be LF or CRLF, and a byte order mark is ignored. This card uses every construct that the
+front matter accepts (the examples use `save-as`, so the source declares `schema: 2` in `_source.md`; see *Examples*):
 
 ```yaml
 ---
@@ -57,7 +57,7 @@ examples:
   - name: config
     kind: source
     language: yaml
-    file: settings.yaml
+    save-as: settings.yaml
     content: |
       title: Demo
       sections:
@@ -86,7 +86,7 @@ that is not allowed is the error `key-unknown`, and its message lists the allowe
 | `examples` | List of examples | O | O | O (`name`, `description`) | - |
 | `extends` | One reference | - | R | - | - |
 | `optional` | `true` or `false` | - | O | - | - |
-| `schema` | Integer, default 1 | - | - | - | O |
+| `schema` | Integer, default 1; 1 and 2 are read, use 2 | - | - | - | O |
 | `name` | Segment | - | - | - | R (or `HelpSource.WithName`) |
 | `language` | Culture name, default `en` | - | - | - | O |
 | `x-` followed by a name | One-line scalar | O | O | - | O |
@@ -106,14 +106,18 @@ title: 'Setup: first steps'
 summary: "Use the \"help\" command"
 ```
 
+A command example starts with the token `{{tool}}`, and a plain scalar must not start with a brace, so always quote
+the content of a command (`content: '{{tool}} check *.yaml'`). The same goes for any value that starts with a
+character of the list above, for example a glob that starts with `*`.
+
 Tabs in the indentation, duplicate keys, flow collections such as `[a, b]`, anchors, aliases, tags, trailing
 comments, and nesting deeper than a list of maps are errors. `title` and `summary` are single lines.
 
 ### The Literal Block
 
-The only value that can span several lines is the `content` of an example, written as a literal block with `|` or
-`|-`. The block starts on the next line. Its indentation is that of its first non-blank line and must be deeper than
-the `content` key. The block ends at the first non-blank line with less indentation. Blank lines inside the block are
+The only values that can span several lines are the `content` and the `expect` of an example, written as a literal block
+with `|` or `|-`. The block starts on the next line. Its indentation is that of its first non-blank line and must be
+deeper than the key. The block ends at the first non-blank line with less indentation. Blank lines inside the block are
 kept, a line that starts with a hash character inside the block is content, and the indentation is removed. Trailing
 line feeds are removed, so `|` and `|-` give the same text. The forms `|+`, `|2`, and the folded `>` are errors, and a
 block anywhere else is the error `block-scalar-not-allowed`.
@@ -122,8 +126,9 @@ block anywhere else is the error `block-scalar-not-allowed`.
 
 The body is Markdown. It must not contain a line that starts with `# ` outside a fenced block, because the title is
 the first-level heading, and it must not contain the generated headings `## Cards`, `## Examples`, and `## See also`.
-The test helpers report both as the warning `heading-reserved`. Give every fenced block a language so that readers and
-tools can format it.
+The test helpers report both as the warning `heading-reserved`. Only those four headings are reserved: you may use `##`
+subheadings of your own, and deeper levels, to structure a long card. Give every fenced block a language so that readers
+and tools can format it.
 
 ## Names, Aliases, and Tags
 
@@ -162,8 +167,8 @@ a forward reference to a card that is defined later is valid.
 | Link | Meaning |
 | --- | --- |
 | `[[build/compile]]` | The card with the local id `build/compile` |
-| `[[build/compile#settings]]` | The example `settings` of that card or of a card below it |
-| `[[#settings]]` | The example `settings` of the card that holds the link |
+| `[[build/compile#settings]]` | The example `settings` of that card, else of the one card below it that has it |
+| `[[#settings]]` | The example `settings` of the card that holds the link, found in the same way |
 | `[[other:build/compile\|the compile card]]` | A card of the declared source `other`, shown as the given text |
 | `[[other:build/compile#settings\|the settings]]` | An example of a card of the source `other` |
 
@@ -178,10 +183,15 @@ contract.
 
 Links are recognized in the body, outside fenced blocks and inline code spans, so `` `[[x]]` `` is plain text. Text
 that starts like a link but is not one is the error `link-syntax`. In an overlay, `[[#name]]` refers to the examples
-of the card that the overlay extends.
+of the card that the overlay extends. A link to an example finds the card's own example first; when the card has none
+of that name and two or more cards below it do, the link is ambiguous (`ambiguous-reference`) and you write
+`[[card#name]]` with the card that owns the example.
 
 How a link is shown depends on the rendering. In plain text a card link reads ``the card `a/b` ``; in the command style
-that the command-line helper uses it becomes the command that prints the card; in Markdown it is a Markdown link.
+that the command-line helper uses it becomes the command that prints the card, and a link to an example becomes the full
+command that prints the example (`tool help guide --example run`), also when the example belongs to the card that holds
+the link; in Markdown it is a Markdown link whose target names the card (`[run](guide#run)`). Only the plain text style,
+which is prose for the card being read, writes the short ``the example `run` ``.
 
 ## Tokens
 
@@ -209,20 +219,36 @@ An example is a named, ready-to-use piece of text attached to a card. Each item 
 
 | Key | Meaning |
 | --- | --- |
-| `name` | A segment, unique within the card's scope (see below) |
+| `name` | A segment, unique within the card (see below) |
 | `kind` | `command`, `source`, or `snippet` |
 | `language` | One lower-case word such as `shell`, `yaml`, or `csharp` |
 | `description` | One line that says what the example shows |
-| `file` | The name of a data file next to the card; the name to save a source as |
+| `file` | A data file next to the card that holds the text (schema 1: also the name to save it as) |
+| `save-as` | Schema 2 only: the name to save the text of a `source` or `snippet` as |
 | `content` | The text itself, a single line or a literal block |
+| `exit` | A `command` only: the exit code the command is expected to end with, from 0 to 255 (default 0) |
+| `expect` | A `command` only: text that the output must contain, a single line or a literal block |
 
-The kinds differ in how they use `file` and `content`:
+The kinds differ in how they use `file`, `save-as`, and `content` (schema 2):
 
-| Kind | `file` | `content` | Meaning |
-| --- | --- | --- | --- |
-| `command` | Not allowed | Required, one line | One command line that starts with the tool name, as `{{tool}} ...` |
-| `source` | Required | Optional | A complete file; inline with `content`, otherwise the file is read |
-| `snippet` | Required | Optional | A fragment that is shown but never claimed to work alone |
+| Kind | `content` | `save-as` | `file` | Meaning |
+| --- | --- | --- | --- | --- |
+| `command` | Required, one line | Not allowed | Not allowed | One command line that starts with the tool name |
+| `source` | Inline text | Required with `content` | Not with `content` | A complete file; inline, or read from `file` |
+| `snippet` | Inline text | Required with `content` | Not with `content` | A fragment that never claims to work alone |
+
+A `source` or `snippet` has inline `content` with `save-as`, or a `file` (and then an optional `save-as`, which defaults
+to the last segment of `file`). `file` together with `content` is `value-invalid`, and so is a `save-as` or `file` on a
+command; an example with neither `content` nor `file` is `key-missing`. Two source examples of one card that are
+saved under the same name are the validator warning `save-as-duplicate`.
+
+**Schema 1.** A source without a `schema` key (or with `schema: 1`) is read as it always was: there is no `save-as`, and
+a `source` or `snippet` needs a `file`, which is the name to save the text as (the whole path, with its folders) and the
+data file to read when there is no `content`. The key `save-as` in such a source is `key-unknown` and the message tells
+you to add `schema: 2` to `_source.md`. Schema 1 stays supported by every 0.x and 1.x release; to migrate a source, add
+`schema: 2`, rename `file` to `save-as` in each example that has both `file` and `content`, and give an example that
+has only `file` a `save-as` with its old path when the folders of the old name matter (the new default is the last
+segment of `file`). The schema belongs to one source, so a library migrates on its own.
 
 The data file of a `source` or `snippet` without `content` is read from the folder of the card and must exist and be
 valid, otherwise the catalog reports `example-file-missing` or `example-invalid`. File names use letters, digits,
@@ -230,9 +256,62 @@ dots, hyphens, and underscores, `/` separates folders, and `..`, a leading `/`, 
 of an example is normalized: CRLF becomes LF, a trailing line feed is removed, tokens are replaced, and a file is read
 as UTF-8.
 
-An example name is unique within a *scope*: the source of the card and the first segment of its local id, counting
-examples that overlays add. Two examples of one scope with the same name are the error `duplicate-example`. A reader
-who asks for an example by name alone finds the first one in the subtree; `card#name` is unambiguous.
+An example name is unique within its *card*, counting examples that overlays add: two examples of one card with the
+same name are the error `duplicate-example`, while different cards, including a parent and its children, may use the
+same name (so the example of every card can be called `settings` or `check`). A reader who asks a card for an example
+by name finds the card's own example first; if the card has none of that name, the cards below it are searched, and the
+name must then be unique among them (the command line and the agent tool list the qualified names `card#name` to choose
+from when it is not). `card#name` always names one card.
+
+**Beta note.** Before 0.1.0-beta.3 an example name had to be unique across a card and every card below it (the first
+segment of its id). Cards that were valid stay valid with the same meaning; the new rule only allows more.
+
+### What to Put in an Example
+
+Use an example to show text that a **user writes or copies**, in a form that a **user authors**:
+
+- A `command` is the command line to run. State what it gives with `exit` and `expect` (see below) instead of showing
+  the output.
+- A `source` is a complete file in a format that a user writes by hand, such as a settings file, a requirements file,
+  or a source file of the tool. Show a whole file, not a fragment, so a test can save it and run the commands on it;
+  use a `snippet` for a fragment.
+- Do not show a file that the tool itself produces (a report, a log, a results file, an export). Explain its format in
+  the text of the card, and prove it with `expect` on the command that produces it. A produced file in a card
+  goes stale silently when the tool changes, and a test cannot tell.
+- Test data belongs in the test project of the product, not in a card. A data file next to a card is for an
+  example that a user reads and saves, not for data that a test of the product needs.
+
+A data file below the `Help` folder is embedded like a card. Check that your `.gitignore` does not exclude its name
+(for example `*.xml` or `*.trx`): an ignored file exists on your machine and is missing in a clean checkout, and the
+catalog then reports `example-file-missing` only in the build of the server. `git status --ignored` lists what is
+ignored.
+
+### Expected Results
+
+A command example can state the result a correct run gives, so that a test can run every example of a card and compare.
+`exit` is the expected exit code. `expect` is the text the output must contain: a single line, or a literal block in
+which every non-blank line is one fragment. Every fragment must appear in the output, in any order, and the case is
+compared as written. Tokens such as `{{tool}}` are replaced in `expect` like in the content.
+
+```yaml
+examples:
+  - name: check-missing
+    kind: command
+    language: shell
+    content: '{{tool}} check absent.yaml'
+    exit: 2
+    expect: |
+      Cannot open absent.yaml
+      1 error
+    description: Check a file that does not exist.
+```
+
+The keys are additive and need no schema change. An `exit` or `expect` on a `source` or `snippet`, an `exit` that is not
+an integer from 0 to 255, and an `expect` that is empty or starts with a blank line are the error `value-invalid`. The
+examples document of the card prints the result after the example (the line `Expected exit code: 2` and one line
+`Expected output contains: ...` per fragment), the JSON documents add `exitCode` and `expect` when they are stated, and
+printing one example alone still prints exactly its content. HelpCards never starts a process: your own test runs the
+command and compares the result.
 
 ## Cultures
 

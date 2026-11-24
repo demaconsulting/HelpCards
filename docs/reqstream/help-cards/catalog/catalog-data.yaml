@@ -33,12 +33,14 @@ sections:
               - id: HelpCards-Catalog-CatalogData-Settings
                 title: >-
                   The data shall hold the tool name, the tool version, and the closed tag vocabulary as configured,
-                  and nothing when they were not configured.
+                  and nothing when they were not configured, and shall give the tool name that commands start with:
+                  the configured name, else the name of the first source.
                 justification: |
                   Renderers write the tool and version only when the caller supplied them, and views validate tags
                   against the vocabulary.
                 tests:
                   - CatalogData_Settings_AsConfigured_AreKept
+                  - CatalogData_EffectiveToolName_ConfiguredOrFirstSource_IsTheCommandName
 
               - id: HelpCards-Catalog-CatalogData-Immutability
                 title: >-

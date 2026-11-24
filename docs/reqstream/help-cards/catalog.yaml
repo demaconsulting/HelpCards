@@ -65,6 +65,7 @@ sections:
               - HelpCards-Catalog-PathResolver-Aliases
               - HelpCards-Catalog-ExampleResolver-Subtree
               - HelpCards-Catalog-ExampleResolver-Search
+              - HelpCards-Catalog-ExampleResolver-Candidates
             tests:
               - Catalog_Lookup_PathsAliasesAndExamples_FindCardsAndReportFailures
 

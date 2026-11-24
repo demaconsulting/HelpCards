@@ -112,6 +112,54 @@ public class PresentationTests
     }
 
     /// <summary>
+    ///     Proves that a link to an example of the card that holds the link is the full command in the command style, a
+    ///     link that names the card in the Markdown style, and consistent in the JSON body and its links.
+    /// </summary>
+    [Fact]
+    public void Presentation_Links_LocalExample_IsTheFullCommandInCommandStyle()
+    {
+        // Arrange: the guide card links to its own example with [[#run]]
+        var catalog = CatalogBuilding.Simple();
+        var guide = catalog.Find("guide")!;
+
+        // Act
+        var command = catalog.FormatBody(guide, new HelpRenderOptions { LinkStyle = HelpLinkStyle.Command });
+        var markdown = catalog.FormatBody(guide, new HelpRenderOptions { LinkStyle = HelpLinkStyle.Markdown });
+        var plain = catalog.FormatBody(guide);
+        var json = catalog.Render(guide, new HelpRenderOptions { Format = HelpFormat.Json, LinkStyle = HelpLinkStyle.Command });
+
+        // Assert: the plain style stays prose, the others can be run or followed from anywhere
+        Assert.Contains("Run it with `simple help guide --example run` or", command, StringComparison.Ordinal);
+        Assert.Contains("Run it with [run](guide#run) or", markdown, StringComparison.Ordinal);
+        Assert.Contains("Run it with the example `run` or", plain, StringComparison.Ordinal);
+        Assert.Contains("Run it with `simple help guide --example run` or", json, StringComparison.Ordinal);
+        Assert.Contains("{\"exampleName\":\"run\",\"exampleCardId\":\"guide\"", json, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the examples document of a card shows the expected results of its commands after each example, and
+    ///     the JSON document writes them when set, through the options and renderers working together.
+    /// </summary>
+    [Fact]
+    public void Presentation_ExpectedResults_RunnableFixture_ShowResultAfterExample()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var check = catalog.Find("check")!;
+
+        // Act
+        var text = catalog.RenderExamples(check);
+        var alone = catalog.RenderExample(check, "missing");
+        var json = catalog.RenderExamples(check, new HelpRenderOptions { Format = HelpFormat.Json });
+
+        // Assert: text shows the result, one example alone is exactly its content, JSON appends the keys
+        Assert.Contains("```\nExpected exit code: 2\nExpected output contains: Cannot open absent.yaml\n", text, StringComparison.Ordinal);
+        Assert.Equal("demo check absent.yaml", alone);
+        Assert.Contains("\"exitCode\":2,\"expect\":[\"Cannot open absent.yaml\"]", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("null", json, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that the examples document prints the own examples in full and lists the cards below by name only.
     /// </summary>
     [Fact]

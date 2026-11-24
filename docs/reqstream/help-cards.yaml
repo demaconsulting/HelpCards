@@ -81,14 +81,48 @@ sections:
       - id: HelpCards-FrontMatter-ExtensionsAndSchema
         title: >-
           Cards shall be able to carry extension keys that start with "x-", which the catalog keeps as extensions of the
-          card, and a source shall declare a schema that is 1 when omitted and rejected when higher than the library
-          supports.
+          card, and a source shall declare a schema that is 1 when omitted, that is read when it is 1 or 2, and that is
+          rejected when higher than the library supports.
         tags: [system]
         justification: |
           Tools attach their own metadata to cards without a change of the library, and a source written for a newer
           schema must fail clearly instead of being read wrongly.
         tests:
           - HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced
+
+      - id: HelpCards-Examples-SaveAs
+        title: >-
+          A source that declares schema 2 shall name the file a source or snippet example is saved as with the key
+          save-as and name a companion data file with the key file, a source of schema 1 shall be read exactly as
+          before, and mixing the two shall be reported with a message that says what to change.
+        tags: [system]
+        justification: |
+          Schema 1 gave the key file two meanings; splitting them is a change of meaning, so it is a new schema, and
+          every library that already ships cards must keep working without a change.
+        children:
+          - HelpCards-Loading-Cards
+          - HelpCards-Composition-Failures
+          - HelpCards-Testing-QualityRules
+        tests:
+          - HelpCards_Examples_SaveAsAndFile_Schema2SplitsAndSchema1StillReads
+
+      - id: HelpCards-Examples-NameScope
+        title: >-
+          An example name shall be unique within its card and the same name may be used by other cards, a link or
+          command that names a card shall find that card's own example first, and a name that only cards below the
+          card have shall be found when exactly one does and reported as ambiguous when several do.
+        tags: [system]
+        justification: |
+          A card is a unit that its author owns; requiring a name to be unique across a whole family of cards forced
+          awkward names such as setup-yaml, while a link that names a card can still be resolved exactly.
+        children:
+          - HelpCards-Composition-Uniqueness
+          - HelpCards-Composition-References
+          - HelpCards-Catalog-Lookup
+          - HelpCards-Integration-CliModes
+          - HelpCards-Integration-AgentCalls
+        tests:
+          - HelpCards_Examples_Names_AreUniquePerCardAndResolveOwnCardFirst
 
       - id: HelpCards-Tokens-Substitution
         title: >-
@@ -308,10 +342,12 @@ sections:
       - id: HelpCards-Rendering-LinkStyles
         title: >-
           A catalog shall write the links of card bodies and lists in a plain, a command, and a Markdown style or
-          through a callback of the caller, and never point at a card that a view hides.
+          through a callback of the caller, write a link to an example as the full command that prints it (or a link
+          that names the card) whichever card holds the link, and never point at a card that a view hides.
         tags: [system]
         justification: |
-          The same card is read in a terminal, in a document, and inside a tool with its own links.
+          The same card is read in a terminal, in a document, and inside a tool with its own links; a link that is
+          copied out of a card must still work.
         children:
           - HelpCards-Presentation-LinkStyles
         tests:
@@ -328,6 +364,24 @@ sections:
           - HelpCards-Presentation-Examples
         tests:
           - HelpCards_Rendering_Examples_ArePrintedInFullOrAlone
+
+      - id: HelpCards-Examples-ExpectedResults
+        title: >-
+          A command example shall be able to state the exit code and the output text it is expected to give, the
+          catalog shall expose them, and an examples document and a JSON document shall show them, while the library
+          shall never run the command.
+        tags: [system]
+        justification: |
+          An example that states its result can be proven by running it, so the examples of a product stay correct;
+          the expected result is data like the command, and starting a process is left to the product's own test.
+        children:
+          - HelpCards-Loading-Cards
+          - HelpCards-Loading-FrontMatter
+          - HelpCards-Catalog-Model
+          - HelpCards-Presentation-Examples
+          - HelpCards-Presentation-Json
+        tests:
+          - HelpCards_Examples_ExpectedResults_AreReadExposedAndShown
 
       - id: HelpCards-JsonContract-Documents
         title: >-
@@ -367,10 +421,25 @@ sections:
         tags: [system]
         justification: |
           Examples are data; a product proves them by running them itself, and the library never starts a process.
+          The runner of the next requirement makes that a one-call test.
         children:
           - HelpCards-Testing-Examples
         tests:
           - HelpCards_Validation_Examples_AreEnumeratedAndCommandsParsed
+
+      - id: HelpCards-Validation-RunExamples
+        title: >-
+          A product shall be able to save the source examples of its cards to a folder, run every command example
+          through its own code, and get every difference from the exit code and the output that the example states as
+          a problem that names the example, while the library never starts a process or a shell.
+        tags: [system]
+        justification: |
+          Help that states results is true only when something runs it; the product knows how to run its own commands,
+          and the library knows what each example expects, so the two meet in one test of the product.
+        children:
+          - HelpCards-Testing-ExampleRunner
+        tests:
+          - HelpCards_Validation_RunExamples_MaterializesRunsAndReportsMismatches
 
       - id: HelpCards-Validation-Markdown
         title: >-
@@ -390,7 +459,8 @@ sections:
           get every file that exists on one side only.
         tags: [system]
         justification: |
-          Authors work in a directory while the product ships embedded resources; they must not differ.
+          Authors work in a directory while the product ships embedded resources; a packaging or release check must be
+          able to find a difference, while the unit tests of a product prove its cards through the embedded source.
         children:
           - HelpCards-Testing-Resources
         tests:
@@ -493,6 +563,34 @@ sections:
           - HelpCards-Integration-CliExtensions
         tests:
           - HelpCards_Cli_Extensions_FallbackSectionsWidthAndLanguage
+
+      - id: HelpCards-Cli-Configuration
+        title: >-
+          A tool shall give its name and its version once, in the options of the help command, and the help command
+          shall use them for the catalog it builds, and the tests of the tool shall be able to validate exactly the
+          catalog that the command builds.
+        tags: [system]
+        justification: |
+          Setting the name and the version twice, in the options and in the builder of the catalog, let them differ,
+          and a test that composed the catalog by hand could pass while the shipped composition was wrong.
+        children:
+          - HelpCards-Integration-CliExtensions
+        tests:
+          - HelpCards_Cli_Configuration_ToolNameAndVersionAreSetOnce
+
+      - id: HelpCards-Cli-Writers
+        title: >-
+          A tool shall be able to choose the writers for the output and the errors of the help command when the command
+          writes, instead of when the command is created, so that a quiet mode that is read from its own arguments can
+          silence help.
+        tags: [system]
+        justification: |
+          A tool creates its help command once, before it has read its own arguments, so a fixed writer cannot follow
+          an option such as --silent.
+        children:
+          - HelpCards-Integration-CliExtensions
+        tests:
+          - HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime
 
       - id: HelpCards-AgentTool-Knowledge
         title: >-

@@ -162,6 +162,54 @@ public partial class JsonDocumentWriterTests
     }
 
     /// <summary>
+    ///     Proves that <c>exitCode</c> and <c>expect</c> are appended to an example object when the command states them,
+    ///     in the card, the examples, and the example documents.
+    /// </summary>
+    [Fact]
+    public void JsonDocumentWriter_Example_ExitCodeAndExpect_AreAppendedWhenSet()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var context = RenderContext.Create(catalog, new HelpRenderOptions { Format = HelpFormat.Json });
+        var check = catalog.Find("check")!;
+
+        // Act
+        var card = JsonDocumentWriter.WriteCard(context, check);
+        var example = JsonDocumentWriter.WriteExampleDocument(context, check, "missing");
+
+        // Assert: exit code first, then the fragments, after the content
+        Assert.Contains(
+            "\"content\":\"demo check absent.yaml\",\"exitCode\":2,\"expect\":[\"Cannot open absent.yaml\"]}",
+            card,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "\"content\":\"demo check check/config.yaml\",\"expect\":[\"Checked 1 file\",\"No problems\"]}",
+            card,
+            StringComparison.Ordinal);
+        Assert.EndsWith("\"content\":\"demo check absent.yaml\",\"exitCode\":2,\"expect\":[\"Cannot open absent.yaml\"]}}", example, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the default exit code and an empty expectation are left out, so documents of examples that
+    ///     state no result do not change.
+    /// </summary>
+    [Fact]
+    public void JsonDocumentWriter_Example_DefaultExitCode_IsOmitted()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var context = RenderContext.Create(catalog, new HelpRenderOptions { Format = HelpFormat.Json });
+
+        // Act
+        var json = JsonDocumentWriter.WriteExampleDocument(context, catalog.Find("check")!, "config");
+
+        // Assert
+        Assert.DoesNotContain("exitCode", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("expect", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("null", json, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that the index respects the depth limit and reports the depth of each card.
     /// </summary>
     [Fact]

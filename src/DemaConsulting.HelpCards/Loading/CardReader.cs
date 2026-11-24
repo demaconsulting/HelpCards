@@ -29,9 +29,9 @@ namespace DemaConsulting.HelpCards.Loading;
 internal sealed partial class CardReader
 {
     /// <summary>
-    ///     The highest card format schema this loader reads.
+    ///     The highest card format schema this loader reads; every schema from 1 up to it is read.
     /// </summary>
-    public const int HighestSchema = 1;
+    public const int HighestSchema = 2;
 
     /// <summary>
     ///     The name used in problems before a source has a name.
@@ -114,6 +114,11 @@ internal sealed partial class CardReader
     private int _structureErrors;
 
     /// <summary>
+    ///     The schema of the source: 1 until <c>_source.md</c> has been read, then the value that it declares.
+    /// </summary>
+    private int _schema = 1;
+
+    /// <summary>
     ///     Creates a reader for one source.
     /// </summary>
     /// <param name="source">The source to read.</param>
@@ -177,6 +182,7 @@ internal sealed partial class CardReader
         _problems.AddRange(_tokens.ScopeProblems);
 
         var header = ReadSourceHeader(document);
+        _schema = header.Schema;
         if (header.Schema > HighestSchema)
         {
             return header with { Problems = _problems.ToList() };

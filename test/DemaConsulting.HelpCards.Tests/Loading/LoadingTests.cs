@@ -225,6 +225,63 @@ public class LoadingTests
     }
 
     /// <summary>
+    ///     Proves that the embedded runnable fixture is read with the exit codes and expected output of its commands,
+    ///     through the decoder, the reader, and the token resolver together.
+    /// </summary>
+    [Fact]
+    public void Loading_ExpectedResults_RunnableFixture_ReadsExitAndExpect()
+    {
+        // Arrange: the runnable fixture compiled into this test assembly by the packaged targets
+        var source = CatalogBuilding.Fixture("runnable");
+
+        // Act
+        var definition = SourceReading.Read(source);
+
+        // Assert: no problems; a block gives two fragments and a plain value one, with tokens replaced
+        Assert.Empty(definition.Problems);
+        var check = definition.Cards.Single(card => card.LocalId == "check");
+        var ok = check.Examples.Single(example => example.Name == "ok");
+        Assert.Equal(0, ok.ExitCode);
+        Assert.Equal(["Checked 1 file", "No problems"], ok.Expect);
+        var missing = check.Examples.Single(example => example.Name == "missing");
+        Assert.Equal(2, missing.ExitCode);
+        Assert.Equal(["Cannot open absent.yaml"], missing.Expect);
+        var verbose = definition.Cards.Single(card => card.LocalId == "check/details").Examples.Single();
+        Assert.Equal(["Verbose output for demo"], verbose.Expect);
+    }
+
+    /// <summary>
+    ///     Proves that the embedded schema 2 runnable fixture is read with its save-as names, the default name of a file-only
+    ///     example, the exit codes, and the expected output, and that the schema 1 simple fixture is read as before, through
+    ///     the decoder, the reader, and the token resolver together.
+    /// </summary>
+    [Fact]
+    public void Loading_Schema2_RunnableFixture_ReadsSaveAsExitAndExpect()
+    {
+        // Arrange / Act: a schema 2 source and a schema 1 source read by the same reader
+        var runnable = SourceReading.Read(CatalogBuilding.Fixture("runnable"));
+        var simple = SourceReading.Read(CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" }));
+
+        // Assert: schema 2 gives the save-as names, with the last segment of a file-only example
+        Assert.Empty(runnable.Problems);
+        Assert.Equal(2, runnable.Schema);
+        var check = runnable.Cards.Single(card => card.LocalId == "check");
+        Assert.Equal(
+            [("config", "check/config.yaml"), ("limits", "limits.yaml"), ("notes", "notes.txt")],
+            check.Examples.Where(example => example.Kind == "source").Select(example => (example.Name, example.FileName)));
+        Assert.Equal("---\nlimit: 10\nmode: strict", check.Examples.Single(example => example.Name == "limits").Content);
+        Assert.Equal(2, check.Examples.Single(example => example.Name == "missing").ExitCode);
+
+        // Assert: schema 1 keeps the whole path of a file as the name, with and without inline content
+        Assert.Empty(simple.Problems);
+        Assert.Equal(1, simple.Schema);
+        var guide = simple.Cards.Single(card => card.LocalId == "guide");
+        Assert.Equal(
+            ["guide/settings.yaml", "fragment.yaml"],
+            guide.Examples.Where(example => example.Kind != "command").Select(example => example.FileName));
+    }
+
+    /// <summary>
     ///     Proves that a front-matter error names the file and the line.
     /// </summary>
     [Fact]

@@ -168,9 +168,23 @@ internal static class RuleIds
     /// <summary>A command example does not parse.</summary>
     public const string CommandParse = "command-parse";
 
+    /// <summary>Two source examples of one card are saved under the same name.</summary>
+    public const string SaveAsDuplicate = "save-as-duplicate";
+
     /// <summary>Files on disk and in the assembly differ.</summary>
     public const string ResourcesMismatch = "resources-mismatch";
 
     /// <summary>An external source is absent although the caller required it.</summary>
     public const string ExternalSourceMissing = "external-source-missing";
+
+    // Errors of the example runner, which are reported in a run report and never fail catalog creation
+
+    /// <summary>A command example cannot be split into arguments, so the runner does not run it.</summary>
+    public const string ExampleParse = "example-parse";
+
+    /// <summary>A command example ended with another exit code than its <c>exit</c>.</summary>
+    public const string ExampleExitCode = "example-exit-code";
+
+    /// <summary>The output of a command example lacks a fragment of its <c>expect</c>.</summary>
+    public const string ExampleOutput = "example-output";
 }

@@ -71,8 +71,8 @@ The name of a source comes from the key `name` of `_source.md`. A source without
 There is no way to rename a source in the consumer, because that would break those links. When two libraries declare
 the same name, one of them must change its `_source.md`.
 
-Ship help with `FromAssembly`. A source cannot be created from a folder on disk; to check that the embedded files
-match the folder that holds your cards, see `HelpCardValidator.CompareToDirectory` below.
+Ship help with `FromAssembly`. A source cannot be created from a folder on disk. The packaged targets embed every file
+below the `Help` folder, so a test of the embedded source (see *Checking the Package*) proves what ships.
 
 ## Exposing the Source
 
@@ -97,9 +97,12 @@ Two checks keep embedding honest:
 - A test that builds the catalog from `MyLibHelp.Source` with `HelpCardValidator.AssertValid` finds every defect of
   the cards. Add an assertion that a known card exists, for example `catalog.Find("getting-started")` is not null,
   because a wrong prefix finds no files at all. The chapter *Testing Your Help* describes the validator.
-- `HelpCardValidator.CompareToDirectory(source, directory)` compares the embedded files with the files on disk and
-  reports a file that exists on only one side as the rule `resources-mismatch`. Use it in a test to catch a card that
-  was added to the folder but is not embedded, for example because the project file excludes it.
+- `HelpCardValidator.CompareToDirectory(source, directory)` compares the embedded files with the files of a folder and
+  reports a file that exists on only one side as the rule `resources-mismatch`. Use it in a packaging or release check
+  outside your unit tests, for example to catch a card that is in the folder of a build but is not embedded because the
+  project file excludes it. Do not use it in a unit test against the checked-in `Help` folder of your repository: such a
+  test reads source files, which the testing standard does not allow a requirement-linked test to do, and a card
+  that the project excludes is found anyway when a test looks for it by id (`catalog.Find("getting-started")`).
 
 The HelpCards repository checks its own package with FileAssert to prove that the two build files are in the package.
 Resources are stored uncompressed in this release.

@@ -11,8 +11,8 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         HelpCards owns its decoder so adopters stay free of a YAML dependency, errors are deterministic
 ///         and name the exact line, and no YAML dialect can drift. The subset is: a block of
 ///         <c>key: value</c> entries; values that are plain, single-quoted, or double-quoted scalars; lists of
-///         scalars; lists of maps of scalars; full-line comments; and, only for the <c>content</c> of an
-///         example, the literal block scalar <c>|</c> or <c>|-</c>. Everything else (flow collections, anchors,
+///         scalars; lists of maps of scalars; full-line comments; and, only for the <c>content</c> and
+///         <c>expect</c> of an example, the literal block scalar <c>|</c> or <c>|-</c>. Everything else (flow collections, anchors,
 ///         aliases, tags, trailing comments, multi-document streams, tabs in indentation, deeper nesting,
 ///         duplicate keys, folded or chomped block scalars) is rejected with an error that names the line and
 ///         says how to fix it.
@@ -244,8 +244,8 @@ internal sealed partial class FrontMatterDecoder
             return ParseEmptyValue(key, line, column);
         }
 
-        // A literal block scalar is allowed only as the content of an example
-        var allowBlock = listKey == "examples" && key == "content";
+        // A literal block scalar is allowed only as the content or the expected output of an example
+        var allowBlock = listKey == "examples" && key is ("content" or "expect");
         return new FrontMatterEntry(key, line, ParseScalar(rest, line, index, column, allowBlock), null);
     }
 

@@ -93,7 +93,8 @@ rule, the file, and the line, and that the key problem names the key and the all
 
 Creates a catalog whose card has two extension keys and a source description with schema 1, and asserts the extensions
 of the card and the schema of the source. Creates a catalog from a source description that omits the schema and asserts
-that the schema is 1, and one with schema 2 and asserts the single `schema-unsupported` problem.
+that the schema is 1, one with schema 2 and asserts that the schema is 2, and one with schema 3 and asserts the single
+`schema-unsupported` problem.
 
 ### Tokens: Replacement and Unknown Tokens
 
@@ -173,6 +174,16 @@ problem of a clash names the source it clashes with.
 Finds a card by alias path, finds nothing for an unqualified id, lists the valid names of a failed path, and finds
 examples by name and by card form.
 
+### Examples: Names per Card
+
+**Test**: `HelpCards_Examples_Names_AreUniquePerCardAndResolveOwnCardFirst`
+
+Creates a catalog in which a card and its child both have an example of the same name and a card without examples has
+two children that both have it. Asserts that the links of the card name their own owners, that `FindExamples` returns
+every match without a limit, only the card's own example for a limiting card that owns the name, and both cards below
+a card that has none, and that a repeated name in one card is `duplicate-example` and a link that finds the name in
+two cards below it is `ambiguous-reference`.
+
 ### Views: Subsets and Hidden Targets
 
 **Test**: `HelpCards_Views_FilterSourceWhereWithout_ShowSubsetsAndHideTargets`
@@ -219,9 +230,30 @@ with its golden file exactly. A golden file holds the output followed by one lin
 **Tests**: `HelpCards_Rendering_LinkStyles_WriteTargetsInEachStyle`,
 `HelpCards_Rendering_Examples_ArePrintedInFullOrAlone`
 
-Formats the guide body in the plain, command, and Markdown styles and with a callback, and asserts one link of each.
-Renders the examples document of the guide card in the command style and compares it with its golden file, and prints
-one example of a card below it alone, asserting that the result is exactly its content.
+Formats the guide body in the plain, command, and Markdown styles and with a callback, and asserts one link of each,
+including the link to an example of the guide card itself (short only in the plain style; the full command or a link
+that names the card in the others). Renders the examples document of the guide card in the command style and compares it
+with its golden file, and prints one example of a card below it alone, asserting that the result is exactly its content.
+
+### Examples: Save-As and File
+
+**Test**: `HelpCards_Examples_SaveAsAndFile_Schema2SplitsAndSchema1StillReads`
+
+Reads the schema 2 `runnable` fixture and asserts the save-as names of its source examples, including the name that
+defaults to the last segment of a file, and reads the schema 1 `simple` fixture and asserts that the whole path of the
+file is still the name. Composes three defective sources and asserts the rule and the message of each: inline content
+in schema 2 without `save-as` (`key-missing`), `file` together with `content` in schema 2 (`value-invalid`), and
+`save-as` in a source of schema 1 (`key-unknown` with the hint about schema 2).
+
+### Examples: Expected Results
+
+**Test**: `HelpCards_Examples_ExpectedResults_AreReadExposedAndShown`
+
+Creates the catalog of the embedded `runnable` fixture, whose command examples state `exit` and `expect`, and asserts
+the exit code and the fragments of a command with a literal block and of one with a plain value. Renders the examples
+document and asserts the expected-result lines after the fence, renders one example as JSON and asserts the appended
+`exitCode` and `expect`, prints one example alone and asserts that it is exactly its content, and creates a catalog with
+an exit code of 300 and asserts the one `value-invalid` problem.
 
 ### Rendering: Card Lists and Wrapping
 
@@ -267,6 +299,16 @@ Validates the embedded `simple` fixture and gets no problem, validates a source 
 without an exception, validates a source with a long summary and gets one warning, and asserts that `AssertValid` throws
 one exception with the same error and accepts a catalog that only has a warning. The other quality warnings of
 the\nrequirement are verified by the scenarios of the Testing subsystem (`docs/verification/help-cards/testing.md`).
+
+### Validation: Running the Examples
+
+**Test**: `HelpCards_Validation_RunExamples_MaterializesRunsAndReportsMismatches`
+
+Runs every command example of the embedded `runnable` fixture through a delegate that returns the stated results and
+asserts that three commands ran in catalog order with the arguments after the tool name, that the files of the card were
+saved, and that the report succeeded (CRLF in the output accepted). Runs it again with a delegate that gives another
+exit code and other output and asserts the `example-exit-code` and `example-output` problems and the exception of
+`AssertSucceeded`.
 
 ### Validation: Examples and Command Lines
 
@@ -321,6 +363,17 @@ golden files. Runs a helper with index sections, a fallback resolver, a console 
 asserts the sections, the answer and exit code of the resolver, and the culture the factory received. Runs a helper with
 usage lines, a preamble, and a command template and asserts the layout of the index and the commands in the topics and
 the links.
+
+### Command Line: Configuration and Writers
+
+**Tests**: `HelpCards_Cli_Configuration_ToolNameAndVersionAreSetOnce`,
+`HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime`
+
+Creates a helper whose options hold the tool name, the version, and a catalog configuration, and asserts that the cards,
+the commands of the links, and the JSON index show the one name and the one version, that the validator accepts the
+catalog of `GetCatalogConfiguration`, and that options with both a configuration and a factory are rejected. Creates a
+helper with writer providers, runs a card and an unknown card, switches a flag that makes the providers return a silent
+writer, runs two more commands, and asserts that the silent ones wrote nothing.
 
 ### Agent Tool: Calls, Schema, and Resilience
 

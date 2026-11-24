@@ -50,7 +50,7 @@ steps, and stops at the first defect of the file:
    only `\\` and `\"` are escapes in double quotes); `|` and `>` start a block scalar; `[ { & * ! # % @` and a
    backtick are rejected with a message that tells the author to quote the text; a plain scalar must not
    contain ` #` or `: ` and must not end with `:`.
-5. Parse a literal block scalar only when the key is `content` of an item of the `examples` list. The block
+5. Parse a literal block scalar only when the key is `content` or `expect` of an item of the `examples` list. The block
    indent is the indent of the first non-blank line and must exceed the key's indent; the block runs while
    lines are blank or have at least that indent; the indent is removed, inner blank lines and `#` lines are
    kept, and trailing blank lines are dropped. Only `|` and `|-` are supported.

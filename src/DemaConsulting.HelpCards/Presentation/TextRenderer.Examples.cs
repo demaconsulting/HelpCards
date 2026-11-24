@@ -153,6 +153,27 @@ internal static partial class TextRenderer
         builder.Append(fence).Append(example.Language).Append('\n');
         builder.Append(example.Content.TrimEnd('\n')).Append('\n');
         builder.Append(fence).Append('\n');
+        AppendExpectedResult(context, builder, example);
+    }
+
+    /// <summary>
+    ///     Appends the result a command example is expected to give: the exit code when it is not 0 and one line
+    ///     per fragment of expected output.
+    /// </summary>
+    /// <param name="context">The settings of the call.</param>
+    /// <param name="builder">The builder to append to.</param>
+    /// <param name="example">The example; nothing is written for one that states no result.</param>
+    private static void AppendExpectedResult(RenderContext context, StringBuilder builder, HelpExample example)
+    {
+        if (example.ExitCode != 0)
+        {
+            TextWrapper.Append(builder, HelpStrings.ExpectedExitCode(example.ExitCode), context.WrapWidth, string.Empty, EntryIndent);
+        }
+
+        foreach (var fragment in example.Expect)
+        {
+            TextWrapper.Append(builder, HelpStrings.ExpectedOutputContains(fragment), context.WrapWidth, string.Empty, EntryIndent);
+        }
     }
 
     /// <summary>

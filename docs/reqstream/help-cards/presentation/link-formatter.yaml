@@ -20,32 +20,41 @@ sections:
                   Plain text readers need a link that still says what it points at.
                 tests:
                   - LinkFormatter_FormatLink_PlainStyle_WritesWords
+                  - LinkFormatter_FormatLink_PlainStyleLocalExample_IsShort
 
               - id: HelpCards-Presentation-LinkFormatter-Command
                 title: >-
                   The formatter shall write a link in the command style as the command that prints the target,
-                  filled in from the command template with the tool and the path with spaces for slashes.
+                  filled in from the command template with the tool and the path with spaces for slashes, and for
+                  an example, including one of the card that holds the link, as the full command with the card that
+                  owns it and the option --example.
                 justification: |
-                  Command-line readers act on a link by typing it.
+                  Command-line readers act on a link by typing it, so it must run as written from any prompt.
                 tests:
                   - LinkFormatter_FormatLink_CommandStyle_WritesCommands
+                  - LinkFormatter_FormatLink_CommandStyleLocalExample_WritesFullCommand
                   - LinkFormatter_Command_Template_ReplacesToolAndPath
 
               - id: HelpCards-Presentation-LinkFormatter-Markdown
                 title: >-
                   The formatter shall write a link in the Markdown style as a Markdown link with the title of the
-                  card, with the display text of an external link, and with a fragment for an example.
+                  card, with the display text of an external link, and for an example with a fragment on the target
+                  that always names the card that owns the example, including for an example of the card that holds
+                  the link.
                 justification: |
-                  Documents and web pages need working links.
+                  Documents and web pages need working links; a bare fragment points at an anchor that the generated
+                  headings do not have.
                 tests:
                   - LinkFormatter_FormatLink_MarkdownStyle_WritesMarkdownLinks
+                  - LinkFormatter_FormatLink_MarkdownStyleLocalExample_NamesTheCard
 
               - id: HelpCards-Presentation-LinkFormatter-LocalExamples
                 title: >-
-                  The formatter shall write the short form only for an example of the card that holds the link, and
-                  the full example form, naming the card, for an example of any other card.
+                  The formatter shall write the short form only in the plain style and only for an example of the
+                  card that holds the link, and the full example form, naming the card, in every other case.
                 justification: |
-                  A short form that points at the wrong card would mislead the reader.
+                  A short form that points at the wrong card, or that cannot be run or followed from where it is
+                  copied, would mislead the reader.
                 tests:
                   - LinkFormatter_FormatLink_LocalExampleOfOtherCard_UsesTheExampleForm
 

@@ -90,21 +90,25 @@ sections:
 
               - id: HelpCards-Loading-FrontMatterDecoder-LiteralBlocks
                 title: >-
-                  The decoder shall accept a literal block scalar ("|" or "|-") only as the content of an
-                  example, remove its indent, keep inner blank lines, hash lines, and deeper indentation, drop
-                  trailing blank lines, and reject block scalars elsewhere and the forms "|+", an indentation
-                  indicator, and ">".
+                  The decoder shall accept a literal block scalar ("|" or "|-") only as the content or the expected
+                  output (expect) of an example, remove its indent, keep inner blank lines, hash lines, and deeper
+                  indentation, drop trailing blank lines, and reject block scalars elsewhere and the forms "|+", an
+                  indentation indicator, and ">".
                 justification: |
-                  Example files must be embeddable in a card without escaping, but allowing blocks anywhere
-                  would let multi-line text into titles and summaries that must stay one line.
+                  Example files and expected output must be embeddable in a card without escaping, but allowing
+                  blocks anywhere would let multi-line text into titles and summaries that must stay one line.
                 tests:
                   - FrontMatterDecoder_TryDecode_ExampleBlockScalarPipe_Accepted
                   - FrontMatterDecoder_TryDecode_ExampleBlockScalarPipeMinus_Accepted
+                  - FrontMatterDecoder_TryDecode_ExampleExpectBlockScalar_Accepted
                   - FrontMatterDecoder_TryDecode_BlockScalarKeepsBlankHashAndNestedLines_Accepted
                   - FrontMatterDecoder_TryDecode_BlockScalarTrailingBlankLines_Accepted
                   - FrontMatterDecoder_TryDecode_BlockScalarForOrdinaryKey_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarAsListItem_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarContentOutsideExamples_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarExpectOutsideExamples_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarContentOrExpectInOtherList_Rejected
+                  - FrontMatterDecoder_TryDecode_BlockScalarForOtherExampleKey_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarKeepIndicator_Rejected
                   - FrontMatterDecoder_TryDecode_BlockScalarIndentationIndicator_Rejected
                   - FrontMatterDecoder_TryDecode_FoldedBlockScalar_Rejected

@@ -17,7 +17,9 @@ All tests in `LinkFormatterTests.cs` pass.
 
 - **Plain, command, and Markdown styles**: a card, an example, an example of the containing card, and an external card
   in each style.
-- **Short form**: an example of another card than the containing one is written in the full form in every style.
+- **Short form**: only the plain style writes the short form, and only for an example of the containing card; the
+  command style writes the full command (also with a custom command template), the Markdown style a link that names
+  the card, and an example of another card than the containing one is written in the full form in every style.
 - **Callback**: the callback replaces the style and receives the link it is asked to write.
 - **Command template**: the default and a custom template with the tool and the path.
 - **Labels**: the id, the command, the Markdown link, and the callback text.

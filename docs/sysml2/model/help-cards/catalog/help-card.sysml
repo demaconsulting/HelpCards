@@ -5,7 +5,7 @@ package HelpCards_HelpCard {
     private import ScalarValues::*;
 
     part def HelpCard {
-        doc /* One card as a catalog view shows it: global and local id, name, nearest visible parent, source, title, summary, tags, aliases, body culture, visible children and see-also cards, examples, and extension keys. The body is the Markdown with every link in the plain style, computed once; the body pieces give renderers text and links to visible targets after the hiding rules of the view. Supporting types: HelpExample, HelpExampleReference, HelpLink, HelpSourceInfo, HelpPathResolution, HelpSearchResult, and BodyPiece. */
+        doc /* One card as a catalog view shows it: global and local id, name, nearest visible parent, source, title, summary, tags, aliases, body culture, visible children and see-also cards, examples (a command with its expected exit code and output), and extension keys. The body is the Markdown with every link in the plain style, computed once; the body pieces give renderers text and links to visible targets after the hiding rules of the view. Supporting types: HelpExample, HelpExampleReference, HelpLink, HelpSourceInfo, HelpPathResolution, HelpSearchResult, and BodyPiece. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (

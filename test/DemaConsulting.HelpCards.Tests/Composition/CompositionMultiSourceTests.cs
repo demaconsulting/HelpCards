@@ -276,13 +276,13 @@ public class CompositionMultiSourceTests
     }
 
     /// <summary>
-    ///     Proves that example names an overlay adds count in the scope of the card it extends.
+    ///     Proves that example names an overlay adds count in the card it extends.
     /// </summary>
     [Fact]
-    public void Composition_ExampleScope_OverlayExampleRepeatingName_IsDuplicateInTargetScope()
+    public void Composition_ExampleNames_OverlayExampleRepeatingName_IsDuplicateInTargetCard()
     {
         // Arrange: lib-a/graph has the example render; the overlay adds another one with that name, another one is
-        // added to a card in a different scope
+        // added to a different card
         var libA = CatalogBuilding.LibA();
         var example = "examples:\n  - name: render\n    kind: command\n    language: shell\n    content: run\n    description: Run.\n";
         var app = CatalogBuilding.Named(
@@ -293,16 +293,16 @@ public class CompositionMultiSourceTests
         // Act
         var result = CatalogBuilding.Compose(builder => builder.AddMountedSource(libA).AddSource(app));
 
-        // Assert: only the overlay of graph repeats a name in its scope; the same name in shapes and in lib-b is fine
+        // Assert: only the overlay of graph repeats a name of its card; the same name in shapes and in lib-b is fine
         var problem = Assert.Single(result.Errors);
         Assert.Equal(("app", "o1.md", "duplicate-example"), (problem.SourceName, problem.File, problem.RuleId));
     }
 
     /// <summary>
-    ///     Proves that the same example name may be used in different sources and different first-segment scopes.
+    ///     Proves that the same example name may be used in different sources and different cards.
     /// </summary>
     [Fact]
-    public void Composition_ExampleScope_SameNameInOtherSourcesAndScopes_IsAllowed()
+    public void Composition_ExampleNames_SameNameInOtherSourcesAndCards_IsAllowed()
     {
         // Arrange / Act: lib-a/graph and lib-b/chart both have the example render
         var catalog = HelpCatalog.Create(builder => builder.AddSource(CatalogBuilding.LibA()).AddSource(CatalogBuilding.LibB()));
@@ -466,7 +466,7 @@ public class CompositionMultiSourceTests
         // Arrange: a syntax error in the first source, a token and a link error in the second, a schema in the third
         var first = CatalogBuilding.Named("first", ("a.md", "---\ntitle: [x]\n---\n"));
         var second = CatalogBuilding.Named("second", ("b.md", SourceReading.Card(body: "{{nope}} and [[missing]].")));
-        var third = CatalogBuilding.Named("third", ("_source.md", "---\nschema: 2\n---\n"));
+        var third = CatalogBuilding.Named("third", ("_source.md", "---\nschema: 3\n---\n"));
 
         // Act
         var result = CatalogBuilding.Compose(builder => builder.AddSource(third).AddSource(second).AddSource(first));
@@ -480,20 +480,21 @@ public class CompositionMultiSourceTests
     }
 
     /// <summary>
-    ///     Proves that the schema of <c>_source.md</c> is handled per source: omitted and 1 are supported.
+    ///     Proves that the schema of <c>_source.md</c> is handled per source: omitted, 1, and 2 are supported side by side.
     /// </summary>
     [Fact]
-    public void Composition_Schema_OmittedAndExplicitOne_AreSupportedPerSource()
+    public void Composition_Schema_OmittedOneAndTwo_AreSupportedPerSource()
     {
         // Arrange
         var omitted = CatalogBuilding.Named("omitted", ("a.md", SourceReading.Card()));
         var explicitOne = CatalogBuilding.Named("explicit", ("_source.md", "---\nschema: 1\n---\n"), ("b.md", SourceReading.Card()));
+        var two = CatalogBuilding.Named("two", ("_source.md", "---\nschema: 2\n---\n"), ("c.md", SourceReading.Card()));
 
         // Act
-        var catalog = HelpCatalog.Create(builder => builder.AddSource(omitted).AddMountedSource(explicitOne));
+        var catalog = HelpCatalog.Create(builder => builder.AddSource(omitted).AddMountedSource(explicitOne).AddMountedSource(two));
 
         // Assert
-        Assert.Equal([1, 1], catalog.Sources.Select(info => info.Schema));
+        Assert.Equal([1, 1, 2], catalog.Sources.Select(info => info.Schema));
     }
 
     /// <summary>

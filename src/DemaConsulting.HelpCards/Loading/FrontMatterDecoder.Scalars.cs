@@ -169,7 +169,7 @@ internal sealed partial class FrontMatterDecoder
     }
 
     /// <summary>
-    ///     Parses a literal block scalar, which is allowed only for the content of an example.
+    ///     Parses a literal block scalar, which is allowed only for the content and the expected output of an example.
     /// </summary>
     /// <remarks>
     ///     The block starts on the line after the header. Its indent is the number of leading spaces of the
@@ -192,7 +192,7 @@ internal sealed partial class FrontMatterDecoder
             throw Failure(
                 RuleIds.BlockScalarNotAllowed,
                 headerLine,
-                "A block scalar is allowed only for the 'content' of an example; write the value on one line, or quote it.");
+                "A block scalar is allowed only for the 'content' or 'expect' of an example; write the value on one line, or quote it.");
         }
 
         if (header != "|" && header != "|-")

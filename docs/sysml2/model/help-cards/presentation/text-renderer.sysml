@@ -7,7 +7,7 @@ package HelpCards_TextRenderer {
     private import HelpCards_HelpCard::*;
 
     part def TextRenderer {
-        doc /* Renders cards, indexes, example documents, search results, and card lists as text and Markdown: the card layout with sections that are left out when empty, the examples as bullets or fenced sections, the hint for printing examples in the command style, the examples document with the cards below listed by name, one example as exactly its content, and the two-column lists. Markdown is the same layout without wrapping and with bold labels. */
+        doc /* Renders cards, indexes, example documents, search results, and card lists as text and Markdown: the card layout with sections that are left out when empty, the examples as bullets or fenced sections, the hint for printing examples in the command style, the examples document with the cards below listed by name, one example as exactly its content, the expected exit code and output after the fence of a command, and the two-column lists. Markdown is the same layout without wrapping and with bold labels. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (

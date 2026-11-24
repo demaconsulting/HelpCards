@@ -115,7 +115,7 @@ public class HelpProblemTests
             "duplicate-example", "tag-unknown", "tag-required", "roots-mismatch", "source-invalid",
             "source-name-duplicate", "mount-invalid", "import-order", "import-missing", "import-cycle",
             "ambiguous-reference", "schema-unsupported", "translation-orphan", "translation-key",
-            "culture-invalid", "source-read", "external-source-missing"
+            "culture-invalid", "source-read", "external-source-missing", "example-parse", "example-exit-code", "example-output"
         ];
 
         // Act: read the defined constants

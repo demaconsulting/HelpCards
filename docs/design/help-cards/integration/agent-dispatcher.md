@@ -29,8 +29,9 @@ time. The class is partial: `AgentDispatcher.cs` holds the choice of the answer 
   global ids; an unknown topic gets up to five suggestions and a pointer to the index.
 - **Example** searches with `FindExamples`, limited to the card of the topic and the cards below it when a topic is
   given. One match is the description line with the kind, language, and file, and the content in a fence one backtick
-  longer than the longest run in the content. Several matches list `card#name` values; none lists the closest example
-  names, or the closest card names when no example name is close.
+  longer than the longest run in the content. A topic that owns an example of the name gives that one. Several matches
+  list `card#name` values; none lists the closest example names, or the closest card names when no example name is
+  close.
 - **Query** searches the view that the source and tag arguments make, with the limit of the call or of the options, and
   lists the cards; no match points to the index.
 

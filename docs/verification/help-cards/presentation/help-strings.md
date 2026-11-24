@@ -17,4 +17,5 @@ All tests in `HelpStringsTests.cs` pass.
 
 - **Chrome**: the headings, the labels in plain and bold form, the title of an examples document, and the hint
   sentences.
+- **Expected results**: the lines for the expected exit code and for one expected output fragment.
 - **Culture**: the headings and titles are the same under a culture with unusual casing rules.

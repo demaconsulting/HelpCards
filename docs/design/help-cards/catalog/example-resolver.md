@@ -18,9 +18,15 @@ tree of a view. Names are compared with `OrdinalIgnoreCase`.
 
 - **`FindInSubtree(start, name, children)`** returns the first example of the name, with the id of the card that owns
   it, in the card and the cards below it, or null.
+- **`FindCandidates(start, name, children)`** returns what a link to an example name can mean from a card: the
+  card's own example when it has one of the name, otherwise every example of the name below it in depth-first order.
+  The caller reads one result as a match and several as an ambiguity. The card itself is not searched twice.
 - **`FindAll(scope, name, scopeCardId)`** returns every match in the visible cards in depth-first order. A name written
   `card#name` limits the search to the subtree of that card (a global id or a path); `scopeCardId` limits it in the same
-  way; both together limit it to the intersection. An unknown or hidden card gives an empty list.
+  way; both together limit it to the intersection. When a limit applies and the card the limits narrow the search to
+  owns an example of the name, only that card's own example is returned (an example name is unique within a card, so
+  the own example is the one meant); the cards below count only when it has none. An unknown or hidden card gives an
+  empty list.
 
 #### Error Handling
 

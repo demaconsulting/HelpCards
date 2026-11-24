@@ -4,7 +4,7 @@ package HelpCards_LinkFormatter {
     private import HelpCards_HelpCard::*;
 
     part def LinkFormatter {
-        doc /* Writes links, card labels, and commands in the plain, command, and Markdown styles, or through the callback of the caller, and writes the body of a card from its parsed pieces with every visible link formatted. The short example form applies only to an example of the card that holds the link. */
+        doc /* Writes links, card labels, and commands in the plain, command, and Markdown styles, or through the callback of the caller, and writes the body of a card from its parsed pieces with every visible link formatted. A link to an example is the full command or a link that names the card in the command and Markdown styles; the short example form is written only in the plain style, for an example of the card that holds the link. */
 
         metadata info : SoftwareInfo {
             sourceFiles = ("src/DemaConsulting.HelpCards/Presentation/LinkFormatter.cs");

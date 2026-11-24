@@ -15,7 +15,7 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         first (found in stages: see <see cref="HelpProblem"/>; a front-matter error hides the link checks of its
 ///         file, so repeat after fixing), followed by the quality warnings (<c>summary-length</c>, <c>card-size</c>,
 ///         <c>heading-reserved</c>, <c>fence-language</c>, <c>fence-unclosed</c>, <c>unused-token</c>,
-///         <c>line-length</c>, and <c>command-parse</c>), the problems of the rules in
+///         <c>line-length</c>, <c>command-parse</c>, and <c>save-as-duplicate</c>), the problems of the rules in
 ///         <see cref="HelpValidationOptions.Rules"/>, and, when requested, an error for each absent external
 ///         source. Within a severity the order is source, file, line, and rule. When a source has errors there is
 ///         no catalog to inspect, so only the errors are returned.
@@ -29,7 +29,8 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         <b>Rules.</b> The errors are the rules of <c>HelpCatalog.Create</c> (<c>key-missing</c>, <c>link-target</c>,
 ///         <c>parent-missing</c> and the others), plus <c>external-source-missing</c> with
 ///         <see cref="HelpValidationOptions.RequireExternalSources"/>; the warnings are the quality rules above and
-///         <c>resources-mismatch</c> from <see cref="CompareToDirectory"/>. Every rule id, with its severity and a one-line
+///         <c>resources-mismatch</c> from <see cref="CompareToDirectory"/> (a check for packaging and release tools, not for unit
+///         tests). Every rule id, with its severity and a one-line
 ///         meaning, is listed once in the table in the remarks of <see cref="HelpProblem"/>. A problem has line 0 when
 ///         no single line applies (for example <c>summary-length</c>, <c>card-size</c> and <c>parent-missing</c>); see
 ///         <see cref="HelpProblem"/>.
@@ -73,7 +74,7 @@ namespace DemaConsulting.HelpCards.Testing;
 /// HelpSource wordy = HelpSource.FromFiles(new Dictionary&lt;string, string&gt;
 /// {
 ///     ["_source.md"] = "---\nname: demo\ntitle: Demo\nsummary: Demo cards.\n---\nBody.",
-///     ["a.md"] = "---\ntitle: A\nsummary: " + new string('x', 80) + "\n---\nBody.",   // longer than 60 for a root card
+///     ["a.md"] = "---\ntitle: A\nsummary: " + new string('x', 90) + "\n---\nBody.",   // longer than 80 for a root card
 /// }, name: "demo");
 ///
 /// foreach (HelpProblem warning in HelpCardValidator.Validate(wordy))

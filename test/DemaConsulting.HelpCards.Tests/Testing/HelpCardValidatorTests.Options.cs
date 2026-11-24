@@ -1,5 +1,8 @@
 using DemaConsulting.HelpCards.Catalog;
+using DemaConsulting.HelpCards.Integration;
+using DemaConsulting.HelpCards.Loading;
 using DemaConsulting.HelpCards.Testing;
+using DemaConsulting.HelpCards.Tests.TestSupport;
 
 namespace DemaConsulting.HelpCards.Tests.Testing;
 
@@ -21,6 +24,46 @@ public partial class HelpCardValidatorTests
     }
 
     /// <summary>
+    ///     Proves that a root summary at the default limit is accepted and takes at most two lines of the topic index at
+    ///     the default width beside the command label of the longest topic of the adopter.
+    /// </summary>
+    [Fact]
+    public void HelpValidationOptions_RootSummaryAtDefaultLimit_FitsTwoIndexLines()
+    {
+        // Arrange: a root card named like the adopter's longest topic and a summary of exactly 80 characters
+        const string toolName = "reqstream";
+        const string topic = "requirements-file";
+        var label = $"{toolName} help {topic}";
+        var summary = string.Join(" ", Enumerable.Repeat("abcdefg", 9)) + " abcdefgh";
+        var output = new StringWriter();
+        var cli = HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = toolName,
+            ConfigureCatalog = (builder, culture) => builder.AddSource(HelpSource.FromFiles(
+                SourceReading.Files(($"{topic}.md", SourceReading.Card(title: "Requirements file", summary: summary))),
+                "test")),
+            Output = output,
+        });
+        var source = HelpSource.FromFiles(
+            SourceReading.Files(($"{topic}.md", SourceReading.Card(title: "Requirements file", summary: summary))),
+            "test");
+
+        // Act
+        cli.Run([]);
+        var warnings = HelpCardValidator.Validate(source);
+        var lines = output.ToString().Split('\n');
+        var first = Array.FindIndex(lines, line => line.StartsWith(label, StringComparison.Ordinal));
+        var entry = lines.Skip(first).TakeWhile(line => line.Length > 0).ToList();
+
+        // Assert
+        Assert.Equal(new HelpValidationOptions().MaxRootSummaryChars, summary.Length);
+        Assert.Empty(warnings);
+        Assert.True(first >= 0);
+        Assert.Equal(2, entry.Count);
+        Assert.All(entry, line => Assert.True(line.Length <= 78));
+    }
+
+    /// <summary>
     ///     Proves that the options have the documented defaults.
     /// </summary>
     [Fact]
@@ -33,7 +76,7 @@ public partial class HelpCardValidatorTests
         Assert.Equal(6000, options.MaxCardChars);
         Assert.Equal(3500, options.MaxRootIndexChars);
         Assert.Equal(100, options.MaxSummaryChars);
-        Assert.Equal(60, options.MaxRootSummaryChars);
+        Assert.Equal(80, options.MaxRootSummaryChars);
         Assert.Null(options.MaxLineLength);
         Assert.Empty(options.Rules);
         Assert.False(options.RequireExternalSources);

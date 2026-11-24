@@ -1,9 +1,10 @@
 package HelpCards_HelpCli {
     private import SoftwareItemMetadata::*;
     private import HelpCards_CliDispatcher::*;
+    private import HelpCards_HelpCatalogBuilder::*;
 
     part def HelpCli {
-        doc /* The command-line helper that a tool adds in front of its own argument parser: it is created without creating the catalog, answers a command line only when its first argument is the help verb, offers a constant footer sentence for the usage text, and runs a help command whose verb was removed. Supporting types: HelpCliOptions (tool name, version, verb, catalog factory, usage lines, preamble, sections, fallback resolver, writers, command template, default width, language option, and width provider), HelpCliSection, and HelpCliAnswer. */
+        doc /* The command-line helper that a tool adds in front of its own argument parser: it is created without creating the catalog, answers a command line only when its first argument is the help verb, offers a constant footer sentence for the usage text, and runs a help command whose verb was removed. The tool name and the version are set once, in HelpCliOptions: with the catalog configuration action the helper sets them (and the culture) on the catalog builder, and GetCatalogConfiguration gives the same configuration to the tests of the tool. Supporting types: HelpCliOptions (tool name, version, verb, catalog configuration or factory, usage lines, preamble, sections, fallback resolver, writers and writer providers, command template, default width, language option, and width provider), HelpCliSection, and HelpCliAnswer. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (
@@ -25,5 +26,8 @@ package HelpCards_HelpCli {
 
         // The helper hands every help command to the dispatcher.
         dependency runsThrough from HelpCli to CliDispatcher;
+
+        // The catalog configuration of the options works on the public builder of the Composition subsystem.
+        dependency configuresBuilder from HelpCli to HelpCatalogBuilder;
     }
 }

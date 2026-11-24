@@ -25,15 +25,19 @@ sections:
 
               - id: HelpCards-Composition-ReferenceValidator-ExampleLinks
                 title: >-
-                  The validator shall resolve an example link by searching the named card and the cards below it,
-                  or the card the link is written in, depth first, name the card that owns the example, and report
-                  an example that is not in that subtree.
+                  The validator shall resolve an example link to the named card, or the card the link is written in,
+                  by that card's own example when it has one of the name and otherwise by the one example of that
+                  name in the cards below it, name the card that owns the example, report an example that is not
+                  found, and report an example that two or more cards below the card have as ambiguous-reference.
                 justification: |
-                  Example names are unique within a scope, so a subtree search finds the one example the author
-                  means.
+                  Example names are unique within a card, so the own example is the one the author means; below it a
+                  name must be unique or the author must choose.
                 tests:
                   - ReferenceValidator_ResolveBody_ExampleLinks_FindOwnerInSubtree
                   - ReferenceValidator_ResolveBody_ExampleNotInSubtree_ReportsExampleTarget
+                  - ReferenceValidator_ResolveBody_OwnExampleBeatsDescendant_Resolves
+                  - ReferenceValidator_ResolveBody_ExampleInTwoDescendants_ReportsAmbiguousReference
+                  - ReferenceValidator_ResolveBody_ExampleInThreeDescendants_NamesAllOfThem
 
               - id: HelpCards-Composition-ReferenceValidator-ExternalLinks
                 title: >-
@@ -66,14 +70,15 @@ sections:
 
               - id: HelpCards-Composition-ReferenceValidator-ExampleNames
                 title: >-
-                  The validator shall report an example name that is used twice in one scope, which is the source
-                  and the first segment of the owning card's id and includes the examples that overlays add, at the
-                  second use in the file where it is written, and allow the same name in different scopes.
+                  The validator shall report an example name that is used twice in one card, counting the examples
+                  that overlays add, at the second use in the file where it is written, and allow the same name in
+                  different cards, whether they are unrelated, parent and child, or siblings.
                 justification: |
-                  A link to an example must find exactly one example.
+                  A card's examples are addressed by name, so the name must be unique where it is looked up; other
+                  cards are addressed by their own id.
                 tests:
-                  - ReferenceValidator_CheckExampleNames_SameScope_ReportsDuplicateAtSecondUse
-                  - ReferenceValidator_CheckExampleNames_DifferentScopes_AreAllowed
+                  - ReferenceValidator_CheckExampleNames_SameCard_ReportsDuplicateAtSecondUse
+                  - ReferenceValidator_CheckExampleNames_SameNameInDifferentCardsOfOneFamily_IsAllowed
                   - ReferenceValidator_CheckExampleNames_OverlayRepeatsName_IsReportedInOverlayFile
 
               - id: HelpCards-Composition-ReferenceValidator-SiblingNames

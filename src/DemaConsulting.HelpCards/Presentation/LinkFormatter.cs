@@ -16,7 +16,9 @@ namespace DemaConsulting.HelpCards.Presentation;
 ///     </para>
 ///     <para>
 ///         The formatter is stateless. A link to an example of the card that contains the link (<c>[[#x]]</c>) is
-///         written in its short form; every other example link names its card.
+///         short only in the plain style (<c>the example `x`</c>), which is prose about the card being read. The
+///         command style writes the full command that prints the example, and the Markdown style a link whose target
+///         names the card, so the text can be copied and run, or followed, from anywhere.
 ///     </para>
 /// </remarks>
 internal static class LinkFormatter
@@ -66,7 +68,7 @@ internal static class LinkFormatter
         var isLocal = link.CardId is null && string.Equals(link.ExampleCardId, containingCardId, StringComparison.Ordinal);
         return context.Options.LinkStyle switch
         {
-            HelpLinkStyle.Command => FormatCommandLink(context, link, isLocal),
+            HelpLinkStyle.Command => FormatCommandLink(context, link),
             HelpLinkStyle.Markdown => FormatMarkdownLink(link, isLocal),
             _ => FormatPlainLink(link, isLocal)
         };
@@ -123,7 +125,7 @@ internal static class LinkFormatter
     ///     Writes a link in the plain style.
     /// </summary>
     /// <param name="link">The link.</param>
-    /// <param name="isLocal">Whether the link is the short form for an example of the containing card.</param>
+    /// <param name="isLocal">Whether the link is to an example of the containing card, which is written short.</param>
     /// <returns>The words that name the target.</returns>
     private static string FormatPlainLink(HelpLink link, bool isLocal)
     {
@@ -142,17 +144,11 @@ internal static class LinkFormatter
     /// </summary>
     /// <param name="context">The settings of the call.</param>
     /// <param name="link">The link.</param>
-    /// <param name="isLocal">Whether the link is the short form for an example of the containing card.</param>
-    /// <returns>The command in a code span.</returns>
-    private static string FormatCommandLink(RenderContext context, HelpLink link, bool isLocal)
+    /// <returns>The command in a code span; an example link is the full command with the card that owns it.</returns>
+    private static string FormatCommandLink(RenderContext context, HelpLink link)
     {
-        if (link.ExampleName is null)
-        {
-            return $"`{Command(context, link.CardId!)}`";
-        }
-
-        return isLocal
-            ? $"`--example {link.ExampleName}`"
+        return link.ExampleName is null
+            ? $"`{Command(context, link.CardId!)}`"
             : $"`{Command(context, link.ExampleCardId!)} --example {link.ExampleName}`";
     }
 
@@ -160,8 +156,8 @@ internal static class LinkFormatter
     ///     Writes a link in the Markdown style.
     /// </summary>
     /// <param name="link">The link.</param>
-    /// <param name="isLocal">Whether the link is the short form for an example of the containing card.</param>
-    /// <returns>The Markdown link.</returns>
+    /// <param name="isLocal">Whether the link is to an example of the containing card, whose text is the example name.</param>
+    /// <returns>The Markdown link; its target is always the card that owns the example.</returns>
     private static string FormatMarkdownLink(HelpLink link, bool isLocal)
     {
         // An external link shows the text its author wrote; an internal one shows the title of the card
@@ -172,7 +168,7 @@ internal static class LinkFormatter
 
         if (isLocal)
         {
-            return $"[{link.ExampleName}](#{link.ExampleName})";
+            return $"[{link.ExampleName}]({link.ExampleCardId}#{link.ExampleName})";
         }
 
         var shown = link.Text ?? $"{link.ExampleName} of {link.Title ?? link.ExampleCardId}";

@@ -299,6 +299,32 @@ public class AgentDispatcherTests
     }
 
     /// <summary>
+    ///     Proves that a topic that owns an example name answers with its own example although a card below it uses
+    ///     the same name.
+    /// </summary>
+    [Fact]
+    public void AgentDispatcher_Example_TopicOwnsName_ReturnsOwn()
+    {
+        // Arrange: the parent and its child both have an example go
+        const string example = "examples:\n  - name: go\n    kind: command\n    language: shell\n    content: run {0}\n    description: Go.\n";
+        var catalog = CatalogBuilding.FromFiles(
+            ("p.md", SourceReading.Card(title: "P", extraFrontMatter: string.Format(System.Globalization.CultureInfo.InvariantCulture, example, "parent"))),
+            ("p/c.md", SourceReading.Card(title: "C", extraFrontMatter: string.Format(System.Globalization.CultureInfo.InvariantCulture, example, "child"))));
+        var tool = HelpAgentTools.Create(catalog);
+
+        // Act
+        var own = tool.Invoke("{\"example\":\"go\",\"topic\":\"p\"}");
+        var child = tool.Invoke("{\"example\":\"go\",\"topic\":\"p/c\"}");
+        var all = tool.Invoke("{\"example\":\"go\"}");
+
+        // Assert
+        Assert.StartsWith("Example `go` of `p` (command, shell):", own, StringComparison.Ordinal);
+        Assert.Contains("run parent", own, StringComparison.Ordinal);
+        Assert.Contains("run child", child, StringComparison.Ordinal);
+        Assert.Equal("The example name 'go' matches several examples. Use one of: p#go, p/c#go.", all);
+    }
+
+    /// <summary>
     ///     Proves that a query lists the best cards, limited by the options and by <c>maxResults</c>, and that a query
     ///     without a match says so.
     /// </summary>

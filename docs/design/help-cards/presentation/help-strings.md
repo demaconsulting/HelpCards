@@ -6,7 +6,8 @@
 
 `HelpStrings` holds every word that a rendering writes around authored content: the headings `Cards`, `Examples`, and
 `See also`, the heading of the cards below with examples, the labels `Also known as` and `Tags`, the hint sentences for
-printing examples, and the sentences for an empty list. The literal heading markers (#, ##, and ###) are layout
+printing examples, the lines that state the expected exit code and output of a command example, and the sentences for an
+empty list. The literal heading markers (#, ##, and ###) are layout
 and stay with TextRenderer; this unit holds the words. Chrome is English in this release and is never localized; this
 unit is the seam where localization would be added.
 
@@ -23,6 +24,8 @@ here.
 - **`Heading(title)`** and **`ExamplesTitle(cardTitle)`** write the second-level heading and the title of an examples
   document.
 - **`PrintExamplesHint(command)`** and **`PrintOneExampleHint(command)`** write the hint sentences with the command.
+- **`ExpectedExitCode(exitCode)`** and **`ExpectedOutputContains(fragment)`** write the lines that follow a command
+  example with an expected result.
 - **`NoResults(query)`** writes the sentence for a search without results.
 - **`Label(label, markdown)`** writes a label with its colon, in bold for Markdown.
 

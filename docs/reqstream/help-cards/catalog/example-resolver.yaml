@@ -24,10 +24,24 @@ sections:
               - id: HelpCards-Catalog-ExampleResolver-Search
                 title: >-
                   The resolver shall find every example of a name in a view in depth-first order, limit the search
-                  with the card form or a scope card by intersection, and find nothing for an unknown or hidden card.
+                  with the card form or a scope card by intersection, return only the limiting card's own example
+                  when it has one of that name, and find nothing for an unknown or hidden card.
                 justification: |
-                  Tools list the examples of a topic and print one by name.
+                  Tools list the examples of a topic and print one by name; a card's own example is the one meant.
                 tests:
                   - ExampleResolver_FindAll_NameOnly_ReturnsEveryMatchInOrder
                   - ExampleResolver_FindAll_CardFormAndScope_RestrictByIntersection
                   - ExampleResolver_FindAll_HiddenCards_ContributeNothing
+                  - ExampleResolver_FindAll_LimitCardOwnsName_ReturnsOnlyOwn
+
+              - id: HelpCards-Catalog-ExampleResolver-Candidates
+                title: >-
+                  The resolver shall give the examples a link to an example name can mean from a card: only the
+                  card's own example when it has one of that name, otherwise every example of that name in the
+                  cards below it in depth-first order, so a caller can tell a unique match from an ambiguous one.
+                justification: |
+                  An example name is unique within a card, not within a family of cards; a link must still find the
+                  one example the author means, and an author must be told when it cannot.
+                tests:
+                  - ExampleResolver_FindCandidates_OwnExample_Wins
+                  - ExampleResolver_FindCandidates_TwoDescendants_ReturnsBoth

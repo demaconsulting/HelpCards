@@ -165,35 +165,96 @@ public class ReferenceValidatorTests
     }
 
     /// <summary>
-    ///     Proves that an example name used twice in one scope is reported at the second use.
+    ///     Proves that an example name used twice in one card is reported at the second use.
     /// </summary>
     [Fact]
-    public void ReferenceValidator_CheckExampleNames_SameScope_ReportsDuplicateAtSecondUse()
+    public void ReferenceValidator_CheckExampleNames_SameCard_ReportsDuplicateAtSecondUse()
     {
-        // Arrange: a and a/b share the scope a
-        var errors = CatalogBuilding.Errors(
-            ("a.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
-            ("a/b.md", SourceReading.Card(extraFrontMatter: Examples("same"))));
+        // Arrange: one card with the same example name twice
+        var errors = CatalogBuilding.Errors(("a.md", SourceReading.Card(extraFrontMatter: Examples("same", "same"))));
 
         // Act / Assert
         var problem = Assert.Single(errors);
-        Assert.Equal(("duplicate-example", "a/b.md", 5), (problem.RuleId, problem.File, problem.Line));
-        Assert.Contains("a.md", problem.Message, StringComparison.Ordinal);
+        Assert.Equal(("duplicate-example", "a.md", 10), (problem.RuleId, problem.File, problem.Line));
+        Assert.Contains("line 5 of 'a.md'", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("within the card 'a'", problem.Message, StringComparison.Ordinal);
     }
 
     /// <summary>
-    ///     Proves that the same example name in different scopes is allowed.
+    ///     Proves that the same example name in different cards is allowed, whether the cards are unrelated, parent and
+    ///     child, or siblings.
     /// </summary>
     [Fact]
-    public void ReferenceValidator_CheckExampleNames_DifferentScopes_AreAllowed()
+    public void ReferenceValidator_CheckExampleNames_SameNameInDifferentCardsOfOneFamily_IsAllowed()
     {
         // Arrange / Act
         var result = CatalogBuilding.Compose(
             ("a.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
-            ("b.md", SourceReading.Card(extraFrontMatter: Examples("same"))));
+            ("a/b.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("a/c.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("d.md", SourceReading.Card(extraFrontMatter: Examples("same"))));
 
         // Assert
         Assert.Empty(result.Errors);
+    }
+
+    /// <summary>
+    ///     Proves that a link finds the card's own example before an example of the same name below it.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_ResolveBody_OwnExampleBeatsDescendant_Resolves()
+    {
+        // Arrange: a and a/b both have the example name; the links in a mean the example of a
+        var result = CatalogBuilding.Compose(
+            ("a.md", SourceReading.Card(extraFrontMatter: Examples("same"), body: "[[#same]] [[a#same]] [[a/b#same]]")),
+            ("a/b.md", SourceReading.Card(extraFrontMatter: Examples("same"))));
+
+        // Act
+        var links = result.Data!.Find("a")!.Body.Where(part => part.Link is not null).Select(part => part.Link!).ToList();
+
+        // Assert: [[a/b#same]] names the example of a/b explicitly
+        Assert.Empty(result.Errors);
+        Assert.Equal(["a", "a", "a/b"], links.Select(link => link.ExampleCardId));
+    }
+
+    /// <summary>
+    ///     Proves that a link whose card has no such example, but two cards below it have, is ambiguous and names both.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_ResolveBody_ExampleInTwoDescendants_ReportsAmbiguousReference()
+    {
+        // Arrange: a has no example; a/b and a/c both have the name; a/d has a unique name
+        var errors = CatalogBuilding.Errors(
+            ("a.md", SourceReading.Card(body: "[[#same]] and [[#only]] and [[a#same]]")),
+            ("a/b.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("a/c.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("a/d.md", SourceReading.Card(extraFrontMatter: Examples("only"))));
+
+        // Act / Assert: the two ambiguous links are reported, the unique one resolves
+        Assert.Equal(
+            [("a.md", "ambiguous-reference"), ("a.md", "ambiguous-reference")],
+            errors.Select(problem => (problem.File, problem.RuleId)));
+        Assert.Contains("[[#same]]", errors[0].Message, StringComparison.Ordinal);
+        Assert.Contains("'a/b' and 'a/c'", errors[0].Message, StringComparison.Ordinal);
+        Assert.Contains("[[a/b#same]]", errors[0].Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that three cards that share an example name are all named in the ambiguity message.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_ResolveBody_ExampleInThreeDescendants_NamesAllOfThem()
+    {
+        // Arrange / Act
+        var errors = CatalogBuilding.Errors(
+            ("a.md", SourceReading.Card(body: "[[#same]]")),
+            ("a/b.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("a/c.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("a/d.md", SourceReading.Card(extraFrontMatter: Examples("same"))));
+
+        // Assert
+        var problem = Assert.Single(errors);
+        Assert.Contains("'a/b', 'a/c', and 'a/d'", problem.Message, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -294,17 +355,17 @@ public class ReferenceValidatorTests
     }
 
     /// <summary>
-    ///     Proves that an example name added by an overlay is checked in the scope of the card it extends and that the
+    ///     Proves that an example name added by an overlay is checked in the card it extends and that the
     ///     problem is reported in the overlay file.
     /// </summary>
     [Fact]
     public void ReferenceValidator_CheckExampleNames_OverlayRepeatsName_IsReportedInOverlayFile()
     {
-        // Arrange / Act
+        // Arrange / Act: the overlay repeats the name of a/b, and its other name is the one of the parent, which is fine
         var result = CatalogBuilding.Compose(
-            ("a.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
-            ("a/b.md", SourceReading.Card()),
-            ("o.md", $"---\nextends: a/b\n{Examples("same")}---\n"));
+            ("a.md", SourceReading.Card(extraFrontMatter: Examples("fine"))),
+            ("a/b.md", SourceReading.Card(extraFrontMatter: Examples("same"))),
+            ("o.md", $"---\nextends: a/b\n{Examples("same", "fine")}---\n"));
 
         // Assert
         var problem = Assert.Single(result.Errors);

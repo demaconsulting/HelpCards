@@ -53,6 +53,13 @@ public class CatalogTests
         Assert.Equal(["setup", "usage"], failed.ValidNames);
         Assert.Equal("guide", Assert.Single(examples).CardId);
         Assert.Equal("settings", catalog.FindExample(catalog.Find("guide")!, "settings")?.Example.Name);
+
+        // Assert: a card's own example wins over one of the same name below it
+        var family = CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(extraFrontMatter: "examples:\n  - name: same\n    kind: command\n    language: shell\n    content: run\n    description: Run.\n")),
+            ("a/b.md", SourceReading.Card(extraFrontMatter: "examples:\n  - name: same\n    kind: command\n    language: shell\n    content: run b\n    description: Run b.\n")));
+        Assert.Equal(["a"], family.FindExamples("same", "a").Select(reference => reference.CardId));
+        Assert.Equal(["a", "a/b"], family.FindExamples("same").Select(reference => reference.CardId));
     }
 
     /// <summary>

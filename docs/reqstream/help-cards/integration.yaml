@@ -86,16 +86,21 @@ sections:
             title: >-
               The subsystem shall let a tool add usage lines, a preamble, and sections to the index, answer subjects
               of its own before the catalog is created, choose the command template, the default width, and the
-              width of the console, and pass a culture to its catalog factory.
+              width of the console, configure its catalog with the tool name, the version, and the culture set once,
+              and choose the writers for output and errors when a command writes.
             justification: |
-              A tool has help of its own that must appear beside the cards.
+              A tool has help of its own that must appear beside the cards, and sets its name and version once.
             children:
               - HelpCards-Integration-CliDispatcher-Fallback
               - HelpCards-Integration-CliDispatcher-Language
               - HelpCards-Integration-CliDispatcher-Width
               - HelpCards-Integration-CliDispatcher-Template
+              - HelpCards-Integration-HelpCli-Configuration
+              - HelpCards-Integration-HelpCli-Writers
             tests:
               - Integration_Cli_Extensions_SectionsFallbackWidthLanguageAndTemplate
+              - Integration_Cli_ConfigureCatalog_AppliesToolNameVersionAndCulture
+              - Integration_Cli_Writers_ProvidersChooseTheWriterWhenACommandWrites
 
           - id: HelpCards-Integration-AgentTool
             title: >-

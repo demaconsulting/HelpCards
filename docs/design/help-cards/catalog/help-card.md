@@ -19,7 +19,7 @@ Supporting types, all immutable and created only by the catalog:
 
 | Type | Meaning |
 | --- | --- |
-| `HelpExample` | Name, kind, language, file name, description, and content of an example |
+| `HelpExample` | Name, kind, language, file name, description, content, exit code, and expected output |
 | `HelpExampleReference` | An example with the global id of the card that owns it (a record) |
 | `HelpLink` | A link to a visible target: ids, example name, title, display text, and source |
 | `HelpSourceInfo` | Name, mount, title, summary, language, and schema of a source (a record) |

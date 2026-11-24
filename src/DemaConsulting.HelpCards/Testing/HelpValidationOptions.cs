@@ -34,7 +34,7 @@ public sealed class HelpValidationOptions
     /// <summary>
     ///     The default limit of the summary of a root card.
     /// </summary>
-    private const int DefaultMaxRootSummaryChars = 60;
+    private const int DefaultMaxRootSummaryChars = 80;
 
     /// <summary>
     ///     The backing store of <see cref="MaxCardChars"/>.
@@ -97,8 +97,13 @@ public sealed class HelpValidationOptions
     }
 
     /// <summary>
-    ///     Gets the most characters the summary of a root card may have; 60 by default.
+    ///     Gets the most characters the summary of a root card may have; 80 by default.
     /// </summary>
+    /// <remarks>
+    ///     The summary of a root card is shown in the topic index next to a command label. At the default width of 78
+    ///     and a label such as <c>reqstream help requirements-file</c> (32 characters) the summary has 44 columns on
+    ///     each line, so 80 characters fit on two lines, which is the most the index should spend on one topic.
+    /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is not positive.</exception>
     public int MaxRootSummaryChars
     {

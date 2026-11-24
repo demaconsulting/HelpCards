@@ -4,7 +4,7 @@ package HelpCards_CliDispatcher {
     private import HelpCards_HelpCatalog::*;
 
     part def CliDispatcher {
-        doc /* Runs one help command: it reads the arguments, offers a card command to the fallback resolver of the tool, creates the catalog with the factory of the tool only then, selects the answer of the mode (index, card, examples, example, search, or tags) with the command link style, and writes it with the exit code of the contract: 0 for success, 2 for wrong arguments and unknown names, 70 for a defective catalog. The class is partial: the flow, the answers of the modes, and the lookups. Supporting types: CliOutcome and CliFailure. */
+        doc /* Runs one help command: it reads the arguments, offers a card command to the fallback resolver of the tool, builds the catalog with the configuration or the factory of the tool only then, selects the answer of the mode (index, card, examples, example, search, or tags) with the command link style, and writes it, to the writer or the provider of the options at that moment, with the exit code of the contract: 0 for success, 2 for wrong arguments and unknown names, 70 for a defective catalog. The class is partial: the flow, the answers of the modes, and the lookups. Supporting types: CliOutcome and CliFailure. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (

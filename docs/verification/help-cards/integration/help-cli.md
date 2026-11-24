@@ -20,4 +20,11 @@ All tests in `HelpCliTests.cs` pass.
   writing; the verb in any case runs the command; the verb alone writes the index.
 - **Verb**: another verb replaces `help` in the gate and the footer.
 - **Run**: the arguments after the verb, and null arguments.
-- **Options**: invalid tool names, verbs, templates, and widths are rejected.
+- **Options**: invalid tool names, verbs, templates, and widths are rejected; options with neither or both of the
+  catalog configuration and the factory, and a writer together with its provider, are rejected.
+- **Catalog configuration**: the catalog is built only after the verb is seen; the tool name, the version, and the
+  culture of the language option reach the cards, and the action of the tool may override them;
+  `GetCatalogConfiguration` applies the same settings and throws `InvalidOperationException` without a configuration.
+- **Writers**: a provider is called when the helper writes (not at creation), so the writer can change between commands;
+  a provider that returns null writes to the console (the console writers are replaced for the test and restored); a
+  provider is not the console for automatic width.

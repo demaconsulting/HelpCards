@@ -53,9 +53,9 @@ public partial class HelpCardValidatorTests
     {
         // Arrange
         var source = HelpSource.FromFiles(
-            SourceReading.Files(("a.md", SourceReading.Card(summary: new string('x', 70)))),
+            SourceReading.Files(("a.md", SourceReading.Card(summary: new string('x', 90)))),
             "test");
-        var options = new HelpValidationOptions { MaxRootSummaryChars = 60 };
+        var options = new HelpValidationOptions { MaxRootSummaryChars = 80 };
 
         // Act
         var fromSource = HelpCardValidator.Validate(source, options);
@@ -278,7 +278,7 @@ public partial class HelpCardValidatorTests
     public void HelpCardValidator_AssertValid_Warnings_FailOnlyWithWarningsAreErrors()
     {
         // Arrange
-        var source = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(summary: new string('x', 70)))), "test");
+        var source = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(summary: new string('x', 90)))), "test");
 
         // Act
         HelpCardValidator.AssertValid(source);

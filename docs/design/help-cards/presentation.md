@@ -51,13 +51,15 @@ width (zero for Markdown), and the tree walks.
 **Layout.** The text layout is fixed: title, summary, aliases, tags, body, then the sections Cards, Examples, and See
 also, each left out when empty. Markdown is the same layout without wrapping and with bold labels. Examples are listed
 as one bullet each, or as sections with fenced content when the options ask for the content; the fence is one backtick
-longer than the longest run in the content. The command link style adds one hint sentence after the examples list. The
-index is a two-column list with labels indented two spaces per level and padded to the widest.
+longer than the longest run in the content, and a command that states its expected exit code or output is followed by
+the lines `Expected exit code: N` (only when not 0) and `Expected output contains: fragment`. The command link style
+adds one hint sentence after the examples list. The index is a two-column list with labels indented two spaces per level
+and padded to the widest.
 
 **Links.** The formatter takes the parsed pieces of the body and writes each visible link: plain words, a command, or a
 Markdown link, or whatever the callback returns. A link to an example of the card that holds the link is written in a
-short form. Links to hidden targets were already turned into text by the catalog view, so the formatter and the
-callback see visible targets only.
+short form only in the plain style; the command and Markdown styles name the card. Links to hidden targets were already
+turned into text by the catalog view, so the formatter and the callback see visible targets only.
 
 **Wrapping.** Only generated lines are wrapped, at the configured width, never inside a word, with the prefix counted
 and a hanging indent; the authored body is copied as it is.

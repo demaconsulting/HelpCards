@@ -2,7 +2,8 @@
 # Testing Subsystem Requirements
 #
 # Requirements for the Testing subsystem: the validator that checks sources and catalogs for defects and quality, the
-# parser for the command lines of examples, the enumeration of examples, and the Markdown helpers for parity tests.
+# parser for the command lines of examples, the enumeration of examples, the runner that runs the commands of examples
+# through a delegate of the product, and the Markdown helpers for parity tests.
 # Each requirement decomposes a system requirement and is decomposed further by the requirements of the units of the
 # subsystem.
 
@@ -35,7 +36,8 @@ sections:
             title: >-
               The subsystem shall report as warnings the summaries that are too long, the cards that render too
               large, the reserved headings, the fenced blocks that name no language or are not closed, the tokens
-              that no file uses, the lines that are too long, and the command examples that cannot be parsed, each
+              that no file uses, the lines that are too long, the command examples that cannot be parsed, and the source
+              examples of one card that are saved under the same name, each
               at the file and line of the defect, apply the rules of the product to every card, and report an
               absent external source as an error when the options require sources.
             justification: |
@@ -49,6 +51,7 @@ sections:
               - HelpCards-Testing-HelpCardValidator-UnusedTokens
               - HelpCards-Testing-HelpCardValidator-LineLength
               - HelpCards-Testing-HelpCardValidator-CommandParse
+              - HelpCards-Testing-HelpCardValidator-SaveAsDuplicate
               - HelpCards-Testing-HelpCardValidator-Rules
               - HelpCards-Testing-HelpCardValidator-ExternalSources
             tests:
@@ -78,6 +81,28 @@ sections:
             tests:
               - Testing_Examples_SimpleFixtureCommands_AreEnumeratedAndParsed
 
+          - id: HelpCards-Testing-ExampleRunner
+            title: >-
+              The subsystem shall save the source examples of a card to a folder and run its command examples one
+              after another through a delegate of the product, never starting a process or a shell itself, compare
+              each exit code and output with the result the example states, and report every difference as a problem
+              that names the example and the card.
+            justification: |
+              A product proves that its help is true by running every command of it; the library supplies the
+              folder, the order, the comparison, and the report, and leaves the running to the product.
+            children:
+              - HelpCards-Testing-HelpExampleRunner-Materialize
+              - HelpCards-Testing-HelpExampleRunner-Order
+              - HelpCards-Testing-HelpExampleRunner-ExitCode
+              - HelpCards-Testing-HelpExampleRunner-Output
+              - HelpCards-Testing-HelpExampleRunner-Parse
+              - HelpCards-Testing-HelpExampleRunner-Report
+              - HelpCards-Testing-HelpExampleRunner-Cleanup
+              - HelpCards-Testing-HelpExampleRunner-Arguments
+              - HelpCards-Catalog-CatalogData-Settings
+            tests:
+              - Testing_ExampleRunner_RunnableFixture_RunsCommandsAndReportsMismatches
+
           - id: HelpCards-Testing-Markdown
             title: >-
               The subsystem shall read the headings, the sections, and the bullets of a card body, ignoring fenced
@@ -99,8 +124,10 @@ sections:
               The subsystem shall compare the files embedded in an assembly with the files of a directory and
               report every file that exists on one side only.
             justification: |
-              Authors edit cards in a directory while the product ships embedded resources; a forgotten or
-              outdated embedding must fail a test, not reach a reader.
+              Authors edit cards in a directory while the product ships embedded resources; a packaging or release
+              check outside the unit tests must be able to find a forgotten or outdated embedding before it reaches
+              a reader. A unit test of a product proves its cards through the embedded source, not by reading the
+              checked-in files of its repository.
             children:
               - HelpCards-Testing-HelpCardValidator-Directory
             tests:

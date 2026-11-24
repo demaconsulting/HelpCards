@@ -204,6 +204,9 @@ public sealed partial class HelpCatalog
     ///     The name may be written <c>card#name</c>, with the card as a global id or a path, to search only that
     ///     card and the cards below it. <paramref name="scopeCardId"/> limits the search to a card and the cards
     ///     below it in the same way. Names are compared ignoring case. An unknown or hidden card gives no result.
+    ///     Example names are unique within a card, so a card's own example is what a link to that card means:
+    ///     when the limiting card owns an example of the name, only that example is returned, and the cards below
+    ///     it count only when it has none. Without a limit every match is returned.
     /// </remarks>
     /// <param name="name">The example name, or <c>card#name</c>. Must not be null or white space.</param>
     /// <param name="scopeCardId">The card whose subtree is searched, or <see langword="null"/> for all cards.</param>
@@ -219,7 +222,8 @@ public sealed partial class HelpCatalog
     ///     Finds the first example with a name in a card and the cards below it.
     /// </summary>
     /// <remarks>
-    ///     The search is depth first: the card's own examples, then those of its children in order.
+    ///     The search is depth first: the card's own examples, then those of its children in order. A card's own
+    ///     example is always the first match.
     /// </remarks>
     /// <param name="card">The card to start at. Must not be null.</param>
     /// <param name="name">The example name. Must not be null or white space.</param>

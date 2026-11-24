@@ -76,7 +76,8 @@ sections:
               - id: HelpCards-Loading-CardReader-Examples
                 title: >-
                   The reader shall read examples of the kinds command, source, and snippet, take the content of
-                  a source or snippet from its inline content or from the file next to the card, normalize
+                  a source or snippet from its inline content or from the file next to the card (the rules of the
+                  keys file and save-as are those of the two requirements that follow), normalize
                   content to LF without trailing line feeds, and report an invalid kind, language, name, file
                   name, missing key, missing file, empty content, content that starts with a blank line, and a
                   command that is not exactly one line.
@@ -105,6 +106,66 @@ sections:
                   - CardReader_Read_UnsafeExampleFileNames_AreReported
                   - CardReader_Read_ExamplesNotListOfMaps_ReportsValueInvalid
                   - CardReader_Read_ExampleProblems_KeepCardOnlyWhenStructureIsValid
+
+              - id: HelpCards-Loading-CardReader-ExampleSaveAs
+                title: >-
+                  The reader shall read, for a source that declares schema 2, the key save-as as the name to save a
+                  source or snippet example as and the key file as a companion data file next to the card, require
+                  save-as for inline content, use the last segment of file as the name when there is no save-as,
+                  reject file together with content, an example with neither, a save-as or file on a command, and an
+                  invalid save-as as problems at their lines, and apply the same rules to the examples of overlays.
+                justification: |
+                  Schema 1 used one key for two things, the file to read and the name to save as; separating them
+                  lets an example show the text inline under one name, or live in a data file under another.
+                tests:
+                  - CardReader_Read_Schema2InlineSource_RequiresSaveAs
+                  - CardReader_Read_Schema2InlineSourceWithSaveAs_UsesTheName
+                  - CardReader_Read_Schema2FileAndContent_IsValueInvalid
+                  - CardReader_Read_Schema2FileOnly_SaveAsDefaultsToLastSegment
+                  - CardReader_Read_Schema2FileWithSaveAs_UsesSaveAs
+                  - CardReader_Read_Schema2NeitherContentNorFile_IsKeyMissing
+                  - CardReader_Read_Schema2SaveAsOnCommand_IsValueInvalid
+                  - CardReader_Read_Schema2CommandWithResult_IsRead
+                  - CardReader_Read_Schema2InvalidSaveAs_IsValueInvalid
+                  - CardReader_Read_Schema2UnknownExampleKey_ListsSaveAs
+                  - CardReader_Read_Schema2OverlayExample_FollowsTheSourceSchema
+
+              - id: HelpCards-Loading-CardReader-SchemaCompatibility
+                title: >-
+                  The reader shall read a source that declares schema 1, or none, exactly as before (the file of
+                  a source or snippet is both the data file and the name to save as, with its whole path), report
+                  the key save-as in such a source as key-unknown with a message that names schema 2 and the fix,
+                  list the keys of the schema in force when it reports another unknown key, and read every schema
+                  up to the highest supported one.
+                justification: |
+                  A library written for an earlier release must keep loading unchanged, and an author who reaches
+                  for the new key must be told which one line makes it available.
+                tests:
+                  - CardReader_Read_Schema1SaveAs_IsKeyUnknownWithSchemaHint
+                  - CardReader_Read_Schema1UnknownKey_ListsKeysWithoutSaveAs
+                  - CardReader_Read_Schema1FileWithContent_StillMeansSaveAs
+                  - CardReader_Read_Schema1FileOnly_KeepsFolderPrefix
+                  - CardReader_Read_UnsupportedSchema_ReportsSchemaUnsupportedAndReadsNoCards
+
+              - id: HelpCards-Loading-CardReader-ExampleExpectations
+                title: >-
+                  The reader shall read the exit code (an integer from 0 to 255, 0 when absent) and the expected
+                  output (one line, or one fragment for every non-blank line of a literal block, with tokens
+                  replaced) of a command example, and shall report as value-invalid an exit code that is not an
+                  integer from 0 to 255, an empty expectation, an expectation that starts with a blank line, and
+                  an exit code or expectation on a source or snippet example.
+                justification: |
+                  A command that states its result can be proven by running it; a result that cannot be read or
+                  that is stated for an example that is not run must be an error when the card is read.
+                tests:
+                  - CardReader_Read_CommandExample_ReturnsExactExample
+                  - CardReader_Read_ExitAndExpect_AreReadForCommands
+                  - CardReader_Read_ExpectBlock_SplitsFragmentsOnLines
+                  - CardReader_Read_ExpectTokens_AreReplaced
+                  - CardReader_Read_ExitOutOfRange_IsValueInvalid
+                  - CardReader_Read_ExitBounds_AreAccepted
+                  - CardReader_Read_InvalidExpect_IsValueInvalid
+                  - CardReader_Read_ExitAndExpectOnSourceAndSnippet_AreValueInvalid
 
               - id: HelpCards-Loading-CardReader-Tokens
                 title: >-
@@ -181,7 +242,7 @@ sections:
                   The reader shall read the optional "_source.md" with name, title, summary, language, schema,
                   aliases, children, extension keys, and a landing body, apply the documented defaults, let a
                   name set in code win over the file, require a valid name, and refuse a schema newer than the
-                  highest supported without reading cards.
+                  highest supported (2) without reading cards.
                 justification: |
                   The source file is the public identity of a library: its name is the target of external links
                   and its schema protects older loaders from cards they cannot read.

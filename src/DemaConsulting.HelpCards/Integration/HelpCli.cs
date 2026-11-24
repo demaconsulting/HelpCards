@@ -23,13 +23,16 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         error document on the output.
 ///     </para>
 ///     <para>
-///         A helper is immutable and safe for concurrent use as far as its writers and its catalog factory are.
+///         A helper is immutable and safe for concurrent use as far as its writers, writer providers, and catalog
+///         configuration are. The tool name and the version are set once, in the options: with
+///         <see cref="HelpCliOptions.ConfigureCatalog"/> the helper gives both to the catalog builder, and
+///         <see cref="HelpCliOptions.GetCatalogConfiguration"/> gives the same configuration to the tests.
 ///     </para>
 ///     <para>
 ///         Links in the printed text use the <em>command</em> style: a link to a card reads as the command that prints
 ///         it (<c>`tool help getting-started install`</c>, built from <see cref="HelpCliOptions.CommandTemplate"/>), and
-///         a link to an example of the same card reads <c>`--example load`</c>, the option to add to the command of
-///         that card. This differs from the plain style (<c>the card `id`</c>) of <c>HelpCatalog.Render</c> without options
+///         a link to an example reads the full command <c>`tool help getting-started --example load`</c>, also for an
+///         example of the card that holds the link. This differs from the plain style (<c>the card `id`</c>) of <c>HelpCatalog.Render</c> without options
 ///         and of the agent tool. <c>--examples</c> and <c>--example name</c> need the path of a card. Generated text is
 ///         wrapped to the width (78 by default, <c>--width</c>), and the continuation lines of a wrapped entry, such as
 ///         a topic or the hint <c>Print them in full with: ...</c> at the end of the examples, are indented by two
@@ -39,12 +42,11 @@ namespace DemaConsulting.HelpCards.Integration;
 /// <example>
 ///     The commands of a tool with two root cards and one child, run in a loop so that the program prints exactly what
 ///     a user sees (the sample points both writers at the console output, so errors appear in order). The cards are
-///     in-memory text; a real tool uses <c>HelpSource.FromAssembly</c>.
+///     in-memory text; a real tool uses <c>HelpSource.FromAssembly</c>. The tool name and the version are set once, in
+///     the options; the helper gives them to the catalog builder.
 ///     <code language="csharp">
 /// using System;
 /// using System.Collections.Generic;
-/// using System.Globalization;
-/// using DemaConsulting.HelpCards.Catalog;
 /// using DemaConsulting.HelpCards.Integration;
 /// using DemaConsulting.HelpCards.Loading;
 ///
@@ -60,11 +62,7 @@ namespace DemaConsulting.HelpCards.Integration;
 /// {
 ///     ToolName = "tool",
 ///     Version = "1.4.0",
-///     CatalogFactory = culture => HelpCatalog.Create(builder => builder
-///         .AddSource(cards)
-///         .ToolName("tool")
-///         .ToolVersion("1.4.0")
-///         .Culture(culture ?? CultureInfo.InvariantCulture)),
+///     ConfigureCatalog = (builder, culture) => builder.AddSource(cards),
 ///     Output = Console.Out,
 ///     Error = Console.Out,
 /// });
@@ -105,7 +103,7 @@ namespace DemaConsulting.HelpCards.Integration;
 /// Install the tool and run it for the first time.
 /// Tags: tutorial
 ///
-/// Install the package, then run `--example load`. Next, see `tool help getting-started install` and `tool help reports`.
+/// Install the package, then run `tool help getting-started --example load`. Next, see `tool help getting-started install` and `tool help reports`.
 ///
 /// ## Cards
 ///
@@ -201,16 +199,16 @@ public sealed class HelpCli
     /// </remarks>
     /// <param name="options">The options. Must not be null.</param>
     /// <returns>The helper.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or its catalog factory is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     /// <exception cref="ArgumentException">
     ///     Thrown when the tool name or the verb is empty or white space, the verb contains white space or starts with
-    ///     a hyphen, the tool name contains a brace, the command template is white space, or the default width is
-    ///     not 0 or 20 to 500.
+    ///     a hyphen, the tool name contains a brace, neither or both of the catalog configuration and the catalog
+    ///     factory are set, an output or error writer is set together with its provider, the command template is
+    ///     white space, or the default width is not 0 or 20 to 500.
     /// </exception>
     public static HelpCli Create(HelpCliOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(options.CatalogFactory);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.ToolName);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.Verb);
         if (options.ToolName.Contains('{', StringComparison.Ordinal) || options.ToolName.Contains('}', StringComparison.Ordinal))
@@ -221,6 +219,21 @@ public sealed class HelpCli
         if (options.Verb.Any(char.IsWhiteSpace) || options.Verb.StartsWith('-'))
         {
             throw new ArgumentException("The verb must not contain white space or start with a hyphen.");
+        }
+
+        if ((options.ConfigureCatalog is null) == (options.CatalogFactory is null))
+        {
+            throw new ArgumentException("Set exactly one of ConfigureCatalog and CatalogFactory.");
+        }
+
+        if (options.Output is not null && options.OutputProvider is not null)
+        {
+            throw new ArgumentException("Set only one of Output and OutputProvider.");
+        }
+
+        if (options.Error is not null && options.ErrorProvider is not null)
+        {
+            throw new ArgumentException("Set only one of Error and ErrorProvider.");
         }
 
         // The render options check the template and the width, so their rules stay in one place

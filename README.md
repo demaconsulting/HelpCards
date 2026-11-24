@@ -29,6 +29,10 @@ Presentation, Integration, and Testing build on that catalog.
 ## Features
 
 - **Markdown Cards**: One file per topic, with a title, summary, aliases, tags, see-also links, and examples
+- **Examples with Expected Results**: A command example can state the exit code and the output it gives (`exit:` and
+  `expect:`), so a test can run every example and compare; HelpCards itself never starts a process. Show a
+  complete file only for a format that users author; explain what the tool produces in prose, and keep test data in the
+  test project
 - **Resource Embedding**: A packaged MSBuild targets file embeds the `Help` folder of a project in its assembly
 - **Links and Tokens**: `[[card]]` links checked at build time and `{{token}}` values per library
 - **Multi-Library Composition**: Several libraries expose a `HelpSource`; an application mounts them, imports,
@@ -39,7 +43,8 @@ Presentation, Integration, and Testing build on that catalog.
   `--tag`, and is independent of any argument-parsing library
 - **Agent Tool**: `HelpAgentTool` is a provider-neutral knowledge tool (index, card, example, and search) with a
   JSON schema and output budgets
-- **Testing Helpers**: `HelpCardValidator` and example helpers prove in your own tests that your cards are valid
+- **Testing Helpers**: `HelpCardValidator` and example helpers prove in your own tests that your cards are valid, and
+  `HelpExampleRunner` runs every command example through your own entry point and compares the result it states
 - **API Reference**: A generated Markdown API reference in the package's `api/` folder, organized for gradual
   disclosure so a developer or a coding agent reads one small page at a time
 - **Dependency-Free**: Built only on the .NET Base Class Library, with its own restricted front-matter parser
@@ -118,19 +123,13 @@ Create a `HelpCli` once, before your own argument parser. The catalog is built o
 `help` verb, so every other command pays nothing:
 
 ```csharp
-using System.Globalization;
-using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Integration;
 
 static readonly HelpCli Help = HelpCli.Create(new HelpCliOptions
 {
     ToolName = "tool",
     Version = "1.4.0",
-    CatalogFactory = culture => HelpCatalog.Create(builder => builder
-        .AddSource(MyLibHelp.Source)
-        .ToolName("tool")
-        .ToolVersion("1.4.0")
-        .Culture(culture ?? CultureInfo.InvariantCulture))
+    ConfigureCatalog = (builder, culture) => builder.AddSource(MyLibHelp.Source)
 });
 
 public static int Main(string[] args)
@@ -144,6 +143,11 @@ public static int Main(string[] args)
     return 0;
 }
 ```
+
+The tool name and the version are set once: the helper gives them (and the culture of `--lang`) to the catalog builder.
+In your tests, `options.GetCatalogConfiguration()` returns the same configuration for `HelpCardValidator`, so the
+cards are validated in the composition that users get. `OutputProvider` and `ErrorProvider` choose the writers when a
+command writes, for example to silence help.
 
 Then `tool help` prints the topics, `tool help getting-started` prints a card, `tool help --search install`
 searches, and `tool help getting-started --json` writes the card as JSON.
@@ -176,7 +180,7 @@ The public types are in these namespaces: `DemaConsulting.HelpCards.Loading` (`H
 `DemaConsulting.HelpCards.Composition` (`HelpCatalogBuilder`), `DemaConsulting.HelpCards.Catalog` (`HelpCatalog`,
 `HelpCard`, and the result types), `DemaConsulting.HelpCards.Presentation` (`HelpRenderOptions`),
 `DemaConsulting.HelpCards.Integration` (`HelpCli`, `HelpAgentTools`), and `DemaConsulting.HelpCards.Testing`
-(`HelpCardValidator` and the example and Markdown helpers).
+(`HelpCardValidator`, `HelpExampleRunner`, and the example and Markdown helpers).
 
 ## Supported front matter
 
@@ -215,6 +219,7 @@ below is the part after `FrontMatterDecoder_TryDecode_`.
 | Extension key | `x-audience: agent` | `ExtensionKey_Accepted` |
 | Literal block `\|` for example `content` | `content: \|` then indented lines | `ExampleBlockScalarPipe_Accepted` |
 | Literal block `\|-` for example `content` | `content: \|-` | `ExampleBlockScalarPipeMinus_Accepted` |
+| Literal block `\|` for example `expect` | `expect: \|` then lines | `ExampleExpectBlockScalar_Accepted` |
 | Blank, `#`, and nested lines in a block | lines kept as content | `BlockScalarKeepsBlankHashAndNestedLines_Accepted` |
 | Trailing blank lines in a block | removed | `BlockScalarTrailingBlankLines_Accepted` |
 | LF or CRLF line endings | | `CrLfLineEndings_Accepted` |
@@ -261,6 +266,8 @@ same prefix as above, and each ends in `_Rejected`.
 | Block scalar for an ordinary key (`block-scalar-not-allowed`) | `summary: \|` | `BlockScalarForOrdinaryKey` |
 | Block scalar as a list item (`block-scalar-not-allowed`) | `- \|` | `BlockScalarAsListItem` |
 | `content` block outside examples (`block-scalar-not-allowed`) | `content: \|` | `BlockScalarContentOutsideExamples` |
+| `expect` block outside examples (`block-scalar-not-allowed`) | `expect: \|` | `BlockScalarExpectOutsideExamples` |
+| Other example key (`block-scalar-not-allowed`) | `description: \|` | `BlockScalarForOtherExampleKey` |
 | Keep indicator | `content: \|+` | `BlockScalarKeepIndicator` |
 | Indentation indicator | `content: \|2` | `BlockScalarIndentationIndicator` |
 | Folded block scalar | `content: >` | `FoldedBlockScalar` |
@@ -285,9 +292,15 @@ release must reference at least that version in its `PackageReference`.
 | `extends`, `optional` (overlays) | 0.1.0 |
 | `schema`, `name`, `language` (`_source.md`) | 0.1.0 |
 | `x-*` (extensions) | 0.1.0 |
+| `exit`, `expect` (command examples) | 0.1.0-beta.3 |
+| `save-as` (examples), with `schema: 2` | 0.1.0-beta.3 |
+| Same example name in several cards of one source (per-card names) | 0.1.0-beta.3 |
+| `HelpCliOptions.ConfigureCatalog`, `GetCatalogConfiguration`, `OutputProvider`, `ErrorProvider` (API) | 0.1.0-beta.3 |
 
-Omitting `schema` means schema 1. A source that declares a schema newer than the library supports fails with the rule
-`schema-unsupported`.
+Omitting `schema` means schema 1. Schema 2 splits the `file` key of an example into `save-as` (the name to save it as)
+and `file` (a companion data file); schema 1 is still read exactly as before and stays supported. A source that declares
+a schema newer than the library supports fails with the rule `schema-unsupported`. Example names are unique within a
+card, not within a family of cards; a card that has none of a name is searched below, where the name must be unique.
 
 ## Target frameworks
 

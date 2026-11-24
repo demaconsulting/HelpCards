@@ -46,10 +46,10 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <listheader><term>Rule id</term><description>Severity and meaning</description></listheader>
 ///         <item><term><c>file-name</c></term><description>Error. A file name fits no pattern: a card is <c>segment.md</c> (lower case, digits, single hyphens), a translation <c>segment.culture.md</c>, plus <c>_source.md</c> and data files.</description></item>
 ///         <item><term><c>syntax</c></term><description>Error. The front matter is not valid in the supported subset: missing <c>---</c> line, flow collection, anchor, trailing comment, tab indentation, duplicate key, unterminated quote, an unquoted value that must be quoted, and so on.</description></item>
-///         <item><term><c>key-unknown</c></term><description>Error. A front-matter key is not allowed for this kind of file; the message lists the allowed keys.</description></item>
+///         <item><term><c>key-unknown</c></term><description>Error. A front-matter key is not allowed for this kind of file; the message lists the allowed keys. The key <c>save-as</c> of an example in a schema 1 source gets a message that names schema 2.</description></item>
 ///         <item><term><c>key-missing</c></term><description>Error. A required key is missing: <c>title</c> or <c>summary</c> of a card, <c>extends</c> of an overlay, <c>name</c>, <c>kind</c>, <c>language</c> or <c>description</c> of an example, the <c>file</c> of a <c>source</c> or <c>snippet</c> example, or the <c>content</c> of a <c>command</c> example.</description></item>
-///         <item><term><c>value-invalid</c></term><description>Error. A value does not follow the grammar of its key (for example an <c>order</c> that is not an integer, a tag that is not a segment, an unknown example <c>kind</c>, or a <c>file</c> on a <c>command</c> example).</description></item>
-///         <item><term><c>block-scalar-not-allowed</c></term><description>Error. A literal block (<c>|</c>) is used anywhere but the <c>content</c> of an example.</description></item>
+///         <item><term><c>value-invalid</c></term><description>Error. A value does not follow the grammar of its key (for example an <c>order</c> that is not an integer, a tag that is not a segment, an unknown example <c>kind</c>, a <c>file</c> on a <c>command</c> example, an <c>exit</c> that is not an integer from 0 to 255, an empty <c>expect</c>, or an <c>exit</c> or <c>expect</c> on a <c>source</c> or <c>snippet</c>).</description></item>
+///         <item><term><c>block-scalar-not-allowed</c></term><description>Error. A literal block (<c>|</c>) is used anywhere but the <c>content</c> or the <c>expect</c> of an example.</description></item>
 ///         <item><term><c>token-unknown</c></term><description>Error. A <c>{{token}}</c> is not defined in the scope of its file.</description></item>
 ///         <item><term><c>token-redefined</c></term><description>Error. A token name is defined twice in one scope or redefines <c>tool</c> or <c>version</c>.</description></item>
 ///         <item><term><c>link-syntax</c></term><description>Error. Text starts like a <c>[[link]]</c> but is not one.</description></item>
@@ -66,7 +66,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>collision</c></term><description>Error. Two sources contribute the same global id, mount, or name.</description></item>
 ///         <item><term><c>example-invalid</c></term><description>Error. The content of an example is not valid: it is empty, it starts with a blank line, it is a list, or a <c>command</c> is not exactly one line.</description></item>
 ///         <item><term><c>example-file-missing</c></term><description>Error. The data file named by an example does not exist next to the card.</description></item>
-///         <item><term><c>duplicate-example</c></term><description>Error. An example name is used twice in one scope.</description></item>
+///         <item><term><c>duplicate-example</c></term><description>Error. An example name is used twice in one card; names are unique per card, so two cards may use the same name.</description></item>
 ///         <item><term><c>tag-unknown</c></term><description>Error. A tag is not in the closed vocabulary set with <c>HelpCatalogBuilder.TagVocabulary</c>.</description></item>
 ///         <item><term><c>tag-required</c></term><description>Error. A card has none of the tags that the vocabulary requires.</description></item>
 ///         <item><term><c>roots-mismatch</c></term><description>Error. The root cards differ from those set with <c>HelpCatalogBuilder.ExpectedRoots</c>.</description></item>
@@ -76,8 +76,8 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>import-order</c></term><description>Error. A source is added before a source it imports; add the imported source first.</description></item>
 ///         <item><term><c>import-missing</c></term><description>Error. An imported source is not registered.</description></item>
 ///         <item><term><c>import-cycle</c></term><description>Error. Sources import each other in a cycle.</description></item>
-///         <item><term><c>ambiguous-reference</c></term><description>Error. A bare reference matches cards of two sources; write <c>source:id</c>.</description></item>
-///         <item><term><c>schema-unsupported</c></term><description>Error. A source declares a <c>schema</c> newer than this library supports.</description></item>
+///         <item><term><c>ambiguous-reference</c></term><description>Error. A bare reference matches cards of two sources, or an example link <c>[[#x]]</c> or <c>[[card#x]]</c> finds no <c>x</c> in the card itself and finds it in two cards below it; write <c>source:id</c> or <c>[[card#x]]</c> with the card that owns the example.</description></item>
+///         <item><term><c>schema-unsupported</c></term><description>Error. A source declares a <c>schema</c> newer than this library supports (the highest is 2).</description></item>
 ///         <item><term><c>translation-orphan</c></term><description>Error. A translation file has no neutral file.</description></item>
 ///         <item><term><c>translation-key</c></term><description>Error. A translation contains a key that translations may not contain.</description></item>
 ///         <item><term><c>culture-invalid</c></term><description>Error. A culture name (a <c>language</c> value or a file suffix) is not valid.</description></item>
@@ -85,7 +85,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>external-source-missing</c></term><description>Error, validator only. An external link names a source that is absent while <c>HelpValidationOptions.RequireExternalSources</c> is set.</description></item>
 ///         <item><term><c>external-source-absent</c></term><description>Info. An external link names a source that is not in the catalog; the link shows its text. Never fails anything.</description></item>
 ///         <item><term><c>overlay-optional-skipped</c></term><description>Info. An <c>optional</c> overlay was skipped because its target source is absent.</description></item>
-///         <item><term><c>summary-length</c></term><description>Warning. A summary is longer than <c>MaxSummaryChars</c> (100) or, for a root card, <c>MaxRootSummaryChars</c> (60).</description></item>
+///         <item><term><c>summary-length</c></term><description>Warning. A summary is longer than <c>MaxSummaryChars</c> (100) or, for a root card, <c>MaxRootSummaryChars</c> (80, so that the summary fits two lines of the topic index).</description></item>
 ///         <item><term><c>card-size</c></term><description>Warning. A card renders as more than <c>MaxCardChars</c> (6000) characters, or <c>MaxRootIndexChars</c> (3500) for a root card with children.</description></item>
 ///         <item><term><c>heading-reserved</c></term><description>Warning. A body has a level-one heading or one of the generated headings <c>## Cards</c>, <c>## Examples</c>, <c>## See also</c>.</description></item>
 ///         <item><term><c>fence-language</c></term><description>Warning. A fenced code block names no language.</description></item>
@@ -93,7 +93,11 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>unused-token</c></term><description>Warning. A token set with <c>WithTokens</c> is used by no file.</description></item>
 ///         <item><term><c>line-length</c></term><description>Warning. A body line is longer than <c>MaxLineLength</c> (off unless set).</description></item>
 ///         <item><term><c>command-parse</c></term><description>Warning. A <c>command</c> example cannot be split into arguments by <c>ExampleCommandLine</c>.</description></item>
-///         <item><term><c>resources-mismatch</c></term><description>Warning. <c>CompareToDirectory</c> found a file on only one side: on disk but not embedded, or embedded but not on disk.</description></item>
+///         <item><term><c>save-as-duplicate</c></term><description>Warning. Two <c>source</c> examples of one card are saved under the same name, so <c>HelpExampleRunner</c> would keep only the last one.</description></item>
+///         <item><term><c>resources-mismatch</c></term><description>Warning. <c>CompareToDirectory</c> (a packaging check, not a unit test) found a file on only one side: on disk but not embedded, or embedded but not on disk.</description></item>
+///         <item><term><c>example-parse</c></term><description>Error, example runner only. A <c>command</c> example cannot be split into arguments by <c>ExampleCommandLine</c>, so <c>HelpExampleRunner</c> did not run it. It is reported in the run report, never by <c>HelpCatalog.Create</c>.</description></item>
+///         <item><term><c>example-exit-code</c></term><description>Error, example runner only. A command ended with another exit code than the <c>exit</c> key of its example states (0 when absent).</description></item>
+///         <item><term><c>example-output</c></term><description>Error, example runner only. The output of a command does not contain a fragment of the <c>expect</c> key of its example; one problem for each missing fragment.</description></item>
 ///     </list>
 ///     <para>
 ///         A rule you add through <c>HelpValidationOptions.Rules</c> reports its own rule ids.

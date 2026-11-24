@@ -33,6 +33,16 @@ and no scenario depends on the machine's culture.
   missing file, tokens in file content, missing file key, command with file or without content, multi-line
   command, empty content, blank first line, block scalar content, invalid kind, language, name, missing keys,
   unknown key, unsafe file names, examples that are not maps, structure errors that drop the card.
+- **Schema 2 examples**: inline content that needs `save-as`, inline content with a nested name (source and snippet),
+  `file` with `content`, a file only (the name is the last segment), `save-as` with `file`, neither content nor file,
+  `save-as` on a command, a command with a result, invalid names (`..`, a leading `/`, `.md`, `//`, a space), the
+  allowed keys in the message, and an overlay example in a schema 2 source.
+- **Schema 1 examples**: `save-as` is `key-unknown` with the message that names schema 2, other unknown keys list no
+  `save-as`, `file` with `content` is still the name, and a file only keeps its folder prefix.
+- **Expected results**: `exit` and `expect` of a command (also as a literal block with CRLF line endings and blank lines
+  between fragments), tokens in `expect` with the line of an unknown token, an exit code outside 0 to 255 or not an
+  integer, the bounds 0 and 255, an empty `expect` and one that starts with a blank line, and both keys on a source and
+  a snippet.
 - **Tokens**: replaced in title, summary, and body; unknown token with exact line; unknown token in summary;
   redefined built-in at source level.
 - **Links**: parsed links and a typo with the right line; an empty body.

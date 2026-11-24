@@ -103,7 +103,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     <list type="table">
 ///         <listheader><term>Key</term><description>Value, and meaning (Card / Overlay / Translation / <c>_source.md</c>)</description></listheader>
 ///         <item><term><c>title</c></term><description>One-line text. R / O / O / O. The heading of the card.</description></item>
-///         <item><term><c>summary</c></term><description>One-line text. R / O / O / O. Shown in lists and search results; keep it to 100 characters (60 for a root card), or the validator warns <c>summary-length</c>.</description></item>
+///         <item><term><c>summary</c></term><description>One-line text. R / O / O / O. Shown in lists and search results; keep it to 100 characters (80 for a root card, which the topic index shows beside a command), or the validator warns <c>summary-length</c>.</description></item>
 ///         <item><term><c>aliases</c></term><description>List of alternative names, each a segment. O / - / O (added) / O. Another way to type the card name; unique among siblings. In <c>_source.md</c> they name the mount root.</description></item>
 ///         <item><term><c>tags</c></term><description>List of unique segments. O / - / - / -. Group cards across the tree; filter with <c>--tag</c> or <c>Filter</c>.</description></item>
 ///         <item><term><c>order</c></term><description>Integer of at most 7 digits (a leading minus is allowed). O / - / - / -. Sorts siblings; a card without <c>order</c> sorts after every card that has one, ties by name.</description></item>
@@ -114,7 +114,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <item><term><c>optional</c></term><description><c>true</c> or <c>false</c>. Overlay only (O). With <c>true</c> the overlay is skipped when its target source is absent.</description></item>
 ///         <item><term><c>name</c></term><description>A segment. <c>_source.md</c> only. <em>Required for every source</em>: either this key or <c>HelpSource.WithName</c> must supply it, or <c>HelpCatalog.Create</c> fails with <c>source-invalid</c>. The declared name of the source: public contract, because external links use it.</description></item>
 ///         <item><term><c>language</c></term><description>Culture name, default <c>en</c>. <c>_source.md</c> only (O). The culture of the neutral files.</description></item>
-///         <item><term><c>schema</c></term><description>Integer, default 1. <c>_source.md</c> only (O). A schema newer than the library supports is <c>schema-unsupported</c>.</description></item>
+///         <item><term><c>schema</c></term><description>Integer, default 1. <c>_source.md</c> only (O). 1 and 2 are supported; use 2 for new sources (see <em>Examples</em>). A schema newer than the library supports is <c>schema-unsupported</c>.</description></item>
 ///         <item><term><c>x-</c> followed by a name</term><description>One-line text. O / O / - / O. Your own data; kept in <c>HelpCard.Extensions</c> and otherwise ignored.</description></item>
 ///     </list>
 ///     <para>
@@ -145,9 +145,10 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         start with <c>#</c> are allowed between entries. Not accepted (all are the error <c>syntax</c>): flow
 ///         collections such as <c>[a, b]</c>, anchors, aliases, tags, trailing comments, tabs in the indentation,
 ///         duplicate keys, and nesting deeper than a list of maps. <c>title</c> and <c>summary</c> are always one
-///         line. The only multi-line value is the <c>content</c> of an example, written as a literal block with
+///         line. The only multi-line values are the <c>content</c> and the <c>expect</c> of an example, written as a
+///         literal block with
 ///         <c>|</c> or <c>|-</c> on the key line and the text indented on the following lines (the indentation of the
-///         first non-blank line, deeper than <c>content</c>); the block ends at the first non-blank line with less
+///         first non-blank line, deeper than the key); the block ends at the first non-blank line with less
 ///         indentation, blank lines and <c>#</c> lines inside are content, trailing line feeds are dropped, so
 ///         <c>|</c> and <c>|-</c> are the same. <c>|+</c>, <c>|2</c> and the folded <c>&gt;</c> are errors, and a block
 ///         anywhere else is <c>block-scalar-not-allowed</c>.
@@ -160,23 +161,65 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     </para>
 ///     <para>
 ///         <b>Examples.</b> Each item of <c>examples</c> is a named, ready-to-use piece of text. Its keys are
-///         <c>name</c> (a segment, unique in the scope: the source and the first segment of the card id),
+///         <c>name</c> (a segment, unique within the card),
 ///         <c>kind</c> (<c>command</c>, <c>source</c> or <c>snippet</c>), <c>language</c> (one lower-case word such as
-///         <c>shell</c>, <c>yaml</c> or <c>csharp</c>), <c>description</c> (one line), <c>file</c> and <c>content</c>;
+///         <c>shell</c>, <c>yaml</c> or <c>csharp</c>), <c>description</c> (one line), <c>file</c>, <c>content</c>,
+///         <c>save-as</c> (schema 2), and, for a <c>command</c> only, the expected result <c>exit</c> and <c>expect</c>;
 ///         <c>name</c>, <c>kind</c>, <c>language</c> and <c>description</c> are always required.
 ///     </para>
+///     <para>
+///         <b>What to show.</b> Show a complete <c>source</c> file only for a format that a user authors; explain a file
+///         that the tool itself produces in prose and prove it with <c>expect</c> on the command that produces it, and
+///         keep test data in the test project, not in a card. A data file below <c>Help</c> is embedded like a card, so
+///         check that <c>.gitignore</c> does not exclude its name (for example <c>*.xml</c> or <c>*.trx</c>); an ignored
+///         file is present on your machine and missing in a clean checkout. Quote a <c>command</c> content that starts
+///         with <c>{{tool}}</c>, because a plain value cannot start with a brace. Besides <c>#</c>, only the generated
+///         headings <c>## Cards</c>, <c>## Examples</c> and <c>## See also</c> are reserved; other <c>##</c> subheadings
+///         are fine.
+///     </para>
+///     <para>
+///         <b>Schema 2: <c>save-as</c> and <c>file</c>.</b> A source that declares <c>schema: 2</c> in <c>_source.md</c>
+///         separates two things that schema 1 called <c>file</c>: <c>save-as</c> is the name to save the text as, and
+///         <c>file</c> is a companion data file next to the card that holds the text. Schema 1 is still read exactly as
+///         before and is supported by every 0.x and 1.x release; use schema 2 for new sources.
+///     </para>
 ///     <list type="table">
-///         <listheader><term>Kind</term><description><c>file</c> and <c>content</c></description></listheader>
-///         <item><term><c>command</c></term><description><c>file</c> not allowed; <c>content</c> required, one line that starts with the tool name, written <c>{{tool}} ...</c>. The test helper <c>ExampleCommandLine</c> checks that it parses.</description></item>
-///         <item><term><c>source</c></term><description><c>file</c> required: the name to save the text as, and the data file to read when there is no <c>content</c>. <c>content</c> optional, a complete file.</description></item>
+///         <listheader><term>Kind</term><description>Schema 2: <c>file</c>, <c>content</c>, and <c>save-as</c></description></listheader>
+///         <item><term><c>command</c></term><description><c>file</c> and <c>save-as</c> not allowed; <c>content</c> required, one line that starts with the tool name, written <c>{{tool}} ...</c>. The test helper <c>ExampleCommandLine</c> checks that it parses. Optional <c>exit</c> and <c>expect</c> state the result (see below).</description></item>
+///         <item><term><c>source</c></term><description>Either inline <c>content</c> with <c>save-as</c> (required), or <c>file</c>, the data file to read, with an optional <c>save-as</c> (by default the last segment of <c>file</c>). <c>file</c> together with <c>content</c> is <c>value-invalid</c>; neither is <c>key-missing</c>. A complete file.</description></item>
 ///         <item><term><c>snippet</c></term><description>As <c>source</c>, but a fragment that is never claimed to work alone.</description></item>
 ///     </list>
 ///     <para>
+///         In schema 1 there is no <c>save-as</c> (it is <c>key-unknown</c>, with a message that names schema 2): a
+///         <c>source</c> or <c>snippet</c> needs a <c>file</c>, which is both the name to save the text as (the whole
+///         path, so <c>HelpExample.FileName</c> keeps its folders) and the data file to read when there is no
+///         <c>content</c>. To migrate a source: add <c>schema: 2</c> to <c>_source.md</c>; in each example that has both
+///         <c>file</c> and <c>content</c>, rename <c>file</c> to <c>save-as</c>; an example with only <c>file</c> keeps
+///         working, but its save-as name is now the last segment of <c>file</c> (add <c>save-as</c> with the old path to
+///         keep the folder). The schema belongs to one source, so a library migrates on its own, whatever the sources
+///         that import or mount it use. The rules of the examples shown below are those of schema 2.
+///     </para>
+///     <para>
+///         <b>Expected results.</b> A <c>command</c> may state what a correct run gives, so a test can run every
+///         example of a card and compare. <c>exit</c> is the expected exit code, an integer from 0 to 255 (default 0).
+///         <c>expect</c> is text the output must contain: one line of text, or a literal block (<c>expect: |</c>) in
+///         which every non-blank line is one fragment; every fragment must appear in the output, in any order, with
+///         the case as written. Tokens such as <c>{{tool}}</c> are replaced in <c>expect</c> as in the content. Both
+///         keys are additive and need no schema change; <c>exit</c> or <c>expect</c> on a <c>source</c> or
+///         <c>snippet</c>, an <c>exit</c> that is not an integer from 0 to 255, and an empty <c>expect</c> are
+///         <c>value-invalid</c>. The card shows the expected result after the example in the examples document and
+///         in the JSON <c>examples</c> (<c>exitCode</c> and <c>expect</c>, written only when stated); the library never
+///         runs a command.
+///     </para>
+///     <para>
 ///         The data file of a <c>source</c> or <c>snippet</c> without <c>content</c> is read from the folder of the card
 ///         file, so a card <c>getting-started</c> (<c>Help/getting-started.md</c>) names <c>getting-started/settings.yaml</c>
-///         and must find it (<c>example-file-missing</c>). File names use letters, digits, dots, hyphens and
-///         underscores, with <c>/</c> between folders; <c>..</c>, a leading <c>/</c> and a drive are not allowed.
-///         Duplicate example names in one scope are <c>duplicate-example</c>; empty or blank-first content, or a
+///         and must find it (<c>example-file-missing</c>). File names (<c>file</c> and <c>save-as</c>) use letters,
+///         digits, dots, hyphens and underscores, with <c>/</c> between folders; <c>..</c>, a leading <c>/</c> and a
+///         drive are not allowed, and the name does not end in <c>.md</c> (<c>value-invalid</c>). Two <c>source</c>
+///         examples of one card that are saved under the same name are the validator warning <c>save-as-duplicate</c>.
+///         Duplicate example names in one card (counting the examples that overlays add) are <c>duplicate-example</c>;
+///         the same name in two cards of one source is fine. Empty or blank-first content, or a
 ///         <c>command</c> on several lines, is <c>example-invalid</c>.
 ///     </para>
 ///     <para>
@@ -188,8 +231,8 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     <list type="table">
 ///         <listheader><term>Link</term><description>Meaning</description></listheader>
 ///         <item><term><c>[[build/compile]]</c></term><description>The card with the local id <c>build/compile</c> in this source (or a source it imports). A bare id that exists in both is <c>ambiguous-reference</c>.</description></item>
-///         <item><term><c>[[build/compile#settings]]</c></term><description>The example <c>settings</c> of that card or of a card below it.</description></item>
-///         <item><term><c>[[#settings]]</c></term><description>The example <c>settings</c> of the card that holds the link.</description></item>
+///         <item><term><c>[[build/compile#settings]]</c></term><description>The example <c>settings</c> of that card; when that card has none of that name, the one card below it that has it (two such cards are <c>ambiguous-reference</c>; name the card to choose).</description></item>
+///         <item><term><c>[[#settings]]</c></term><description>The example <c>settings</c> of the card that holds the link, found in the same way.</description></item>
 ///         <item><term><c>[[other:build/compile|the compile card]]</c></term><description>A cross-source link: the card of the declared source <c>other</c> (the <c>name</c> in its <c>_source.md</c>), shown as the text after the bar (1 to 120 characters).</description></item>
 ///         <item><term><c>[[other:build/compile#settings|the settings]]</c></term><description>An example of a card of the source <c>other</c>.</description></item>
 ///     </list>
@@ -198,8 +241,8 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         note <c>external-source-absent</c>; <c>HelpValidationOptions.RequireExternalSources</c> turns it into an
 ///         error); when the source is present but has no such card it is the error <c>link-target</c> (or
 ///         <c>example-target</c> for an example). How a link reads in the output depends on the renderer: the
-///         command-line helper writes a card link as the command that prints the card and a local example link as
-///         <c>--example name</c>; the agent tool and <c>Render</c> write <c>the card `id`</c>; Markdown output writes a
+///         command-line helper writes a card link as the command that prints the card and an example link as the
+///         full command <c>tool help card --example name</c>; the agent tool and <c>Render</c> write <c>the card `id`</c>; Markdown output writes a
 ///         Markdown link (see <c>HelpLinkStyle</c> in <c>DemaConsulting.HelpCards.Presentation</c> and
 ///         <c>HelpCliOptions</c>).
 ///     </para>
@@ -229,8 +272,9 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         base class library types, so it can appear in the API of any library. Wrong arguments throw
 ///         <c>ArgumentException</c> or <c>ArgumentNullException</c>; defects in the cards are never reported here,
 ///         but by <c>HelpCatalog.Create</c> as a <c>HelpCatalogException</c>. A source cannot be created from a
-///         folder on disk; ship the cards embedded. To check in a test that the embedded files match the folder, use
-///         <c>HelpCardValidator.CompareToDirectory</c> (see <c>DemaConsulting.HelpCards.Testing</c>).
+///         folder on disk; ship the cards embedded. Every file below the <c>Help</c> folder is embedded by the packaged
+///         targets, so <c>HelpCardValidator.AssertValid</c> on the embedded source proves what ships (see
+///         <c>DemaConsulting.HelpCards.Testing</c>; <c>CompareToDirectory</c> there is for checks outside the unit tests).
 ///     </para>
 /// </remarks>
 /// <example>
@@ -251,6 +295,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     <code language="markdown">
 /// ---
 /// name: mylib
+/// schema: 2
 /// title: MyLib
 /// summary: Help cards of MyLib.
 /// ---
@@ -283,11 +328,14 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     kind: command
 ///     language: shell
 ///     content: '{{tool}} load data.csv'
+///     exit: 0
+///     expect: 'Loaded 1 file'
 ///     description: Load a data file.
 ///   - name: settings
 ///     kind: source
 ///     language: yaml
 ///     file: getting-started/settings.yaml
+///     save-as: mylib.yaml
 ///     description: A settings file for the load command.
 /// x-audience: beginner
 /// ---
@@ -349,8 +397,7 @@ namespace DemaConsulting.HelpCards.Loading;
 /// ## Examples
 ///
 /// - load [command]: Load a data file.
-/// - settings [source] getting-started/settings.yaml: A settings file for the
-///   load command.
+/// - settings [source] mylib.yaml: A settings file for the load command.
 ///
 /// ## See also
 ///

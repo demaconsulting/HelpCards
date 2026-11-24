@@ -5,7 +5,7 @@ package HelpCards_JsonDocumentWriter {
     private import HelpCards_HelpCard::*;
 
     part def JsonDocumentWriter {
-        doc /* Writes the documents of JSON contract version 1 (index, card, examples, example, search, cards, and error) on one line of ASCII with the keys in a fixed order, optional values left out, arrays always present, and no null; the top-level object can be replaced by a callback of the caller, and non-ASCII characters are escaped whichever envelope is used. */
+        doc /* Writes the documents of JSON contract version 1 (index, card, examples, example, search, cards, and error) on one line of ASCII with the keys in a fixed order, optional values left out (the exit code and expected output of an example only when stated), arrays always present, and no null; the top-level object can be replaced by a callback of the caller, and non-ASCII characters are escaped whichever envelope is used. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (

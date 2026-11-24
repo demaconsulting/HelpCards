@@ -1,0 +1,113 @@
+---
+# HelpExampleRunner Unit Requirements
+#
+# Requirements for the HelpExampleRunner unit of the Testing subsystem (with its report, invocation, and outcome
+# types): saving the source examples of a card to a folder and running its command examples through a delegate of the
+# caller, comparing each result with the exit code and the output that the example states. The library never starts a
+# process.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Testing Requirements
+        sections:
+          - title: HelpExampleRunner Requirements
+            requirements:
+              - id: HelpCards-Testing-HelpExampleRunner-Materialize
+                title: >-
+                  The runner shall write every source example of a card to a folder under its file name, with LF
+                  line endings, exactly one trailing line feed, UTF-8 without a byte order mark, and the folders
+                  created (and the folder itself, even for a card with no source example), let a later example with the
+                  same name overwrite an earlier one, write neither snippets
+                  nor commands, return the names it wrote in the order of the examples, and reject a file name that
+                  would leave the folder.
+                justification: |
+                  A command that names the files of its card can only run when those files exist exactly as the card
+                  shows them, and an example file name must never be able to write outside the folder of the test.
+                tests:
+                  - HelpExampleRunner_Materialize_SourceExamples_WritesFilesWithTrailingLfAndFolders
+                  - HelpExampleRunner_Materialize_SnippetAndCommand_AreNotWritten
+                  - HelpExampleRunner_Materialize_SameName_LastWins
+                  - HelpExampleRunner_Materialize_EscapingName_Throws
+                  - HelpExampleRunner_Materialize_CommandOnlyCard_CreatesTheFolder
+
+              - id: HelpCards-Testing-HelpExampleRunner-Order
+                title: >-
+                  The runner shall run the command examples of a card one after another in the order of the card,
+                  through the delegate of the caller and never through a process or a shell of its own, with the
+                  card, the example, the arguments after the tool name, and the folder that holds the saved files,
+                  and shall run every visible card that has a command in catalog order, each in a fresh scratch
+                  folder.
+                justification: |
+                  The product decides how its commands run; the order and the folder are what make the result of a run
+                  repeatable.
+                tests:
+                  - HelpExampleRunner_Run_Commands_RunInOrderWithParsedArguments
+                  - HelpExampleRunner_Run_Catalog_UsesFreshFolderPerCardAndDeletesIt
+                  - HelpExampleRunner_Run_Catalog_WithoutCommands_RunsNothing
+                  - HelpExampleRunner_Run_CommandOnlyCard_WorkingDirectoryExists
+
+              - id: HelpCards-Testing-HelpExampleRunner-ExitCode
+                title: >-
+                  The runner shall report an example-exit-code problem when the exit code of a command differs from the
+                  exit code its example states (0 when it states none), at the file of the card, naming the example, the
+                  card, both codes, and the first 400 characters of the output.
+                justification: |
+                  A command that fails when the card says it succeeds, or the other way round, makes the help wrong.
+                tests:
+                  - HelpExampleRunner_Run_ExitCodeMismatch_ReportsExampleExitCode
+
+              - id: HelpCards-Testing-HelpExampleRunner-Output
+                title: >-
+                  The runner shall report one example-output problem for every fragment of the expected output that the
+                  output lacks, comparing case-sensitively after CRLF becomes LF and treating a missing output like an
+                  empty one, and shall show at most the first 400 characters of the output in the problem.
+                justification: |
+                  The expected text is what the reader of the card is told to expect; a missing fragment must be
+                  named so that the author can see which statement is no longer true.
+                tests:
+                  - HelpExampleRunner_Run_MissingFragment_ReportsExampleOutputPerFragment
+                  - HelpExampleOutcome_Equality_ComparesByValue
+                  - HelpExampleRunner_Run_NullOutput_IsTreatedAsEmpty
+
+              - id: HelpCards-Testing-HelpExampleRunner-Parse
+                title: >-
+                  The runner shall split each command with the command line grammar of the library and the tool name,
+                  report an example-parse problem for a command that cannot be split without running it, go on with the
+                  next command, and take the tool name of the catalog when the caller gives none.
+                justification: |
+                  A command that cannot be split is a defect of the example, not a reason to hide the results of the
+                  others.
+                tests:
+                  - HelpExampleRunner_Run_UnreadableCommand_ReportsExampleParseAndContinues
+                  - HelpExampleRunner_Run_Catalog_ToolNameDefaultsToCatalogTool
+
+              - id: HelpCards-Testing-HelpExampleRunner-Report
+                title: >-
+                  The report shall give the number of commands that were run and every problem in the order the examples
+                  ran, shall say whether the run succeeded, and shall throw a catalog exception with the same problems
+                  when asked to assert success of a run that found one.
+                justification: |
+                  A test wants one assertion that fails with every difference at once.
+                tests:
+                  - HelpExampleRunner_Report_AssertSucceeded_ThrowsWithProblems
+
+              - id: HelpCards-Testing-HelpExampleRunner-Cleanup
+                title: >-
+                  The runner shall delete the scratch folder of a card after it ran, also when the delegate throws, and
+                  let the exception of the delegate propagate.
+                justification: |
+                  A test run must not leave folders behind, and a failure of the product's own entry point must not be
+                  hidden.
+                tests:
+                  - HelpExampleRunner_Run_DelegateThrows_CleansUpAndPropagates
+                  - HelpExampleRunner_Run_Catalog_UsesFreshFolderPerCardAndDeletesIt
+
+              - id: HelpCards-Testing-HelpExampleRunner-Arguments
+                title: >-
+                  The runner shall reject a null card, catalog, folder, or delegate and a blank folder or tool name with
+                  an argument exception when it is called.
+                justification: |
+                  A mistake should fail at the line that made it.
+                tests:
+                  - HelpExampleRunner_InvalidArguments_Throw

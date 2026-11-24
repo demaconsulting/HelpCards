@@ -10,7 +10,7 @@ package HelpCards_HelpCardValidator {
     private import HelpCards_HelpCardMarkdown::*;
 
     part def HelpCardValidator {
-        doc /* Validates a help source, the configuration of a catalog, or a catalog and returns every problem as a list: the errors that creating the catalog would raise (composed through the builder without an exception), then the quality warnings (summary-length, card-size, heading-reserved, fence-language, fence-unclosed, unused-token, line-length, command-parse), the problems of the rules of the product, and, on request, an error for each absent external source; AssertValid throws one catalog exception; CompareToDirectory reports files that are embedded or on disk only. Supporting types: HelpValidationOptions (the limits and switches) and IHelpCardRule (the rule of a product). */
+        doc /* Validates a help source, the configuration of a catalog, or a catalog and returns every problem as a list: the errors that creating the catalog would raise (composed through the builder without an exception), then the quality warnings (summary-length, card-size, heading-reserved, fence-language, fence-unclosed, unused-token, line-length, command-parse, save-as-duplicate), the problems of the rules of the product, and, on request, an error for each absent external source; AssertValid throws one catalog exception; CompareToDirectory reports files that are embedded or on disk only. Supporting types: HelpValidationOptions (the limits and switches) and IHelpCardRule (the rule of a product). */
 
         metadata info : SoftwareInfo {
             sourceFiles = (

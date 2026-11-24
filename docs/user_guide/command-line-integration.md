@@ -8,8 +8,6 @@ raw arguments before its own parser runs, and it answers only when the first arg
 There are two integration points, both before the tool's own parser, and one line in the usage text:
 
 ```csharp
-using System.Globalization;
-using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Integration;
 
 internal static class Program
@@ -18,11 +16,7 @@ internal static class Program
     {
         ToolName = "tool",
         Version = "1.4.0",
-        CatalogFactory = culture => HelpCatalog.Create(builder => builder
-            .AddSource(MyLibHelp.Source)
-            .ToolName("tool")
-            .ToolVersion("1.4.0")
-            .Culture(culture ?? CultureInfo.InvariantCulture)),
+        ConfigureCatalog = (builder, culture) => builder.AddSource(MyLibHelp.Source),
     });
 
     public static int Main(string[] args)
@@ -42,11 +36,16 @@ internal static class Program
 `TryRun` returns `false` at once, without creating the catalog and without touching any resource, unless there is at
 least one argument and the first one equals the verb, ignoring case. `Footer` is a constant sentence, `Run 'tool
 help' for topics and examples.`, that also needs no catalog. A normal run of your tool therefore pays nothing for
-help. The catalog factory runs the first time a help command arrives, and it receives the culture that the user
-asked for, or `null`.
+help. The catalog is built the first time a help command arrives. The helper creates the catalog builder, sets
+the tool name from `ToolName`, the version from `Version`, and the culture of the `--lang` option, and then calls
+`ConfigureCatalog(builder, culture)`, where the culture is the one the user asked for or `null`. You state the tool
+name and the version once, in the options; they are the `{{tool}}` and `{{version}}` of the cards, the commands in
+the links, and the version of the JSON documents. The action can still call `ToolName` or `ToolVersion` on the builder
+to override them. The older `CatalogFactory` (a function from the culture to a whole catalog) still works, but then you
+set `ToolName` and `ToolVersion` on your own builder as well; set exactly one of the two.
 
-If the factory throws a `HelpCatalogException`, the helper prints `Help is unavailable: {first problem}` and exits
-with 70. A tool that wants to answer a `help` call with its own text uses the `FallbackResolver` described below.
+If building the catalog throws a `HelpCatalogException`, the helper prints `Help is unavailable: {first problem}` and
+exits with 70. A tool that wants to answer a `help` call with its own text uses the `FallbackResolver` described below.
 
 ## Command Grammar
 
@@ -121,8 +120,10 @@ Run 'tool help' for topics and examples.
 ```
 
 Links in cards appear as commands that the user can paste. A card printed with `tool help guide` says ``Start with
-`tool help guide setup` `` and ``Run it with `--example run` ``, and ends with the lists of child cards, examples, and
-related cards. A path that does not exist gives a hint:
+`tool help guide setup` `` and ``Run it with `tool help guide --example run` ``, and ends with the lists of child
+cards, examples, and related cards. A link to an example is always the full command, also when the example belongs to
+the card that holds the link, so it works wherever it is copied (the Markdown style likewise names the card in the
+target, `[run](guide#run)`). A path that does not exist gives a hint:
 
 ```text
 Error: Unknown help card 'usages' under 'guide'.
@@ -139,14 +140,17 @@ exits with 2; use `card#name`.
 | Option of `HelpCliOptions` | Meaning |
 | --- | --- |
 | `ToolName` | Required: the name used in commands, a word without braces |
-| `Version` | For information only; the version in the JSON index is the `ToolVersion` of the catalog builder |
+| `Version` | The version of the tool; with `ConfigureCatalog` it is the catalog's `ToolVersion` too |
 | `Verb` | The help verb; the default is `help` |
-| `CatalogFactory` | Required: builds the catalog, called only after the verb is seen |
+| `ConfigureCatalog` | Required, or `CatalogFactory`: `(builder, culture)` adds the sources |
+| `CatalogFactory` | The older alternative: builds the whole catalog; not combined with `ConfigureCatalog` |
+| `GetCatalogConfiguration(culture)` | A method: the same configuration as an action for the validator |
 | `UsageLines` | The usage lines at the top of the index |
 | `IndexPreamble` | A paragraph between the usage lines and the topics |
 | `IndexSections` | A list of `HelpCliSection(heading, lines)` printed between the preamble and the topics |
 | `FallbackResolver` | Offered the path words of a card command before the catalog is searched |
 | `Output`, `Error` | The writers; the defaults are the console |
+| `OutputProvider`, `ErrorProvider` | Return the writer when a command writes; `null` is the console |
 | `CommandTemplate` | The template for command links, `{tool}` and `{path}`; the default is `{tool} help {path}` |
 | `DefaultWidth` | The wrapping width, 78 by default |
 | `EnableLanguageOption` | Adds `--lang` |
@@ -158,6 +162,18 @@ A `FallbackResolver` lets a tool keep answers that are not cards. It receives th
 (`help build`); `help build --examples` and `help build --example x` go to the catalog, which does not know the subject
 and answers with a not-found error. The options object is kept by the helper, not copied; do not change it after you
 create a helper from it.
+
+A provider is the way to follow an option that the tool reads after it created the helper, such as `--silent`:
+`OutputProvider = () => silent ? TextWriter.Null : null`, with `ErrorProvider` likewise, is evaluated each time a
+command writes. A provider counts as a writer that is not the console, so `--width auto` uses `OutputWidthProvider`
+or 78.
+
+To prove in a test that the cards of the tool are valid in the composition that users get, pass the same
+configuration to the validator:
+
+```csharp
+HelpCardValidator.AssertValid(options.GetCatalogConfiguration());
+```
 
 `Run(arguments)` is the same helper without the verb check, for a tool whose own parser has already recognized the
 help command and removed the verb.

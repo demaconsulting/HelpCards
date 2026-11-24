@@ -152,7 +152,7 @@ public partial class CardReaderTests
     public void CardReader_Read_UnsupportedSchema_ReportsSchemaUnsupportedAndReadsNoCards()
     {
         // Arrange
-        var source = Read(("_source.md", "---\nschema: 2\n---\n"), ("a.md", SourceReading.Card()));
+        var source = Read(("_source.md", "---\nschema: 3\n---\n"), ("a.md", SourceReading.Card()));
 
         // Act
         var problem = Assert.Single(source.Problems);
@@ -160,10 +160,10 @@ public partial class CardReaderTests
         // Assert: the message names the source, its schema, and the highest supported schema
         AssertProblem(problem, RuleIds.SchemaUnsupported, "_source.md", 2);
         Assert.Contains("'test'", problem.Message, StringComparison.Ordinal);
-        Assert.Contains("schema 2", problem.Message, StringComparison.Ordinal);
-        Assert.Contains("supports is 1", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("schema 3", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("supports is 2", problem.Message, StringComparison.Ordinal);
         Assert.Empty(source.Cards);
-        Assert.Equal(2, source.Schema);
+        Assert.Equal(3, source.Schema);
     }
 
     /// <summary>

@@ -137,6 +137,75 @@ public class IntegrationTests
     }
 
     /// <summary>
+    ///     Proves that the tool name, the version, and the culture are set once in the options and reach the cards, the
+    ///     JSON documents, and the catalog that the tests of the tool validate.
+    /// </summary>
+    [Fact]
+    public void Integration_Cli_ConfigureCatalog_AppliesToolNameVersionAndCulture()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var options = new HelpCliOptions
+        {
+            ToolName = "mytool",
+            Version = "3.1",
+            EnableLanguageOption = true,
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            Output = output,
+        };
+        var cli = HelpCli.Create(options);
+
+        // Act
+        var card = cli.Run(["guide", "--lang", "de-DE"]);
+        var json = cli.Run(["--json"]);
+        var validated = HelpCatalog.Create(options.GetCatalogConfiguration(System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+
+        // Assert: the name and the version are in the cards, the commands, and the JSON documents, and in the catalog
+        // of the tests
+        Assert.Equal((0, 0), (card, json));
+        Assert.Contains("Version 3.1 of mytool accepts", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("`mytool help guide setup`", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("\"version\":\"3.1\"", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Version 3.1 of mytool accepts", validated.Find("guide")!.Body, StringComparison.Ordinal);
+        Assert.Equal("de-DE", validated.Culture.Name);
+    }
+
+    /// <summary>
+    ///     Proves that the providers choose the writers when a command writes, so a quiet mode that is read after the
+    ///     helper was created silences help, and that an error still reaches the error provider.
+    /// </summary>
+    [Fact]
+    public void Integration_Cli_Writers_ProvidersChooseTheWriterWhenACommandWrites()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var errors = new StringWriter();
+        var silent = false;
+        var cli = HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = "tool",
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            OutputProvider = () => silent ? TextWriter.Null : output,
+            ErrorProvider = () => silent ? TextWriter.Null : errors,
+        });
+
+        // Act
+        cli.Run(["guide"]);
+        cli.Run(["nothing"]);
+        var loud = (output.ToString(), errors.ToString());
+        silent = true;
+        cli.Run(["reference"]);
+        cli.Run(["nothing"]);
+
+        // Assert: the second pair of commands wrote nowhere
+        Assert.StartsWith("# Guide\n", loud.Item1, StringComparison.Ordinal);
+        Assert.StartsWith("Error: Unknown help card 'nothing'.", loud.Item2, StringComparison.Ordinal);
+        Assert.Equal(loud, (output.ToString(), errors.ToString()));
+    }
+
+    /// <summary>
     ///     Proves that the tool is created with the name a host chooses, with the schema of the contract, and with a
     ///     description that lists the sources.
     /// </summary>

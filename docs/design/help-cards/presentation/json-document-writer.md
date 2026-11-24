@@ -19,7 +19,7 @@ list documents. Documents are written with `Utf8JsonWriter` into a buffer.
 | `index` | `tool`, `version` (only when set), `usage` (only when supplied), `sources`, `cards` with `depth` |
 | `card` | the identity fields, `culture`, `body`, `children`, `seeAlso`, `examples`, `links` |
 | `examples` | `id`, `examples`, `cards` with `id`, `summary`, `command`, `examples` |
-| `example` | `id`, `example` with `card`, `name`, `kind`, `language`, `fileName`, `description`, `content` |
+| `example` | `id`, `example` with `card` and the fields of an item of `examples` |
 | `search` | `query`, `results` with `id`, `title`, `summary`, `source`, `score`, `matchedOn`, `command` |
 | `cards` | `filter` with `tags` and `sources`, `cards` with `id`, `title`, `summary`, `tags`, `source`, `command` |
 | `error` | `code`, `message`, `hint` (optional), `candidates` (only for `not-found` and `ambiguous`) |
@@ -32,6 +32,8 @@ list documents. Documents are written with `Utf8JsonWriter` into a buffer.
   units) after the document is complete. The writer uses the relaxed escaping, so quotes, apostrophes, backticks, and
   angle brackets stay readable. Because the replacement runs on the finished text, it also covers a callback envelope.
 - **`WriteCommand`** writes `command` only when the link style is `Command`.
+- **`WriteExample`** writes an example object; after `content` it appends `exitCode` (a number, only when it is not 0)
+  and `expect` (an array of strings, only when not empty), so documents of examples that state no result are unchanged.
 - **`WriteLinks`** lists the visible link targets of the body with `cardId`, `exampleName`, `exampleCardId`, and `text`,
   each only when present.
 - **`WriteError`** accepts only the codes `usage-error`, `not-found`, `ambiguous`, and `catalog-error`.

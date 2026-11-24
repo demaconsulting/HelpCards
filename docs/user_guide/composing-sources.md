@@ -107,7 +107,7 @@ Nothing shadows silently. These are errors that name both sources and files:
   root of another source already uses (`collision`); the same clash inside one source is `name-duplicate`
 - A duplicate source name (`source-name-duplicate`)
 - A mount that is not a valid single segment (`mount-invalid`)
-- Two examples of one scope with the same name (`duplicate-example`)
+- Two examples of one card with the same name (`duplicate-example`)
 - A set of root ids that differs from `ExpectedRoots` (`roots-mismatch`)
 
 To fix a name clash between two libraries, rename the card or the declared source name in one of them, or mount one of
