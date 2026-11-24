@@ -12,10 +12,10 @@
 HelpCards is a .NET library for authoring help and knowledge content as Markdown cards with YAML front matter,
 embedded in assemblies and served as command-line help for people and as searchable knowledge for AI agents.
 
-The diagram below is a placeholder: replace its TODO boxes to show how an application calls your library's
-subsystems, which inputs it takes, and which outputs it produces.
+The diagram below shows how a tool or library uses HelpCards: its cards go in as Markdown files, the subsystems load and
+compose them into an immutable catalog, and the catalog renders text, Markdown, or JSON.
 
-![Placeholder architecture diagram: replace the TODO boxes for your application, library subsystems, support units, dependencies, inputs, and outputs with the real ones][architecture]
+![Architecture of HelpCards: help cards flow through the Loading, Composition, and Catalog subsystems, and Presentation and Testing serve the application][architecture]
 
 ## Features
 

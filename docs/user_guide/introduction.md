@@ -1,9 +1,9 @@
 # Introduction
 
-The following diagram is a placeholder: replace its TODO boxes to show how your application calls the
-library's subsystems, which inputs it takes, and which outputs it produces.
+The following diagram shows how an application uses the library: its cards go in as Markdown files, the subsystems
+load and compose them into an immutable catalog, and the catalog renders text, Markdown, or JSON.
 
-![Placeholder architecture diagram: replace the TODO boxes for your application, library subsystems, support units, dependencies, inputs, and outputs with the real ones](architecture.svg)
+![Architecture of HelpCards: help cards flow through the Loading, Composition, and Catalog subsystems, and Presentation and Testing serve the application](architecture.svg)
 
 ## Purpose
 

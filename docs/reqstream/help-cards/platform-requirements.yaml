@@ -27,7 +27,7 @@ sections:
           DEMA Consulting libraries must support Windows as a major development platform.
         tests:
           # Tests link to "windows" to ensure results come from Windows platform
-          - "windows@HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix"
+          - "windows@HelpCards_Rendering_SimpleFixtureText_EqualsGolden"
 
       - id: HelpCards-Platform-Linux
         title: The library shall build and run on Linux platforms.
@@ -36,7 +36,7 @@ sections:
           DEMA Consulting libraries must support Linux for CI/CD and containerized environments.
         tests:
           # Tests link to "ubuntu" to ensure results come from Linux platform
-          - "ubuntu@HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix"
+          - "ubuntu@HelpCards_Rendering_SimpleFixtureText_EqualsGolden"
 
       - id: HelpCards-Platform-MacOS
         title: The library shall build and run on macOS platforms.
@@ -45,7 +45,7 @@ sections:
           DEMA Consulting libraries must support macOS for developers using Apple platforms.
         tests:
           # Tests link to "macos" to ensure results come from macOS platform
-          - "macos@HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix"
+          - "macos@HelpCards_Rendering_SimpleFixtureText_EqualsGolden"
 
       - id: HelpCards-Platform-Net8
         title: The library shall support .NET 8 runtime.
@@ -56,7 +56,7 @@ sections:
           a newer release, such as enterprise environments with slow upgrade cycles, can keep
           using it.
         tests:
-          - "net8.0@HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix"
+          - "net8.0@HelpCards_Rendering_SimpleFixtureText_EqualsGolden"
 
       - id: HelpCards-Platform-Net9
         title: The library shall support .NET 9 runtime.
@@ -66,7 +66,7 @@ sections:
           library continues to support this runtime so that users who have not yet migrated to a
           newer release can keep using it.
         tests:
-          - "net9.0@HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix"
+          - "net9.0@HelpCards_Rendering_SimpleFixtureText_EqualsGolden"
 
       - id: HelpCards-Platform-Net10
         title: The library shall support .NET 10 runtime.
@@ -75,7 +75,7 @@ sections:
           .NET 10 is the current Long-Term Support (LTS) release. Supporting this runtime provides
           a stable, long-term supported target for users who prefer LTS releases.
         tests:
-          - "net10.0@HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix"
+          - "net10.0@HelpCards_Rendering_SimpleFixtureText_EqualsGolden"
 
       - id: HelpCards-Platform-Net11
         title: The library shall support .NET 11 runtime.
@@ -84,4 +84,4 @@ sections:
           .NET 11 is the latest release in the .NET platform roadmap. Supporting this runtime
           ensures the library works for users as they adopt the newest .NET version.
         tests:
-          - "net11.0@HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix"
+          - "net11.0@HelpCards_Rendering_SimpleFixtureText_EqualsGolden"
