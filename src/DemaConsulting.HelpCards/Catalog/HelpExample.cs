@@ -7,6 +7,10 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     An example is never run or saved by the library. Its <see cref="Content"/> is final: line endings are
 ///     normalized to LF, trailing line feeds are removed, and tokens are replaced. The type is immutable and
 ///     therefore safe for concurrent use. Instances are created by the catalog and cannot be created by callers.
+///     In a card file an example is an item of the front-matter key <c>examples</c> with the keys <c>name</c>,
+///     <c>kind</c>, <c>language</c>, <c>description</c>, <c>file</c> and <c>content</c> (the <c>file</c> key is
+///     <see cref="FileName"/>; it is required for the kinds <c>source</c> and <c>snippet</c> and not allowed for a
+///     <c>command</c>). The complete grammar is on the page of the <c>DemaConsulting.HelpCards.Loading</c> namespace.
 /// </remarks>
 public sealed class HelpExample
 {

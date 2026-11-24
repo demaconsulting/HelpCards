@@ -24,7 +24,69 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         class uses no test framework. The validator reads files of the sources it is given and keeps no
 ///         state, so it is safe for concurrent use.
 ///     </para>
+///     <para>
+///         <b>Rules.</b> The errors are the rules of <c>HelpCatalog.Create</c> (<c>key-missing</c>, <c>link-target</c>,
+///         <c>parent-missing</c> and the others), plus <c>external-source-missing</c> with
+///         <see cref="HelpValidationOptions.RequireExternalSources"/>; the warnings are the quality rules above and
+///         <c>resources-mismatch</c> from <see cref="CompareToDirectory"/>. Every rule id, with its severity and a one-line
+///         meaning, is listed once in the table in the remarks of <see cref="HelpProblem"/>. A problem has line 0 when
+///         no single line applies (for example <c>summary-length</c>, <c>card-size</c> and <c>parent-missing</c>); see
+///         <see cref="HelpProblem"/>.
+///     </para>
+///     <para>
+///         <b>The failure message.</b> The message of the exception that <c>AssertValid</c> throws is the text of the
+///         first failing problem followed by <c>(and N more)</c>; print <see cref="HelpCatalogException.Problems"/> in
+///         your test to show every defect, as the example does.
+///     </para>
 /// </remarks>
+/// <example>
+///     One source with two errors and one with a warning. <c>AssertValid</c> throws for the errors, and
+///     <c>Validate</c> returns the findings without throwing, warnings included.
+///     <code language="csharp">
+/// using System;
+/// using System.Collections.Generic;
+/// using DemaConsulting.HelpCards.Catalog;
+/// using DemaConsulting.HelpCards.Loading;
+/// using DemaConsulting.HelpCards.Testing;
+///
+/// HelpSource broken = HelpSource.FromFiles(new Dictionary&lt;string, string&gt;
+/// {
+///     ["_source.md"] = "---\nname: demo\ntitle: Demo\nsummary: Demo cards.\n---\nBody.",
+///     ["a.md"] = "---\ntitle: A\n---\nBody.",                                         // key-missing: no summary
+///     ["b/c.md"] = "---\ntitle: C\nsummary: Needs a parent.\n---\nBody.",            // parent-missing: no b.md
+/// }, name: "demo");
+///
+/// try
+/// {
+///     HelpCardValidator.AssertValid(broken);
+/// }
+/// catch (HelpCatalogException exception)
+/// {
+///     Console.WriteLine(exception.Message);
+///     foreach (HelpProblem problem in exception.Problems)
+///     {
+///         Console.WriteLine($"{problem.Severity} {problem.RuleId} {problem.File} line {problem.Line}");
+///     }
+/// }
+///
+/// HelpSource wordy = HelpSource.FromFiles(new Dictionary&lt;string, string&gt;
+/// {
+///     ["_source.md"] = "---\nname: demo\ntitle: Demo\nsummary: Demo cards.\n---\nBody.",
+///     ["a.md"] = "---\ntitle: A\nsummary: " + new string('x', 80) + "\n---\nBody.",   // longer than 60 for a root card
+/// }, name: "demo");
+///
+/// foreach (HelpProblem warning in HelpCardValidator.Validate(wordy))
+/// {
+///     Console.WriteLine($"{warning.Severity} {warning.RuleId} {warning.File} line {warning.Line}");
+/// }
+/// </code>
+///     <code language="text">
+/// Help card 'a.md' of source 'demo', line 1: The required key 'summary' is missing. (and 1 more)
+/// Error key-missing a.md line 1
+/// Error parent-missing b/c.md line 0
+/// Warning summary-length a.md line 0
+/// </code>
+/// </example>
 public static partial class HelpCardValidator
 {
     /// <summary>

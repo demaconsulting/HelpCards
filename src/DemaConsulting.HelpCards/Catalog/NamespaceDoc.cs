@@ -4,7 +4,9 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     The immutable catalog of help cards and everything you read from it: <c>HelpCatalog</c> with its lookups,
 ///     search, filtered views and renderings, the <c>HelpCard</c> and <c>HelpExample</c> it holds, and the
 ///     <c>HelpProblem</c>, <c>HelpSearchResult</c> and <c>HelpPathResolution</c> results. Start at
-///     <c>HelpCatalog.Create</c>, then call <c>Find</c>, <c>Search</c> or <c>Render</c>.
+///     <c>HelpCatalog.Create</c>, then call <c>Find</c>, <c>Search</c> or <c>Render</c>. To write cards (front-matter
+///     keys, links, examples, embedding), read the page of <c>DemaConsulting.HelpCards.Loading</c>; the table of every
+///     rule id that a problem can carry is in the remarks of <c>HelpProblem</c>.
 /// </summary>
 /// <remarks>
 ///     <para>

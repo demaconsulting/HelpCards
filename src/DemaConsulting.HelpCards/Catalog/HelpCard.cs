@@ -17,6 +17,14 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         is cached; the other renderings are made from the parsed parts every time. Instances are created by
 ///         the catalog and cannot be created by callers.
 ///     </para>
+///     <para>
+///         The front-matter keys of a card file map to the properties: <c>title</c> (<see cref="Title"/>),
+///         <c>summary</c> (<see cref="Summary"/>), <c>aliases</c> (<see cref="Aliases"/>), <c>tags</c>
+///         (<see cref="Tags"/>), <c>order</c> and <c>children</c> (the order of <see cref="ChildIds"/>),
+///         <c>see-also</c> (<see cref="SeeAlsoIds"/>), <c>examples</c> (<see cref="Examples"/>) and <c>x-*</c>
+///         (<see cref="Extensions"/>). The complete card grammar is on the page of the
+///         <c>DemaConsulting.HelpCards.Loading</c> namespace.
+///     </para>
 /// </remarks>
 public sealed partial class HelpCard
 {

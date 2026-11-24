@@ -25,7 +25,140 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     <para>
 ///         A helper is immutable and safe for concurrent use as far as its writers and its catalog factory are.
 ///     </para>
+///     <para>
+///         Links in the printed text use the <em>command</em> style: a link to a card reads as the command that prints
+///         it (<c>`tool help getting-started install`</c>, built from <see cref="HelpCliOptions.CommandTemplate"/>), and
+///         a link to an example of the same card reads <c>`--example load`</c>, the option to add to the command of
+///         that card. This differs from the plain style (<c>the card `id`</c>) of <c>HelpCatalog.Render</c> without options
+///         and of the agent tool. <c>--examples</c> and <c>--example name</c> need the path of a card.
+///     </para>
 /// </remarks>
+/// <example>
+///     The commands of a tool with two root cards and one child, run in a loop so that the program prints exactly what
+///     a user sees (the sample points both writers at the console output, so errors appear in order). The cards are
+///     in-memory text; a real tool uses <c>HelpSource.FromAssembly</c>.
+///     <code language="csharp">
+/// using System;
+/// using System.Collections.Generic;
+/// using System.Globalization;
+/// using DemaConsulting.HelpCards.Catalog;
+/// using DemaConsulting.HelpCards.Integration;
+/// using DemaConsulting.HelpCards.Loading;
+///
+/// HelpSource cards = HelpSource.FromFiles(new Dictionary&lt;string, string&gt;
+/// {
+///     ["_source.md"] = "---\nname: demo\ntitle: Demo tool\nsummary: Help cards of the demo tool.\n---\nThe demo tool loads data files.",
+///     ["getting-started.md"] = "---\ntitle: Getting started\nsummary: Install the tool and run it for the first time.\ntags:\n  - tutorial\nexamples:\n  - name: load\n    kind: command\n    language: shell\n    content: '{{tool}} load data.csv'\n    description: Load a data file.\n---\nInstall the package, then run [[#load]]. Next, see [[getting-started/install]] and [[reports]].",
+///     ["getting-started/install.md"] = "---\ntitle: Install\nsummary: Install the tool with the dotnet CLI.\n---\nRun `dotnet tool install {{tool}}`.",
+///     ["reports.md"] = "---\ntitle: Reports\nsummary: Write a report from loaded data.\naliases:\n  - report\ntags:\n  - tutorial\n---\nReports are written as Markdown files.",
+/// }, name: "demo");
+///
+/// HelpCli help = HelpCli.Create(new HelpCliOptions
+/// {
+///     ToolName = "tool",
+///     Version = "1.4.0",
+///     CatalogFactory = culture => HelpCatalog.Create(builder => builder
+///         .AddSource(cards)
+///         .ToolName("tool")
+///         .ToolVersion("1.4.0")
+///         .Culture(culture ?? CultureInfo.InvariantCulture)),
+///     Output = Console.Out,
+///     Error = Console.Out,
+/// });
+///
+/// string[] commands =
+/// [
+///     "help",
+///     "help getting-started",
+///     "help getting-started install",
+///     "help --search install",
+///     "help getting-started --examples",
+///     "help getting-started --example load",
+///     "help --search install --json",
+///     "help nothing",
+/// ];
+///
+/// foreach (string command in commands)
+/// {
+///     Console.WriteLine($"$ tool {command}");
+///     bool answered = help.TryRun(command.Split(' '), out int exitCode);
+///     Console.WriteLine($"[answered: {answered}, exit code: {exitCode}]");
+///     Console.WriteLine();
+/// }
+/// </code>
+///     The output:
+///     <code language="text">
+/// $ tool help
+/// Help topics:
+/// tool help getting-started  Install the tool and run it for the first time.
+/// tool help reports          Write a report from loaded data.
+///
+/// Run 'tool help' for topics and examples.
+/// [answered: True, exit code: 0]
+///
+/// $ tool help getting-started
+/// # Getting started
+///
+/// Install the tool and run it for the first time.
+/// Tags: tutorial
+///
+/// Install the package, then run `--example load`. Next, see `tool help getting-started install` and `tool help reports`.
+///
+/// ## Cards
+///
+/// - tool help getting-started install
+///   Install the tool with the dotnet CLI.
+///
+/// ## Examples
+///
+/// - load [command]: Load a data file.
+///
+/// Print them in full with: tool help getting-started --examples, or one alone
+///   with: tool help getting-started --example &lt;name&gt;.
+/// [answered: True, exit code: 0]
+///
+/// $ tool help getting-started install
+/// # Install
+///
+/// Install the tool with the dotnet CLI.
+///
+/// Run `dotnet tool install tool`.
+/// [answered: True, exit code: 0]
+///
+/// $ tool help --search install
+/// tool help getting-started install  Install the tool with the dotnet CLI.
+/// tool help getting-started          Install the tool and run it for the first
+///                                    time.
+/// [answered: True, exit code: 0]
+///
+/// $ tool help getting-started --examples
+/// # Getting started: examples
+///
+/// ## load [command]
+///
+/// Load a data file.
+///
+/// ```shell
+/// tool load data.csv
+/// ```
+///
+/// Print one alone with: tool help getting-started --example &lt;name&gt;
+/// [answered: True, exit code: 0]
+///
+/// $ tool help getting-started --example load
+/// tool load data.csv
+/// [answered: True, exit code: 0]
+///
+/// $ tool help --search install --json
+/// {"helpSchemaVersion":1,"ok":true,"kind":"search","query":"install","results":[{"id":"getting-started/install","title":"Install","summary":"Install the tool with the dotnet CLI.","source":"demo","score":190,"matchedOn":["id","title","summary"],"command":"tool help getting-started install"},{"id":"getting-started","title":"Getting started","summary":"Install the tool and run it for the first time.","source":"demo","score":60,"matchedOn":["summary"],"command":"tool help getting-started"}]}
+/// [answered: True, exit code: 0]
+///
+/// $ tool help nothing
+/// Error: Unknown help card 'nothing'.
+/// Help topics: getting-started, reports. Run 'tool help' for their summaries.
+/// [answered: True, exit code: 2]
+/// </code>
+/// </example>
 public sealed class HelpCli
 {
     /// <summary>
@@ -100,7 +233,10 @@ public sealed class HelpCli
     ///     <see langword="false"/> at once, without creating the catalog or touching any resource.
     /// </remarks>
     /// <param name="args">The arguments of the tool. Must not be null.</param>
-    /// <param name="exitCode">Receives the exit code when the command was a help command; otherwise 0.</param>
+    /// <param name="exitCode">
+    ///     Receives the exit code when the command was a help command (0 success, 2 wrong arguments or a name that matches
+    ///     nothing, 70 defective catalog); otherwise 0.
+    /// </param>
     /// <returns><see langword="true"/> when the arguments were a help command and have been answered.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="args"/> is null.</exception>
     public bool TryRun(string[] args, out int exitCode)

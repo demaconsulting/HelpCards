@@ -75,8 +75,19 @@ public sealed class HelpSource
     ///     Creates a source from the embedded resources of an assembly.
     /// </summary>
     /// <remarks>
-    ///     The resources are the files that the packaged MSBuild targets embed under the logical name prefix.
-    ///     The assembly is not inspected until a catalog is built.
+    ///     <para>
+    ///         The resources are the files that the packaged MSBuild targets embed under the logical name prefix.
+    ///         The assembly is not inspected until a catalog is built.
+    ///     </para>
+    ///     <para>
+    ///         The targets embed the <c>Help</c> folder (property <c>HelpCardsDirectory</c>, default <c>Help</c>) of the
+    ///         project under the prefix <c>$(AssemblyName).Help</c> (property <c>HelpCardsPrefix</c>) when the project
+    ///         has a <c>PackageReference</c> to <c>DemaConsulting.HelpCards</c>; <c>HelpCardsEnabled</c> (default
+    ///         <c>true</c>) switches it off. Only a project with its own direct reference embeds: an application that
+    ///         merely references your library embeds nothing. A card <c>a/b</c> needs the card <c>a</c>
+    ///         (<c>parent-missing</c>). The details and the complete card grammar are on the page of the
+    ///         <c>DemaConsulting.HelpCards.Loading</c> namespace.
+    ///     </para>
     /// </remarks>
     /// <param name="assembly">The assembly that holds the cards. Must not be null.</param>
     /// <param name="resourcePrefix">

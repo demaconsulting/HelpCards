@@ -15,7 +15,47 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         The exception derives from <see cref="InvalidOperationException"/> so callers that catch the broader
 ///         type also see it. It is immutable and therefore safe to share between threads.
 ///     </para>
+///     <para>
+///         <see cref="Exception.Message"/> shows only the first problem and the number of the others, for example
+///         <c>Help card 'a.md' of source 'demo', line 1: The required key 'summary' is missing. (and 1 more)</c>. In a
+///         test or a log, print every entry of <see cref="Problems"/>; each has the severity, rule id, file, line and
+///         message (the table of rule ids is in the remarks of <see cref="HelpProblem"/>).
+///     </para>
 /// </remarks>
+/// <example>
+///     Catching the exception and printing every problem:
+///     <code language="csharp">
+/// using System;
+/// using System.Collections.Generic;
+/// using DemaConsulting.HelpCards.Catalog;
+/// using DemaConsulting.HelpCards.Loading;
+///
+/// HelpSource broken = HelpSource.FromFiles(new Dictionary&lt;string, string&gt;
+/// {
+///     ["_source.md"] = "---\nname: demo\ntitle: Demo\nsummary: Demo cards.\n---\nBody.",
+///     ["a.md"] = "---\ntitle: A\n---\nBody.",
+///     ["b/c.md"] = "---\ntitle: C\nsummary: Needs a parent.\n---\nSee [[nowhere]].",
+/// }, name: "demo");
+///
+/// try
+/// {
+///     HelpCatalog.Create(builder => builder.AddSource(broken));
+/// }
+/// catch (HelpCatalogException exception)
+/// {
+///     Console.WriteLine(exception.Message);
+///     foreach (HelpProblem problem in exception.Problems)
+///     {
+///         Console.WriteLine($"{problem.RuleId}: {problem.Message}");
+///     }
+/// }
+/// </code>
+///     <code language="text">
+/// Help card 'a.md' of source 'demo', line 1: The required key 'summary' is missing. (and 1 more)
+/// key-missing: The required key 'summary' is missing.
+/// parent-missing: The card 'b/c' needs a parent card 'b' ('b.md'), which does not exist.
+/// </code>
+/// </example>
 public sealed class HelpCatalogException : InvalidOperationException
 {
     /// <summary>

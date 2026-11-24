@@ -123,7 +123,9 @@ each type has a page, and each member has its own page. Read the namespace page 
 common usage steps and a complete example, then follow the links to the types and members you need. The
 `DemaConsulting.HelpCards.Integration` page, for example, shows how to wire `HelpCli` into a command-line tool and how
 to expose the cards to an AI agent, and the `DemaConsulting.HelpCards.Loading` page shows how a library exposes its
-embedded cards as a `HelpSource`.
+embedded cards as a `HelpSource` and is also the complete card-format reference (front-matter keys, links, examples,
+tokens, cultures, the hierarchy rule, and the `HelpCardsEnabled`, `HelpCardsDirectory` and `HelpCardsPrefix` MSBuild
+properties). The remarks of `HelpProblem` list every rule id once.
 
 To read it from a restored package, open the HelpCards package folder in the NuGet global-packages cache and read
 `api/api.md`, or unzip the `.nupkg`. When building this

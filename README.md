@@ -316,7 +316,9 @@ page instead of one large document. Start at `api/api.md` (the index, one row pe
 an overview, the common usage steps, and a complete usage example, then follow the links to type and member pages. For
 example, the `DemaConsulting.HelpCards.Integration` namespace page shows how to wire `HelpCli` into a command-line tool
 and how to expose the cards to an AI agent with `HelpAgentTools`; the `DemaConsulting.HelpCards.Loading` page shows how
-a library exposes its embedded cards as a `HelpSource`. To read it from a restored package, open the package folder in
+a library exposes its embedded cards as a `HelpSource` and is the complete card-format reference (front-matter keys,
+links, examples, tokens, cultures, and the MSBuild embedding properties); the remarks of `HelpProblem` list every rule
+id. To read it from a restored package, open the package folder in
 the NuGet global-packages cache, or unzip the `.nupkg`. When building from source, the same files are written to
 `src/DemaConsulting.HelpCards/api/`.
 
