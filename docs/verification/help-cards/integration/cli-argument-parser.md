@@ -21,7 +21,9 @@ All tests in `CliArgumentParserTests.cs` pass; every row of the option table of 
   the list of valid options, with and without the language option.
 - **Repeats**: every option that may not repeat, and the tag and source options that may.
 - **Modes**: each combination that chooses the index, a card, examples, an example, a search, or the tag listing.
-- **Conflicts**: every pair of mode options, mode options with the tag and all options, and the path rules.
-- **Language**: valid and invalid culture names, enabled and disabled.
+- **Conflicts**: every pair of mode options, mode options with the tag and all options, `--tag` with `--all`, a search
+  with tag and source (accepted), and the path rules.
+- **Language**: valid and invalid culture names (including a one-character subtag), well-formed names that no platform
+  knows (accepted, also under invariant globalization), enabled and disabled.
 - **JSON requested**: before and after an error, and after a double hyphen.
 - **Arguments**: null arguments.

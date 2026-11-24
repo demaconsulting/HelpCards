@@ -126,6 +126,7 @@ public class AgentArgumentReaderTests
     [InlineData("{\"maxResults\":21}", "The argument 'maxResults' must be an integer from 1 to 20.")]
     [InlineData("{\"maxResults\":-1}", "The argument 'maxResults' must be an integer from 1 to 20.")]
     [InlineData("{\"maxResults\":2.5}", "The argument 'maxResults' must be an integer from 1 to 20.")]
+    [InlineData("{\"maxResults\":5.0}", "The argument 'maxResults' must be an integer from 1 to 20.")]
     [InlineData("{\"maxResults\":true}", "The argument 'maxResults' must be an integer from 1 to 20.")]
     [InlineData("{\"maxResults\":99999999999}", "The argument 'maxResults' must be an integer from 1 to 20.")]
     public void AgentArgumentReader_Read_WrongTypes_AreReportedByName(string json, string message)

@@ -114,6 +114,24 @@ public class AgentDispatcherTests
     }
 
     /// <summary>
+    ///     Proves that a tag in a catalog that has no tags at all is answered with a message, not with an empty list.
+    /// </summary>
+    [Fact]
+    public void AgentDispatcher_Answer_TagInCatalogWithoutTags_SaysThereAreNone()
+    {
+        // Arrange
+        var tool = HelpAgentTools.Create(CatalogBuilding.FromIds("a", "b"));
+
+        // Act
+        var index = tool.Invoke("{\"tag\":\"x\"}");
+        var search = tool.Invoke("{\"tag\":\"x\",\"query\":\"a\"}");
+
+        // Assert
+        Assert.Equal("No cards have the tag 'x'; this help has no tags.", index);
+        Assert.Equal(index, search);
+    }
+
+    /// <summary>
     ///     Proves that a topic gives the card in Markdown with plain links and the content of its examples.
     /// </summary>
     [Fact]

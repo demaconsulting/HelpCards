@@ -65,24 +65,30 @@ sections:
 
               - id: HelpCards-Integration-CliArgumentParser-Conflicts
                 title: >-
-                  The parser shall reject two mode options together, a mode option with the tag or all option, the
-                  all option with the tag option, the examples and example options without a card path, the tag,
-                  source, and all options with a card path, and a search with a card path or extra words, which gets
-                  a hint to quote the query.
+                  The parser shall reject these option pairs: any two of the examples, example, and search options;
+                  the examples or example option with the tag option; the examples, example, or search option with
+                  the all option; and the tag option with the all option (an addition to the option table of the
+                  specification). It shall accept a search together with the tag and source options. It shall also
+                  reject the examples and example options without a card path, the tag, source, and all options with
+                  a card path, and a search with a card path or extra words, which gets a hint to quote the query.
                 justification: |
                   A combination that has no meaning must not silently drop an option.
                 tests:
                   - CliArgumentParser_Parse_ConflictingOptions_AreUsageErrors
+                  - CliArgumentParser_Parse_SearchWithTagAndSource_IsAccepted
                   - CliArgumentParser_Parse_PathRules_AreUsageErrors
 
               - id: HelpCards-Integration-CliArgumentParser-Language
                 title: >-
-                  The parser shall accept the language option only when it is enabled, as a well-formed culture name,
-                  and report any other name as a usage error.
+                  The parser shall accept the language option only when it is enabled, as a culture name of two or
+                  three letters followed by subtags of two to eight letters or digits, accept a well-formed name that
+                  the platform does not know without a usage error, and report any other name as a usage error.
                 justification: |
-                  Tools without translations must not accept an option that does nothing.
+                  Tools without translations must not accept an option that does nothing, and a well-formed language
+                  without files falls back to the neutral files whatever the platform knows.
                 tests:
                   - CliArgumentParser_Parse_Language_ReadsWellFormedCultureNamesOnlyWhenEnabled
+                  - CliArgumentParser_Parse_Language_WellFormedUnknownCulture_IsAccepted
 
               - id: HelpCards-Integration-CliArgumentParser-JsonRequested
                 title: >-

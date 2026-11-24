@@ -154,4 +154,47 @@ public class MounterTests
         Assert.Throws<ArgumentNullException>(() => Mounter.Register(null!, problems));
         Assert.Throws<ArgumentNullException>(() => Mounter.Register(registry, null!));
     }
+
+    /// <summary>
+    ///     Proves that a mounted source without a usable name is excluded without a second problem: the missing name
+    ///     is reported once by Loading, and the mount that would fall back to it is not reported again.
+    /// </summary>
+    [Fact]
+    public void Mounter_Register_MountedSourceWithoutName_ExcludesSilently()
+    {
+        // Arrange
+        var registry = Read(
+            (HelpCards.Loading.HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card()))), true, null),
+            (CatalogBuilding.Named("lib", ("b.md", SourceReading.Card())), true, null));
+        var problems = new ProblemCollector();
+
+        // Act
+        Mounter.Register(registry, problems);
+
+        // Assert: Register adds nothing; the only problem is the loader's source-invalid
+        Assert.Equal([true, false], registry.Entries.Select(entry => entry.Excluded));
+        Assert.Empty(problems.GetOrdered());
+        Assert.Equal(["source-invalid"], registry.Problems.Select(item => item.Problem.RuleId));
+    }
+
+    /// <summary>
+    ///     Proves that a mount alias that a flat root alias used first is a collision as well as the other way round.
+    /// </summary>
+    [Fact]
+    public void Mounter_CheckRootNames_FlatAliasBeforeMountAlias_ReportsCollisionOnTheMount()
+    {
+        // Arrange
+        var registry = Read(
+            (CatalogBuilding.Named("flat", ("a.md", SourceReading.Card(extraFrontMatter: "aliases:\n  - shared\n"))), false, null),
+            (CatalogBuilding.Named("lib", ("_source.md", "---\naliases:\n  - shared\n---\n"), ("b.md", SourceReading.Card())), true, null));
+        var problems = new ProblemCollector();
+
+        // Act
+        Mounter.CheckRootNames(registry, problems);
+
+        // Assert
+        Assert.Equal(
+            [("lib", "_source.md", "collision")],
+            problems.GetOrdered().Select(problem => (problem.SourceName, problem.File, problem.RuleId)));
+    }
 }

@@ -336,26 +336,33 @@ internal sealed class CliArgumentParser
     /// <summary>
     ///     Reads the value of <c>--lang</c>: a well-formed culture name.
     /// </summary>
+    /// <remarks>
+    ///     The grammar is that of the culture suffix of a file (6.1): a language of 2 or 3 letters followed by subtags
+    ///     of 2 to 8 letters or digits. The name is not looked up in the operating system: a well-formed name that no
+    ///     file uses is a request that falls back to the neutral files, and the check gives the same answer whether
+    ///     or not the process runs with invariant globalization.
+    /// </remarks>
     /// <param name="value">The value.</param>
     private void ReadCulture(string value)
     {
-        // A language of two or three letters followed by subtags of letters and digits, such as de or de-DE
         var parts = value.Split('-');
         var wellFormed = parts[0].Length is 2 or 3
             && parts[0].All(char.IsAsciiLetter)
-            && parts.Skip(1).All(part => part.Length is >= 1 and <= 8 && part.All(char.IsAsciiLetterOrDigit));
+            && parts.Skip(1).All(part => part.Length is >= 2 and <= 8 && part.All(char.IsAsciiLetterOrDigit));
+        if (!wellFormed)
+        {
+            Fail($"The language '{value}' is not a valid culture name.", "Use a name such as en or de-DE.");
+            return;
+        }
+
         try
         {
-            _culture = wellFormed ? CultureInfo.GetCultureInfo(value) : null;
+            _culture = CultureInfo.GetCultureInfo(value, predefinedOnly: false);
         }
         catch (CultureNotFoundException)
         {
-            _culture = null;
-        }
-
-        if (_culture is null)
-        {
-            Fail($"The language '{value}' is not a valid culture name.", "Use a name such as en or de-DE.");
+            // The platform cannot represent the name; the request still falls back to the neutral files
+            _culture = CultureInfo.InvariantCulture;
         }
     }
 

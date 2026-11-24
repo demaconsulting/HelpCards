@@ -186,6 +186,30 @@ public class HelpFileProviderTests
     }
 
     /// <summary>
+    ///     Proves that the assembly provider removes a byte order mark, keeps non-ASCII text, converts a backslash in
+    ///     a resource name to a slash, and refuses bytes that are not valid UTF-8.
+    /// </summary>
+    [Fact]
+    public void AssemblyFileProvider_ReadText_ByteOrderMarkAndInvalidBytes_RemovesMarkAndRefusesInvalid()
+    {
+        // Arrange: a resource with a mark, one written with a backslash as MSBuild does on Windows, and a damaged one
+        var assembly = new FakeResourceAssembly("Fake", new Dictionary<string, byte[]>
+        {
+            ["Fake.Help/mark.md"] = [0xEF, 0xBB, 0xBF, .. Encoding.UTF8.GetBytes("café")],
+            ["Fake.Help/nested\\card.md"] = Encoding.UTF8.GetBytes("nested"),
+            ["Fake.Help/bad.md"] = [0x61, 0xFF, 0x62],
+            ["Other.Help/ignored.md"] = Encoding.UTF8.GetBytes("ignored")
+        });
+        var provider = new AssemblyFileProvider(assembly, null);
+
+        // Act / Assert: the default prefix lists three files, the mark is gone, and invalid bytes fail
+        Assert.Equal(["bad.md", "mark.md", "nested/card.md"], provider.ListFiles());
+        Assert.Equal("café", provider.ReadText("mark.md"));
+        Assert.Equal("nested", provider.ReadText("nested/card.md"));
+        Assert.ThrowsAny<ArgumentException>(() => provider.ReadText("bad.md"));
+    }
+
+    /// <summary>
     ///     Proves that the directory provider lists nested files with <c>/</c> separators in ordinal order.
     /// </summary>
     [Fact]
@@ -261,7 +285,8 @@ public class HelpFileProviderTests
         using var directory = new TemporaryDirectory();
         var provider = new DirectoryFileProvider(directory.FullPath);
 
-        // Act / Assert: a parent-relative path is refused
+        // Act / Assert: a parent-relative path and an absolute path elsewhere are refused
         Assert.Throws<ArgumentException>(() => provider.ReadText("../outside.md"));
+        Assert.Throws<ArgumentException>(() => provider.ReadText(Path.Combine(Path.GetTempPath(), "outside.md")));
     }
 }

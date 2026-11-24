@@ -8,7 +8,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     rebuilding the assembly. The directory is resolved and enumerated only when a catalog is built, so
 ///     constructing the provider does no I/O. Every listing and every read goes to the file system, so
 ///     the provider reflects the current disk state. It never follows a path outside the directory because
-///     reads accept only paths that the listing produced.
+///     a read refuses any path that resolves outside the directory (the loader only asks for listed paths).
 /// </remarks>
 internal sealed class DirectoryFileProvider : HelpFileProvider
 {

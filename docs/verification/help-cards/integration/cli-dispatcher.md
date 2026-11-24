@@ -23,7 +23,8 @@ exit code of the contract.
 - **Card**: the card with command links in text and Markdown, and the path as words, slashes, alias, and other case.
 - **Examples**: the examples in full with the cards below only listed, one example alone, the qualified name, a missing
   example, and an ambiguous name below a mount.
-- **Not found**: the closest name, the names at the level, a card without children, and a far name at the top.
+- **Not found**: the closest name, the names at the level, a card without children, and a far name at the top whose
+  hint uses the command template.
 - **Search and tags**: ranked results with and without matches, restriction by tag and source, an unknown tag, and a
   catalog without tags.
 - **Sources**: the index restricted by source, an unknown source, and the filter of the JSON tag listing.

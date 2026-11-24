@@ -7,8 +7,11 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     The settings of a command-line help helper.
 /// </summary>
 /// <remarks>
-///     Only <see cref="ToolName"/> and <see cref="CatalogFactory"/> are required. The options are read once, when the
-///     helper is created, and are checked there. The catalog factory is not called when the helper is created.
+///     Only <see cref="ToolName"/> and <see cref="CatalogFactory"/> are required. The options object is kept by the
+///     helper, not copied: the checks of the required values and the verb are made when the helper is created, and the
+///     writers, usage lines, sections, fallback, and the other settings are read from the object each time a command
+///     runs. Do not change an options object after you created a helper from it. The catalog factory is not called
+///     when the helper is created.
 /// </remarks>
 public sealed class HelpCliOptions
 {
@@ -18,7 +21,9 @@ public sealed class HelpCliOptions
     public required string ToolName { get; init; }
 
     /// <summary>
-    ///     Gets the version of the tool, or <see langword="null"/> when it has none to show.
+    ///     Gets the version of the tool for information, or <see langword="null"/> when it has none. The helper does not
+    ///     print it: the version that the help shows comes from <c>HelpCatalogBuilder.ToolVersion</c> of the catalog
+    ///     that <see cref="CatalogFactory"/> creates.
     /// </summary>
     public string? Version { get; init; }
 

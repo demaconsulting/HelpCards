@@ -22,6 +22,8 @@ strict UTF-8 without a byte order mark; unlisted paths and paths outside the dir
 - **Assembly resources**: explicit prefix, prefix with a trailing slash, default prefix from the assembly
   name, unknown prefix gives an empty list, embedded text is the authored text, unknown path is refused.
 - **UTF-8 text**: byte order mark character removed from memory text, byte order mark bytes removed from a
-  file, invalid bytes refused.
-- **Isolation**: the memory provider copies its input and refuses unknown paths; a missing directory raises
-  `DirectoryNotFoundException`; a parent-relative path is refused.
+  resource and from a file, invalid bytes refused in a resource and in a file, a backslash in a resource name
+  converted to a slash.
+- **Isolation**: the memory provider copies its input and refuses unknown paths; the assembly provider refuses a path
+  that is not a resource; a missing directory raises `DirectoryNotFoundException`; a parent-relative path and an
+  absolute path elsewhere are refused.

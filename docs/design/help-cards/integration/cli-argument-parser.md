@@ -18,12 +18,12 @@ flag, the name of a search or example, the tags and sources, the all flag, and t
 | Option | Value | Rule |
 | --- | --- | --- |
 | `--json`, `--format` | none; text, markdown, json | Equal when both are given |
-| `--examples`, `--example` | none; a name | A card path is required |
-| `--search` | one query | No card path; may combine with `--tag` and `--source` |
+| `--examples`, `--example` | none; a name | Need a path; conflict with each other, `--search`, `--tag`, `--all` |
+| `--search` | one query | No path; conflicts with `--examples`, `--example`, `--all`; may use `--tag`, `--source` |
 | `--tag`, `--source` | a name | May repeat; not with a card path |
-| `--all` | none | Index only |
+| `--all` | none | Index only; not with `--tag` (an addition to spec 6.12: both choose what the index lists) |
 | `--width` | 20 to 500, or auto | Validated for every format |
-| `--lang` | a culture name | Only when enabled |
+| `--lang` | a culture name | Only when enabled; 2 or 3 letters, then subtags of 2 to 8 letters or digits |
 
 #### Key Methods
 
@@ -36,8 +36,11 @@ flag, the name of a search or example, the tags and sources, the all flag, and t
 
 #### Error Handling
 
-Null arguments throw `ArgumentNullException`. Everything else is a usage error in the result. A culture name must be two
-or three letters followed by subtags of letters and digits and must be accepted by the platform.
+Null arguments throw `ArgumentNullException`. Everything else is a usage error in the result. A culture name must be
+two or three letters followed by subtags of 2 to 8 letters or digits (the grammar of a culture suffix, 6.1). It is
+not required to be known to the platform: a well-formed name that no file uses falls back to the neutral files, also
+under invariant globalization, where the platform cannot represent the name and the request carries the invariant
+culture.
 
 #### Dependencies
 

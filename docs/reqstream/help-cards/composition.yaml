@@ -47,6 +47,7 @@ sections:
               - Composition_Mounting_TwoLibraries_GivesMountRootsAndGlobalIds
               - Composition_Mounting_MountRoot_UsesSourceBodyAsLandingText
               - Composition_Mounting_FlatSources_MergeRootsInRegistrationOrder
+              - Composition_Mounting_SourceWithoutName_IsReportedOnce
               - Composition_Ordering_MixedSources_FollowsRegistrationOrderAndOrderValuesStayInOneSource
               - Composition_Views_FilterSource_ShowsOneMountedSource
               - Composition_Reading_TwoSources_ReadsEachFileOnceAndNothingAfterCreate
@@ -92,6 +93,7 @@ sections:
               - Composition_Overlays_AppFixture_MergesIntoTheTargetCards
               - Composition_Overlays_OptionalOverlayOfAbsentSource_IsSkippedWithInfo
               - Composition_Overlays_Order_IsRegistrationOrderThenOrdinalFilePath
+              - Composition_Overlays_TargetFailedToLoad_ReportsOnlyTheFailure
 
           - id: HelpCards-Composition-Collisions
             title: >-
@@ -163,12 +165,14 @@ sections:
 
           - id: HelpCards-Composition-Vocabulary
             title: >-
-              The subsystem shall enforce an optional closed tag vocabulary with a set of required tags, and an
-              optional set of expected roots, and shall report each difference at its file and line.
+              The subsystem shall enforce an optional closed tag vocabulary with a set of required tags, exempting
+              the generated root cards of mounted sources, and an optional set of expected roots, and shall report
+              each difference at its file and line.
             justification: |
               A product that fixes its tag set and its top-level cards needs a build failure when a card strays.
             children:
               - HelpCards-Composition-HelpCatalogBuilder-TagVocabulary
+              - HelpCards-Composition-HelpCatalogBuilder-TagVocabularyMountRoots
               - HelpCards-Composition-HelpCatalogBuilder-ExpectedRoots
             tests:
               - Composition_Uniqueness_NamesAliasesExamplesAndRoots_AreChecked

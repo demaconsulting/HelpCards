@@ -13,15 +13,17 @@ deterministic order, and so that one run reports all defects of a source.
 
 All definitions are immutable records:
 
-- `SourceDefinition`: name, source file, title, summary, language, schema, aliases, children, extensions,
-  landing body, cards, overlays, failed ids, and problems.
+- `SourceDefinition`: name, source file, title, summary, language (the culture of the neutral files), schema, aliases,
+  children, extensions, culture (of the file that supplied the landing body), landing body and the line it starts on
+  (`BodyLine`), cards, overlays, failed ids, and problems.
 - `CardDefinition`: source name, local id, file, title, summary, aliases, tags, order, children, see-also,
   examples, extensions, culture, body parts, and the file that supplied the body (a translation file when one was
   selected), so a problem in a link can name the right file.
 - `OverlayDefinition`: the extended reference, the optional flag, optional title and summary, see-also,
   examples, extensions, culture, body parts, and the file that supplied the body.
-- `TranslationDefinition`: culture suffix, optional title and summary, extra aliases, example descriptions,
-  and body parts.
+- `TranslationDefinition`: culture suffix, the file it was read from, optional title and summary, extra aliases,
+  example descriptions, `HasBody` (a translation without a body is ignored completely), the line its body starts on
+  (`BodyLine`), and body parts.
 - `ExampleDefinition`: name, kind, language, file name, description, normalized content, and where it was
   written.
 - `ReferenceDefinition`: optional source name and local id of a see-also or extends reference.
@@ -52,7 +54,16 @@ grammars, values and the key matrix, examples, cards and translations, and the s
 - **Cultures.** All translations are read and validated; `CultureSelector` picks one per file; title, summary,
   and example descriptions fall back individually; a translation without a body is ignored completely.
 - **Source name.** A name given with `WithName` wins over `name` in `_source.md`; a missing or malformed name
-  is `source-invalid`. A schema above 1 is `schema-unsupported` and no card is read.
+  is `source-invalid`. A schema above `HighestSchema` (1) is `schema-unsupported` and no card is read. A name given
+  with `WithName` is not checked against the `name` of `_source.md`, which is ignored in that case.
+- **Source language.** The `language` of `_source.md` must be a culture name of the grammar of 6.1 (a 2 or 3 letter
+  language and subtags of 2 to 8 letters or digits). A value that is not is the problem `culture-invalid` at the
+  line of the key, and the language falls back to `en`; the culture is never looked up in the operating system, so
+  the check does not depend on the globalization mode.
+- **Front-matter edges.** Duplicate keys, nesting deeper than a list of maps, and document markers are decoded as
+  `syntax` errors by `FrontMatterDecoder` (see its design), so a file with one of them contributes nothing and its id
+  is in `FailedIds`; a second `---` after the closing one is body text and is not an error.
+- **Example data files.** A data file that several examples name is read once; the text is cached by path for the read.
 - **Shared grammar checks** `IsSegment` and `IsLocalId` are internal static helpers that Composition reuses
   for mounts and source names.
 

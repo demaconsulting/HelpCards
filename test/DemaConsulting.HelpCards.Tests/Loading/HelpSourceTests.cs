@@ -81,8 +81,43 @@ public class HelpSourceTests
         // Arrange / Act: create a source for a directory that does not exist
         var source = HelpSource.FromDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
 
-        // Assert: creation succeeded; the failure is deferred to reading
-        Assert.NotNull(source);
+        // Assert: creation succeeded; the failure is deferred to reading, where it is a source-read problem
+        var problem = Assert.Single(SourceReading.Read(source.WithName("test")).Problems);
+        Assert.Equal("source-read", problem.RuleId);
+    }
+
+    /// <summary>
+    ///     Proves that an empty or white-space path and an empty name are rejected.
+    /// </summary>
+    [Fact]
+    public void HelpSource_FromFiles_EmptyPathOrName_ThrowsArgumentException()
+    {
+        // Arrange / Act / Assert
+        Assert.Throws<ArgumentException>(() => HelpSource.FromFiles(new Dictionary<string, string> { [string.Empty] = "x" }));
+        Assert.Throws<ArgumentException>(() => HelpSource.FromFiles(new Dictionary<string, string> { [" "] = "x" }));
+        Assert.Throws<ArgumentException>(() => HelpSource.FromFiles(new Dictionary<string, string> { ["a.md"] = "x" }, string.Empty));
+    }
+
+    /// <summary>
+    ///     Proves that an assembly source reads the files below a given prefix and not those below another one.
+    /// </summary>
+    [Fact]
+    public void HelpSource_FromAssembly_GivenPrefix_ReadsOnlyFilesBelowThatPrefix()
+    {
+        // Arrange
+        var assembly = new FakeResourceAssembly("Fake", new Dictionary<string, byte[]>
+        {
+            ["Custom/a.md"] = System.Text.Encoding.UTF8.GetBytes(SourceReading.Card()),
+            ["Fake.Help/b.md"] = System.Text.Encoding.UTF8.GetBytes(SourceReading.Card())
+        });
+
+        // Act
+        var custom = SourceReading.Read(HelpSource.FromAssembly(assembly, "Custom").WithName("test"));
+        var byDefault = SourceReading.Read(HelpSource.FromAssembly(assembly).WithName("test"));
+
+        // Assert
+        Assert.Equal(["a"], custom.Cards.Select(card => card.LocalId));
+        Assert.Equal(["b"], byDefault.Cards.Select(card => card.LocalId));
     }
 
     /// <summary>

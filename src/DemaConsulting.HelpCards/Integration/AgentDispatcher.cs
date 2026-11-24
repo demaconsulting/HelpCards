@@ -58,28 +58,47 @@ internal sealed partial class AgentDispatcher
     public string Answer(AgentArguments arguments)
     {
         ArgumentNullException.ThrowIfNull(arguments);
-        string answer;
-        string? ignored = null;
         if (arguments.Example is not null)
         {
-            answer = AnswerExample(arguments);
-            ignored = arguments.Query is null ? null : "example";
+            return AnswerExample(arguments);
+        }
+
+        if (arguments.Topic is not null)
+        {
+            return AnswerTopic(arguments.Topic);
+        }
+
+        return arguments.Query is not null ? AnswerQuery(arguments) : AnswerIndex(arguments);
+    }
+
+    /// <summary>
+    ///     Gets the line that tells the agent that its query was not used, when a topic or an example was given too.
+    /// </summary>
+    /// <remarks>
+    ///     The line is not part of <see cref="Answer"/> so that the tool can append it after it cuts a long answer.
+    /// </remarks>
+    /// <param name="arguments">The arguments. Must not be null.</param>
+    /// <returns>The line, or <see langword="null"/> when no query was ignored.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="arguments"/> is null.</exception>
+    public static string? IgnoredNotice(AgentArguments arguments)
+    {
+        ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments.Query is null)
+        {
+            return null;
+        }
+
+        string? given = null;
+        if (arguments.Example is not null)
+        {
+            given = "example";
         }
         else if (arguments.Topic is not null)
         {
-            answer = AnswerTopic(arguments.Topic);
-            ignored = arguments.Query is null ? null : "topic";
-        }
-        else if (arguments.Query is not null)
-        {
-            answer = AnswerQuery(arguments);
-        }
-        else
-        {
-            answer = AnswerIndex(arguments);
+            given = "topic";
         }
 
-        return ignored is null ? answer : $"{answer}\nIgnored 'query' because '{ignored}' was given.";
+        return given is null ? null : $"Ignored 'query' because '{given}' was given.";
     }
 
     /// <summary>
@@ -153,14 +172,15 @@ internal sealed partial class AgentDispatcher
         if (arguments.Tag is not null)
         {
             var tag = view.TagNames.FirstOrDefault(name => string.Equals(name, arguments.Tag, StringComparison.OrdinalIgnoreCase));
-            if (tag is null && view.TagNames.Count > 0)
+            if (tag is null)
             {
-                failure = $"Unknown tag '{arguments.Tag}'. Valid tags: {string.Join(", ", view.TagNames)}.";
+                failure = view.TagNames.Count > 0
+                    ? $"Unknown tag '{arguments.Tag}'. Valid tags: {string.Join(", ", view.TagNames)}."
+                    : $"No cards have the tag '{arguments.Tag}'; this help has no tags.";
                 return null;
             }
 
-            // Without any tag in the catalog nothing can match, so the view shows nothing
-            view = tag is null ? view.Where(_ => false) : view.Filter([tag]);
+            view = view.Filter([tag]);
         }
 
         return view;

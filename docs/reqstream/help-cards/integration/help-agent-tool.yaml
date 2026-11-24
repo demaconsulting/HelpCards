@@ -52,11 +52,13 @@ sections:
                 title: >-
                   The tool shall cut an answer longer than the output limit at the last line end at or before the
                   limit, or at the limit without splitting a surrogate pair when there is none, and append the number of
-                  omitted characters.
+                  omitted characters, and shall keep the line that names an ignored query after the cut.
                 justification: |
-                  An agent has a limited context and must be told when text was left out.
+                  An agent has a limited context and must be told when text was left out and when part of its call was
+                  not used.
                 tests:
                   - HelpAgentTool_Invoke_LongAnswer_IsCutAtALineEndWithTheOmittedCount
+                  - HelpAgentTool_Invoke_LongAnswerWithIgnoredQuery_KeepsTheNoticeAfterTheCut
                   - HelpAgentTool_Invoke_LongSingleLine_IsCutAtTheLimitWithoutSplittingAPair
 
               - id: HelpCards-Integration-HelpAgentTool-Boundary

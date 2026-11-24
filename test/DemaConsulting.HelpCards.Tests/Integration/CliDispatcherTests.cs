@@ -303,4 +303,24 @@ public partial class CliDispatcherTests
         Assert.Contains("`simple manual guide setup`", custom.Output.ToString(), StringComparison.Ordinal);
         Assert.Contains("`tool help guide setup`", standard.Output.ToString(), StringComparison.Ordinal);
     }
+
+    /// <summary>
+    ///     Proves that the hint of an unknown first word names the command of the template, like the hint of an unknown
+    ///     child does.
+    /// </summary>
+    [Fact]
+    public void CliDispatcher_Run_UnknownTopLevelCard_HintUsesTheCommandTemplate()
+    {
+        // Arrange
+        var custom = new CliHarness(CatalogBuilding.Simple(), template: "{tool} manual {path}");
+        var standard = new CliHarness(CatalogBuilding.Simple());
+
+        // Act
+        custom.Run("qqqqqqqq");
+        standard.Run("qqqqqqqq");
+
+        // Assert
+        Assert.Contains("Run 'tool manual' for their summaries.", custom.Error.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Run 'tool help' for their summaries.", standard.Error.ToString(), StringComparison.Ordinal);
+    }
 }

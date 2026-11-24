@@ -16,7 +16,8 @@ All tests in `AgentDispatcherTests.cs` pass; every miss says what to send instea
 
 #### Test Scenarios
 
-- **Index**: the configured depth, one block for each source, restriction by source and tag, and unknown names.
+- **Index**: the configured depth, one block for each source, restriction by source and tag, unknown names, and a tag
+  in a catalog without tags.
 - **Topic**: the Markdown card with the content of its examples, a path, an alias, any case, an unqualified local id, an
   ambiguous local id, and an unknown topic with and without suggestions.
 - **Example**: one example with its fence, a fence that is longer than the backticks in the content, the topic that

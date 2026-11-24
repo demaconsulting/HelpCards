@@ -49,18 +49,21 @@ sections:
               - id: HelpCards-Composition-SourceRegistry-ImportChecks
                 title: >-
                   The registry shall report an import that is not registered as import-missing, one that is
-                  registered after its importer as import-order, and one that is the importing source as
-                  import-cycle, and shall not list such an import.
+                  registered after its importer as import-order (including a later source that is matched only by
+                  a name it declares in its source file), and one that is the importing source as import-cycle,
+                  and shall not list such an import.
                 justification: |
                   Imports are declared in code; a wrong one must fail at catalog creation with a clear cause.
                 tests:
                   - SourceRegistry_Read_MissingLaterAndSelfImports_ReportEachRule
+                  - SourceRegistry_Read_ImportOfLaterSourceNamedInSourceFile_ReportsImportOrder
 
               - id: HelpCards-Composition-SourceRegistry-Tokens
                 title: >-
                   The registry shall give each source the scope of its own tokens, the tokens of every source it
                   imports, and the built-in tokens, with the tool token defaulting to the name of the first source,
-                  and shall report a name that two sources of one scope define as token-redefined.
+                  and shall surface the token-redefined problem that the token scope reports for a name that two
+                  sources of one scope define.
                 justification: |
                   A tool uses the tokens of its library without repeating them, and a source never sees the
                   tokens of a source it does not import.

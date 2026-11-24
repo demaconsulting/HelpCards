@@ -286,6 +286,49 @@ public partial class CardReaderTests
     }
 
     /// <summary>
+    ///     Proves that a data file that several examples name is read once.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_SharedExampleDataFile_IsReadOnce()
+    {
+        // Arrange: two cards whose examples use the same data file
+        const string example = "examples:\n  - name: x\n    kind: source\n    language: mermaid\n    file: shared.mmd\n    description: D.\n";
+        var provider = new CountingFileProvider(SourceReading.Files(
+            ("a.md", SourceReading.Card(extraFrontMatter: example)),
+            ("b.md", SourceReading.Card(extraFrontMatter: example)),
+            ("shared.mmd", "graph TD")));
+
+        // Act
+        var source = SourceReading.Read(HelpSource.FromProvider(provider, "test"));
+
+        // Assert: two cards and one data file are read; both examples have the content
+        Assert.Empty(source.Problems);
+        Assert.Equal(3, provider.ReadCount);
+        Assert.All(source.Cards, card => Assert.Equal("graph TD", Assert.Single(card.Examples).Content));
+    }
+
+    /// <summary>
+    ///     Proves that the problems of the token scope are reported even when the files cannot be listed.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ListFails_StillReportsTokenScopeProblems()
+    {
+        // Arrange: a token scope that redefines the built-in tool token
+        var provider = new CountingFileProvider(new Dictionary<string, string>(), failList: true);
+        var source = HelpSource.FromProvider(provider, "test");
+        var redefined = new Dictionary<string, string> { ["tool"] = "mine" };
+
+        // Act
+        var definition = CardReader.Read(
+            source,
+            CultureInfo.InvariantCulture,
+            name => TokenResolver.Create(name, redefined, [], SourceReading.ToolName, SourceReading.ToolVersion));
+
+        // Assert
+        Assert.Equal([RuleIds.SourceRead, RuleIds.TokenRedefined], definition.Problems.Select(problem => problem.RuleId).Order(StringComparer.Ordinal));
+    }
+
+    /// <summary>
     ///     Proves that a normal read lists once and reads each Markdown file once, and never reads unused data files.
     /// </summary>
     [Fact]

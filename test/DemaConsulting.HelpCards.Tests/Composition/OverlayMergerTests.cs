@@ -187,6 +187,45 @@ public class OverlayMergerTests
     {
         // Act / Assert
         Assert.Throws<ArgumentNullException>(() => OverlayMerger.Apply(null!, new ProblemCollector()));
+        var registry = SourceRegistry.Read([], System.Globalization.CultureInfo.InvariantCulture, null, null);
+        Assert.Throws<ArgumentNullException>(() => OverlayMerger.Apply(registry, null!));
+    }
+
+    /// <summary>
+    ///     Proves that an overlay whose target failed to load is silent, so that the one defect is reported once.
+    /// </summary>
+    [Fact]
+    public void OverlayMerger_Apply_TargetFailedToLoad_ReportsOnlyTheSyntaxError()
+    {
+        // Arrange: the target card has broken front matter
+        var result = CatalogBuilding.Compose(
+            ("a.md", "---\ntitle: [unterminated\n---\nBody."),
+            ("o.md", Overlay("a", "title: New\n", "More.")));
+
+        // Assert
+        Assert.Null(result.Data);
+        var problem = Assert.Single(result.Errors);
+        Assert.Equal(("a.md", "syntax"), (problem.File, problem.RuleId));
+    }
+
+    /// <summary>
+    ///     Proves that overlays of different sources apply in registration order of their sources.
+    /// </summary>
+    [Fact]
+    public void OverlayMerger_Apply_OverlaysOfTwoSources_ApplyInRegistrationOrder()
+    {
+        // Arrange: the later source is registered second, although its name sorts first
+        var lib = CatalogBuilding.Named("lib", ("a.md", SourceReading.Card(title: "Base", body: "Base.")));
+        var second = CatalogBuilding.Named("zeta", ("o.md", Overlay("lib:a", "title: Z\n", "Z."))).Imports(lib);
+        var third = CatalogBuilding.Named("alpha", ("o.md", Overlay("lib:a", "title: A\n", "A."))).Imports(lib);
+
+        // Act
+        var result = CatalogBuilding.Compose(builder => builder.AddSource(lib).AddSource(second).AddSource(third));
+
+        // Assert
+        var node = result.Data!.Find("a")!;
+        Assert.Equal("A", node.Title);
+        Assert.Equal("Base.\n\nZ.\n\nA.", string.Concat(node.Body.Select(part => part.Text)));
     }
 
     /// <summary>

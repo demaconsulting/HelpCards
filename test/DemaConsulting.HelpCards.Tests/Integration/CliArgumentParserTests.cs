@@ -283,6 +283,7 @@ public class CliArgumentParserTests
         var digits = CliArgumentParser.Parse(["--lang", "d3"], true);
         var subtag = CliArgumentParser.Parse(["--lang", "de-"], true);
         var twice = CliArgumentParser.Parse(["--lang", "de", "--lang", "fr"], true);
+        var shortSubtag = CliArgumentParser.Parse(["--lang", "de-D"], true);
 
         // Assert
         Assert.Equal("de-DE", german!.Culture!.Name);
@@ -290,7 +291,44 @@ public class CliArgumentParserTests
         Assert.Equal("The language 'english' is not a valid culture name.", tooLong.Message);
         Assert.Equal("The language 'd3' is not a valid culture name.", digits.Message);
         Assert.Equal("The language 'de-' is not a valid culture name.", subtag.Message);
+        Assert.Equal("The language 'de-D' is not a valid culture name.", shortSubtag.Message);
         Assert.Equal("option '--lang' may be given only once.", twice.Message);
+    }
+
+    /// <summary>
+    ///     Proves that a well-formed culture name that no operating system knows is accepted, so that it falls back to the
+    ///     neutral files, and that this does not depend on the machine's globalization mode.
+    /// </summary>
+    [Theory]
+    [InlineData("xx-YY")]
+    [InlineData("zz")]
+    [InlineData("qaa-Latn-ZZ")]
+    [InlineData("tlh-12345678")]
+    public void CliArgumentParser_Parse_Language_WellFormedUnknownCulture_IsAccepted(string name)
+    {
+        // Arrange / Act
+        var result = CliArgumentParser.Parse(["--lang", name], true);
+
+        // Assert: no usage error and a culture is carried; a platform that cannot represent the name (for example
+        // under invariant globalization) carries the invariant culture, which also selects the neutral files
+        Assert.Null(result.Message);
+        Assert.NotNull(result.Request!.Culture);
+    }
+
+    /// <summary>
+    ///     Proves that a search may be combined with tag and source restrictions, as the option table allows.
+    /// </summary>
+    [Fact]
+    public void CliArgumentParser_Parse_SearchWithTagAndSource_IsAccepted()
+    {
+        // Arrange / Act
+        var result = Parse("--search", "x", "--tag", "t", "--source", "s");
+
+        // Assert
+        Assert.Null(result.Message);
+        Assert.Equal((CliMode.Search, "x"), (result.Request!.Mode, result.Request.Name));
+        Assert.Equal(["t"], result.Request.Tags);
+        Assert.Equal(["s"], result.Request.Sources);
     }
 
     /// <summary>

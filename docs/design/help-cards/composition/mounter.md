@@ -20,7 +20,9 @@ The class is static and stateless. It works on the `SourceEntry` objects of the 
   mount is the one given to `AddMountedSource`, or else the declared name of the source.
 - **`Register(registry, problems)`** visits the sources in registration order and claims every global id: first the
   mount of a mounted source, then its cards in ordinal order. A mount that is not a segment is `mount-invalid` and
-  excludes the source; a mount that another id already uses is `collision` and excludes the source; a card whose id is
+  excludes the source; a mount that another id already uses is `collision` and excludes the source; a mounted source
+  without a usable name (so its mount would fall back to the placeholder name) is excluded without a problem, because
+  Loading already reported `source-invalid`; a card whose id is
   taken is `collision` and is recorded in `Dropped`. The message names the later source and file and the source and
   file that hold the id. It returns the owner of every claimed id, which the tree placement uses to tell
   `tree-foreign` from `parent-missing`.

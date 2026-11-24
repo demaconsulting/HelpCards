@@ -46,6 +46,14 @@ created only by `HelpCatalog.Create` and by the validator.
   checks uniqueness and the expected roots, and freezes `CatalogData` when no error exists. The expected roots are
   the mount roots and the roots of the flat sources; the check counts a root that failed to load as present and is
   skipped when a source could not be read (no name, unsupported schema, or the listing failed) or was left out.
+- **Pipeline helpers.** `PlaceEntry` places the cards of one source and checks its tags (a mounted source whose mount
+  could not be claimed is skipped); `CreateNodes` creates one node per card and one generated root node per mounted
+  source, mount root first and then its cards depth first, which is also the freeze order; `ResolveReferences` resolves
+  the bodies, links, and see-also entries of every node in ordinal id order through `ReferenceValidator`;
+  `CheckUniqueness` checks example names and sibling names; `CheckExpectedRoots` compares the roots with the expected
+  roots; `Freeze` builds the immutable `CatalogData`.
+- **Tag vocabulary.** The vocabulary and the required tags apply to the cards that authors wrote, in every source. The
+  generated root card of a mounted source has no tags and is not checked.
 
 #### Error Handling
 

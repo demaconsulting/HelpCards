@@ -79,6 +79,23 @@ public class SiblingOrderTests
     }
 
     /// <summary>
+    ///     Proves that a listed card keeps its listed position although it has an order value.
+    /// </summary>
+    [Fact]
+    public void SiblingOrder_Order_ListedCardWithOrderValue_KeepsListedPosition()
+    {
+        // Arrange: x has the lowest order value but is listed last
+        var cards = Cards(("w", 1), ("x", 0), ("y", 2));
+
+        // Act
+        var (names, problems) = Order(cards, ["y", "x"]);
+
+        // Assert
+        Assert.Equal(["y", "x", "w"], names);
+        Assert.Empty(problems);
+    }
+
+    /// <summary>
     ///     Proves that names tie-break in ordinal order, not culture order.
     /// </summary>
     [Fact]

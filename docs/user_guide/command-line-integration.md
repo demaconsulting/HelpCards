@@ -75,9 +75,18 @@ option can appear once, except `--tag` and `--source`, which can repeat and comb
 
 The helper works in one of six modes: the **index** (no path, no mode option), a **card** (a path), **examples**
 (`--examples`), one **example** (`--example`), **search** (`--search`), and **tags** (`--tag`). These combinations are
-usage errors: two mode options together, `--search` with a path, `--examples` or `--example` without a path, and a
-path together with `--tag`, `--source`, or `--all`. `--tag` with `--all` is also a usage error. With `--width auto`,
-the console width is clamped to 40 to 120 columns, and 78 is used when the output is redirected.
+usage errors: two mode options together (`--examples`, `--example`, `--search`), `--examples` or `--example` with
+`--tag` or `--all`, `--search` with `--all`, `--search` with a path, `--examples` or `--example` without a path, and a
+path together with `--tag`, `--source`, or `--all`. `--search` may be combined with `--tag` and `--source`. `--tag` with
+`--all` is also a usage error: this is an intentional addition to the option table of the specification (6.12), because
+`--all` widens the index to the whole tree while `--tag` lists the cards that have a tag, and the two cannot both apply.
+With `--width auto`, the console width is clamped to 40 to 120 columns, and 78 is used when the output is redirected.
+
+`--lang` takes a culture name of 2 or 3 letters followed by subtags of 2 to 8 letters or digits, such as `de` or
+`de-DE`; any other value is a usage error. A well-formed name for which no card has a translation is not an error: the
+neutral files are shown. The name is not checked against the operating system, so the answer does not depend on the
+machine (on a machine whose runtime has no culture data, for example with invariant globalization, translations cannot
+be selected and the neutral files are shown).
 
 ## What Is Printed
 
@@ -130,7 +139,7 @@ exits with 2; use `card#name`.
 | Option of `HelpCliOptions` | Meaning |
 | --- | --- |
 | `ToolName` | Required: the name used in commands, a word without braces |
-| `Version` | Shown in the JSON index |
+| `Version` | For information only; the version in the JSON index is the `ToolVersion` of the catalog builder |
 | `Verb` | The help verb; the default is `help` |
 | `CatalogFactory` | Required: builds the catalog, called only after the verb is seen |
 | `UsageLines` | The usage lines at the top of the index |
@@ -145,7 +154,10 @@ exits with 2; use `card#name`.
 
 A `FallbackResolver` lets a tool keep answers that are not cards. It receives the path words and returns a
 `HelpCliAnswer(text, exitCode)` or `null` to continue with the cards. A tool can print the usage of its own command
-`build` this way and let the cards document everything else.
+`build` this way and let the cards document everything else. The resolver is offered plain card commands only
+(`help build`); `help build --examples` and `help build --example x` go to the catalog, which does not know the subject
+and answers with a not-found error. The options object is kept by the helper, not copied; do not change it after you
+create a helper from it.
 
 `Run(arguments)` is the same helper without the verb check, for a tool whose own parser has already recognized the
 help command and removed the verb.

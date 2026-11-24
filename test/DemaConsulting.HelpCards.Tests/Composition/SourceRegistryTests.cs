@@ -97,6 +97,7 @@ public class SourceRegistryTests
         Assert.Same(registry.Entries[0], registry.FindByName("same"));
         var (index, problem) = Assert.Single(registry.Problems);
         Assert.Equal((1, "source-name-duplicate"), (index, problem.RuleId));
+        Assert.Contains("position 1", problem.Message);
     }
 
     /// <summary>
@@ -279,9 +280,32 @@ public class SourceRegistryTests
         // Assert
         Assert.Equal(
             [(0, "import-order"), (0, "import-missing"), (2, "import-cycle")],
-            registry.Problems.Select(item => (item.SourceIndex, item.Problem.RuleId)));
+            registry.Problems.OrderBy(item => item.SourceIndex).Select(item => (item.SourceIndex, item.Problem.RuleId)));
         Assert.Empty(registry.Entries[0].Imports);
         Assert.True(registry.Entries[0].BrokenImports);
         Assert.False(registry.Entries[1].BrokenImports);
+    }
+
+    /// <summary>
+    ///     Proves that an import matched by declared name to a later source that is named in its <c>_source.md</c>
+    ///     is reported as <c>import-order</c>, not <c>import-missing</c>.
+    /// </summary>
+    [Fact]
+    public void SourceRegistry_Read_ImportOfLaterSourceNamedInSourceFile_ReportsImportOrder()
+    {
+        // Arrange: the later source takes its name from _source.md; the import names it only by that name
+        var importedByName = CatalogBuilding.Named("later", ("x.md", SourceReading.Card()));
+        var importer = CatalogBuilding.Named("importer", ("i.md", SourceReading.Card())).Imports(importedByName);
+        var later = HelpSource.FromFiles(SourceReading.Files(("_source.md", "---\nname: later\n---\n"), ("l.md", SourceReading.Card())));
+
+        // Act
+        var registry = Read(Flat(importer, later));
+
+        // Assert
+        var problem = Assert.Single(registry.Problems);
+        Assert.Equal((0, "import-order"), (problem.SourceIndex, problem.Problem.RuleId));
+        Assert.Contains("later", problem.Problem.Message);
+        Assert.True(registry.Entries[0].BrokenImports);
+        Assert.Empty(registry.Entries[0].Imports);
     }
 }

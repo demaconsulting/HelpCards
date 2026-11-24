@@ -47,6 +47,11 @@ public sealed class HelpAgentTool
     private readonly Func<AgentArguments, string> _answer;
 
     /// <summary>
+    ///     Gives the line that is appended after a cut answer, or <see langword="null"/> for none.
+    /// </summary>
+    private readonly Func<AgentArguments, string?>? _notice;
+
+    /// <summary>
     ///     The most characters of an answer before it is cut.
     /// </summary>
     private readonly int _maxOutputChars;
@@ -58,12 +63,21 @@ public sealed class HelpAgentTool
     /// <param name="description">The description for the agent.</param>
     /// <param name="answer">Answers a call from checked arguments; the dispatcher of the catalog.</param>
     /// <param name="maxOutputChars">The most characters of an answer before it is cut.</param>
-    internal HelpAgentTool(string name, string description, Func<AgentArguments, string> answer, int maxOutputChars)
+    /// <param name="notice">
+    ///     Gives a line that must follow the answer even when the answer is cut, or <see langword="null"/> for none.
+    /// </param>
+    internal HelpAgentTool(
+        string name,
+        string description,
+        Func<AgentArguments, string> answer,
+        int maxOutputChars,
+        Func<AgentArguments, string?>? notice = null)
     {
         Name = name;
         Description = description;
         _answer = answer;
         _maxOutputChars = maxOutputChars;
+        _notice = notice;
     }
 
     /// <summary>
@@ -98,8 +112,16 @@ public sealed class HelpAgentTool
         try
         {
             var read = AgentArgumentReader.Read(argumentsJson);
-            var answer = read.Arguments is { } arguments ? _answer(arguments) : read.Error!;
-            return Truncate(answer);
+            if (read.Arguments is not { } arguments)
+            {
+                return Truncate(read.Error!, _maxOutputChars);
+            }
+
+            // The notice is appended after the cut, so a long answer cannot cut it away; its room is reserved
+            var notice = _notice?.Invoke(arguments);
+            var limit = notice is null ? _maxOutputChars : Math.Max(1, _maxOutputChars - notice.Length - 1);
+            var answer = Truncate(_answer(arguments), limit);
+            return notice is null ? answer : $"{answer}\n{notice}";
         }
         catch (Exception exception) when (exception is HelpCatalogException
             or ArgumentException
@@ -117,19 +139,20 @@ public sealed class HelpAgentTool
     ///     Cuts an answer that exceeds the limit at the last line end at or before it, and says how much was left out.
     /// </summary>
     /// <param name="text">The answer.</param>
+    /// <param name="limit">The most characters to keep.</param>
     /// <returns>The answer, cut when it was too long.</returns>
-    private string Truncate(string text)
+    private static string Truncate(string text, int limit)
     {
-        if (text.Length <= _maxOutputChars)
+        if (text.Length <= limit)
         {
             return text;
         }
 
-        var cut = text.LastIndexOf('\n', _maxOutputChars);
+        var cut = text.LastIndexOf('\n', limit);
         if (cut < 0)
         {
             // A single very long line: cut at the limit without splitting a surrogate pair
-            cut = char.IsHighSurrogate(text[_maxOutputChars - 1]) ? _maxOutputChars - 1 : _maxOutputChars;
+            cut = char.IsHighSurrogate(text[limit - 1]) ? limit - 1 : limit;
         }
 
         var omitted = text.Length - cut;

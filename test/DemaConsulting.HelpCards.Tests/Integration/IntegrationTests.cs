@@ -46,7 +46,6 @@ public class IntegrationTests
     public void Integration_Cli_OptionTable_SelectsModesAndFormats()
     {
         // Arrange
-        var harness = new CliHarness(CatalogBuilding.Simple());
         string[][] commands =
         [
             [],
@@ -78,7 +77,6 @@ public class IntegrationTests
         Assert.All(results, result => Assert.Equal((0, 0, 0), (result.Item1, result.Item2, result.Item3)));
         Assert.All(results, result => Assert.StartsWith("{\"helpSchemaVersion\":1,\"ok\":true,\"kind\":", result.Item4, StringComparison.Ordinal));
         Assert.Equal(["index", "index", "card", "examples", "example", "search", "cards", "index"], results.Select(result => Kind(result.Item4)));
-        Assert.Equal(0, harness.FactoryCalls);
     }
 
     /// <summary>
@@ -203,6 +201,122 @@ public class IntegrationTests
         Assert.StartsWith("No help card matches 'nope'.", answers[5], StringComparison.Ordinal);
         Assert.StartsWith("No example named 'nope'", answers[6], StringComparison.Ordinal);
         Assert.Equal("No cards match 'qqq'. Call with no arguments for the index.", answers[7]);
+    }
+
+    /// <summary>
+    ///     Proves that the answers are restricted by source and that a card, example, source, or tag that does not exist
+    ///     is answered with the closest name or the valid names, and that one example is printed as exactly its content.
+    /// </summary>
+    [Fact]
+    public void Integration_Cli_RestrictionsAndMisses_AreAnsweredWithValidNames()
+    {
+        // Arrange
+        var catalog = HelpCatalog.Create(builder => builder
+            .AddSource(CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" }))
+            .AddSource(CatalogBuilding.LibB()));
+        var restricted = new CliHarness(catalog);
+        var everything = new CliHarness(catalog);
+        var source = new CliHarness(catalog);
+        var tag = new CliHarness(catalog);
+        var card = new CliHarness(catalog);
+        var example = new CliHarness(catalog);
+        var exact = new CliHarness(catalog);
+
+        // Act
+        restricted.Run("--source", "simple");
+        everything.Run();
+        var sourceCode = source.Run("--source", "nope");
+        var tagCode = tag.Run("--tag", "nope");
+        var cardCode = card.Run("guid");
+        var exampleCode = example.Run("guide", "--example", "nope");
+        var exactCode = exact.Run("guide", "--example", "run");
+
+        // Assert: the restriction hides the other source
+        Assert.Contains("guide", restricted.Output.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain("chart", restricted.Output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("chart", everything.Output.ToString(), StringComparison.Ordinal);
+
+        // Assert: every miss exits with 2 and names what is valid
+        Assert.Equal((2, 2, 2, 2, 0), (sourceCode, tagCode, cardCode, exampleCode, exactCode));
+        Assert.StartsWith("Error: Unknown help source 'nope'.", source.Error.ToString(), StringComparison.Ordinal);
+        Assert.Contains("simple", source.Error.ToString(), StringComparison.Ordinal);
+        Assert.StartsWith("Error: Unknown tag 'nope'.", tag.Error.ToString(), StringComparison.Ordinal);
+        Assert.Contains("tutorial", tag.Error.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Did you mean 'guide'?", card.Error.ToString(), StringComparison.Ordinal);
+        Assert.StartsWith("Error: The help card 'guide' has no example 'nope'.", example.Error.ToString(), StringComparison.Ordinal);
+        Assert.Contains("Examples: run", example.Error.ToString(), StringComparison.Ordinal);
+
+        // Assert: one example is its content and nothing else
+        Assert.DoesNotContain("\n", exact.Output.ToString().TrimEnd('\n'), StringComparison.Ordinal);
+        Assert.Empty(exact.Error.ToString());
+    }
+
+    /// <summary>
+    ///     Proves that an ambiguous example is a JSON error on the output with the candidates, like a card that is not
+    ///     found, and that neither writes to the error channel.
+    /// </summary>
+    [Fact]
+    public void Integration_Cli_JsonFailures_AmbiguousAndNotFound_UseTheOutputChannel()
+    {
+        // Arrange: two roots of one mounted source have an example of the same name
+        const string example = "examples:\n  - name: x\n    kind: command\n    language: shell\n    content: tool x\n    description: An example.\n";
+        var source = HelpSource.FromFiles(
+            SourceReading.Files(("a.md", SourceReading.Card(extraFrontMatter: example)), ("b.md", SourceReading.Card(extraFrontMatter: example))),
+            "lib");
+        var catalog = HelpCatalog.Create(builder => builder.AddMountedSource(source, "m"));
+        var ambiguous = new CliHarness(catalog);
+        var missing = new CliHarness(catalog);
+
+        // Act
+        var ambiguousCode = ambiguous.Run("m", "--example", "x", "--json");
+        var missingCode = missing.Run("zzz", "--json");
+
+        // Assert
+        Assert.Equal((2, 2), (ambiguousCode, missingCode));
+        Assert.Contains("\"kind\":\"error\",\"code\":\"ambiguous\"", ambiguous.Output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("\"candidates\":[\"m/a#x\",\"m/b#x\"]", ambiguous.Output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("\"kind\":\"error\",\"code\":\"not-found\"", missing.Output.ToString(), StringComparison.Ordinal);
+        Assert.Empty(ambiguous.Error.ToString());
+        Assert.Empty(missing.Error.ToString());
+    }
+
+    /// <summary>
+    ///     Proves that the tool is created with options that are checked at once: a name that does not match the
+    ///     pattern and a limit outside its range are argument errors.
+    /// </summary>
+    [Fact]
+    public void Integration_Agent_Creation_InvalidOptions_AreCheckedWhereTheToolIsCreated()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+
+        // Act / Assert
+        Assert.Throws<ArgumentException>(() => HelpAgentTools.Create(catalog, new HelpAgentToolOptions { Name = "Bad Name" }));
+        Assert.ThrowsAny<ArgumentException>(() => HelpAgentTools.Create(catalog, new HelpAgentToolOptions { MaxResults = 0 }));
+        Assert.ThrowsAny<ArgumentException>(() => HelpAgentTools.Create(catalog, new HelpAgentToolOptions { MaxOutputChars = 10 }));
+        Assert.ThrowsAny<ArgumentException>(() => HelpAgentTools.Create(catalog, new HelpAgentToolOptions { IndexDepth = 9 }));
+        Assert.Throws<ArgumentNullException>(() => HelpAgentTools.Create(null!));
+    }
+
+    /// <summary>
+    ///     Proves that using the tool reads no file after the catalog is created, and that text the agent sends never
+    ///     makes it throw, even text that is not valid Unicode.
+    /// </summary>
+    [Fact]
+    public void Integration_Agent_Use_ReadsNoFileAndNeverThrowsForHostileText()
+    {
+        // Arrange
+        var files = new CountingFileProvider(SourceReading.Files(("a.md", SourceReading.Card())));
+        var tool = HelpAgentTools.Create(CatalogBuilding.Create(HelpSource.FromProvider(files, "test")));
+        var before = (files.ListCount, files.ReadCount);
+        string[] sent = [null!, string.Empty, "{\"topic\":\"a\"}", "{\"query\":\"x\"}", "{\"topic\":\"\\uD800\"}", "\uD800", "{\"topic\":\"../../etc/passwd\"}"];
+
+        // Act
+        var answers = sent.Select(tool.Invoke).ToList();
+
+        // Assert
+        Assert.All(answers, answer => Assert.False(string.IsNullOrWhiteSpace(answer)));
+        Assert.Equal(before, (files.ListCount, files.ReadCount));
     }
 
     /// <summary>

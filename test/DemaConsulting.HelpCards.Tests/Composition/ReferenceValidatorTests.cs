@@ -310,4 +310,47 @@ public class ReferenceValidatorTests
         var problem = Assert.Single(result.Errors);
         Assert.Equal(("duplicate-example", "o.md", 4), (problem.RuleId, problem.File, problem.Line));
     }
+
+    /// <summary>
+    ///     Proves that a bare link that names a card of two sources is ambiguous, at the line of the link.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_ResolveBody_BareLinkInTwoSources_ReportsAmbiguousReference()
+    {
+        // Arrange
+        var lib = CatalogBuilding.Named("lib", ("x.md", SourceReading.Card()));
+        var app = CatalogBuilding.Named(
+            "app",
+            ("x.md", SourceReading.Card()),
+            ("a.md", SourceReading.Card(body: "See [[x]] and [[lib:x|the lib card]]."))).Imports(lib);
+
+        // Act
+        var result = CatalogBuilding.Compose(builder => builder.AddSource(lib).AddMountedSource(app));
+
+        // Assert
+        var problem = Assert.Single(result.Errors);
+        Assert.Equal(("ambiguous-reference", "a.md", 5), (problem.RuleId, problem.File, problem.Line));
+    }
+
+    /// <summary>
+    ///     Proves that the landing body of a mount root resolves its links in the mounted source and reports a broken
+    ///     link in <c>_source.md</c>.
+    /// </summary>
+    [Fact]
+    public void ReferenceValidator_ResolveLanding_MountRootBody_ResolvesLinksAndReportsBrokenOnes()
+    {
+        // Arrange
+        var good = CatalogBuilding.Named("good", ("_source.md", "---\n---\nStart at [[a]]."), ("a.md", SourceReading.Card()));
+        var bad = CatalogBuilding.Named("bad", ("_source.md", "---\n---\nStart at [[nope]]."), ("b.md", SourceReading.Card()));
+
+        // Act
+        var resolved = CatalogBuilding.Compose(builder => builder.AddMountedSource(good));
+        var broken = CatalogBuilding.Compose(builder => builder.AddMountedSource(bad));
+
+        // Assert
+        Assert.Empty(resolved.Errors);
+        Assert.Equal("good/a", resolved.Data!.Find("good")!.Body[1].Link!.CardId);
+        var problem = Assert.Single(broken.Errors);
+        Assert.Equal(("link-target", "_source.md", 3), (problem.RuleId, problem.File, problem.Line));
+    }
 }

@@ -45,6 +45,11 @@ internal sealed class SourceRegistry
     private readonly List<(int SourceIndex, HelpProblem Problem)> _problems = [];
 
     /// <summary>
+    ///     The imports no earlier source matched, in the order they were found.
+    /// </summary>
+    private readonly List<(SourceEntry Entry, HelpSource Imported)> _unresolved = [];
+
+    /// <summary>
     ///     The tool name set on the builder, or <see langword="null"/>.
     /// </summary>
     private readonly string? _toolName;
@@ -104,6 +109,9 @@ internal sealed class SourceRegistry
             registry.ReadEntry(entry, culture);
         }
 
+        // An import that no earlier source matches can name a later source, whose declared name is only known
+        // once that source was read, so it is classified when every source has been read
+        registry.ReportUnresolvedImports();
         return registry;
     }
 
@@ -262,6 +270,7 @@ internal sealed class SourceRegistry
             CollectImportedTokens(imported, seen, tokens);
         }
     }
+
     /// <summary>
     ///     Matches the imports of a source to registered sources and reports those that cannot be used.
     /// </summary>
@@ -270,33 +279,48 @@ internal sealed class SourceRegistry
     {
         foreach (var imported in entry.Source.ImportedSources)
         {
-            var match = _entries.FirstOrDefault(candidate => Matches(candidate, imported));
+            var match = _entries.FirstOrDefault(candidate => candidate.Index <= entry.Index && Matches(candidate, imported));
             if (match is null)
             {
                 entry.BrokenImports = true;
-                Report(
-                    entry,
-                    RuleIds.ImportMissing,
-                    string.Empty,
-                    $"The source '{entry.Name}' imports {Describe(imported)}, which is not added to the catalog; add it before '{entry.Name}'.");
+                _unresolved.Add((entry, imported));
             }
             else if (match.Index == entry.Index)
             {
                 entry.BrokenImports = true;
                 Report(entry, RuleIds.ImportCycle, string.Empty, $"The source '{entry.Name}' imports itself, directly or through a copy.");
             }
-            else if (match.Index > entry.Index)
+            else if (!entry.Imports.Contains(match))
             {
-                entry.BrokenImports = true;
+                entry.Imports.Add(match);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Reports the imports that no earlier source matched: <c>import-order</c> when a later source matches (now
+    ///     that its declared name is known), <c>import-missing</c> otherwise.
+    /// </summary>
+    private void ReportUnresolvedImports()
+    {
+        foreach (var (entry, imported) in _unresolved)
+        {
+            var later = _entries.FirstOrDefault(candidate => candidate.Index > entry.Index && Matches(candidate, imported));
+            if (later is null)
+            {
+                Report(
+                    entry,
+                    RuleIds.ImportMissing,
+                    string.Empty,
+                    $"The source '{entry.Name}' imports {Describe(imported)}, which is not added to the catalog; add it before '{entry.Name}'.");
+            }
+            else
+            {
                 Report(
                     entry,
                     RuleIds.ImportOrder,
                     string.Empty,
-                    $"The source '{entry.Name}' imports {Label(match)}, which is added after it; add it before '{entry.Name}'.");
-            }
-            else if (!entry.Imports.Contains(match))
-            {
-                entry.Imports.Add(match);
+                    $"The source '{entry.Name}' imports {Label(later)}, which is added after it; add it before '{entry.Name}'.");
             }
         }
     }

@@ -149,8 +149,10 @@ sections:
               - id: HelpCards-Integration-CliDispatcher-Template
                 title: >-
                   The dispatcher shall write the commands of links from the command template of the options, or from
-                  the tool name, the verb, and the path.
+                  the tool name, the verb, and the path, and shall use the same template for the command in the hint
+                  of an unknown first word.
                 justification: |
                   A command must be one the reader can type into the tool.
                 tests:
                   - CliDispatcher_Run_CommandTemplate_BuildsTheCommands
+                  - CliDispatcher_Run_UnknownTopLevelCard_HintUsesTheCommandTemplate

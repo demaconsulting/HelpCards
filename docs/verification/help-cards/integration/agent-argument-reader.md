@@ -20,4 +20,5 @@ All tests in `AgentArgumentReaderTests.cs` pass; every row of the argument table
 - **Invalid JSON**: several malformed texts, the example of what to send, and a document that is too deep.
 - **Not an object**: arrays, strings, numbers, and booleans.
 - **Unknown property**: the first in ordinal order, before the types.
-- **Wrong types**: each text property and each wrong `maxResults`, and the order in which types are checked.
+- **Wrong types**: each text property and each wrong `maxResults` (including `5.0`), and the order in which types are
+  checked.

@@ -22,6 +22,20 @@ The result is an immutable tree of records, all produced by this unit:
 The decoder never goes deeper than a list of maps. An empty value (a key with nothing after the colon and no
 list below it) is a scalar with empty text.
 
+Three rules of the spec (6.3) are enforced as `syntax` errors at the offending line, and the unobvious edges of
+each are part of the contract:
+
+- **Duplicate keys.** A key used twice at the top level is an error at the second use (`The key 'x' is used
+  twice.`); a key used twice inside one list item is an error too. The same key in two different list items is fine.
+- **Depth.** Only a mapping of scalars and lists of scalars or maps of scalars exist. A nested mapping as the
+  value of a key, or any nesting below a key of a list item, is `Nesting deeper than a list of maps is not
+  supported.`
+- **Multi-document streams.** A line that is exactly `---` after the opening one closes the front matter. A line that
+  starts with `---` followed by anything else, or a line `...`, inside the front matter is an error (`Document markers
+  are not supported; the front matter is a single document.`). The decoder does not look at the body: a later `---`
+  line there is Markdown (a thematic break) and is never interpreted as a second document. A file whose closing `---`
+  is missing is reported at line 1 (`The front matter is not closed`).
+
 #### Key Methods
 
 **`TryDecode(text, sourceName, file, out document, out problem)`** is the only entry point. It follows these

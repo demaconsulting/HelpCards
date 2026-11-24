@@ -41,26 +41,29 @@ sections:
 
               - id: HelpCards-Loading-HelpFileProvider-Utf8Text
                 title: >-
-                  Every provider shall read files as UTF-8 text without a byte order mark, and the file-based
-                  providers shall refuse bytes that are not valid UTF-8 instead of replacing them.
+                  Every provider shall read files as UTF-8 text without a byte order mark, and the assembly and
+                  directory providers shall refuse bytes that are not valid UTF-8 instead of replacing them.
                 justification: |
                   A damaged card must be found, not silently altered, and an invisible byte order mark must not
                   break the first line of the front matter.
                 tests:
                   - MemoryFileProvider_ReadText_LeadingByteOrderMark_IsRemoved
+                  - AssemblyFileProvider_ReadText_ByteOrderMarkAndInvalidBytes_RemovesMarkAndRefusesInvalid
                   - DirectoryFileProvider_ReadText_Utf8WithByteOrderMark_RemovesMark
                   - DirectoryFileProvider_ReadText_InvalidUtf8_ThrowsArgumentException
 
               - id: HelpCards-Loading-HelpFileProvider-Isolation
                 title: >-
-                  The in-memory provider shall copy its files, the directory provider shall read only files below
-                  its directory and report a missing directory, and reading a file that was not listed shall be
-                  refused.
+                  The in-memory provider shall copy its files and refuse a path that is not one of them, the
+                  assembly provider shall refuse a path that is not an embedded resource below its prefix, and the
+                  directory provider shall refuse a path that resolves outside its directory (parent-relative or
+                  absolute) and report a missing directory.
                 justification: |
                   A provider must serve exactly the files of its source: later changes by the caller must not
                   leak in, and a crafted path must never reach a file outside the help folder.
                 tests:
                   - MemoryFileProvider_Constructor_SourceDictionaryChanged_ProviderUnaffected
                   - MemoryFileProvider_ReadText_UnknownPath_ThrowsArgumentException
+                  - AssemblyFileProvider_ReadText_UnknownPath_ThrowsArgumentException
                   - DirectoryFileProvider_ListFiles_MissingDirectory_ThrowsDirectoryNotFoundException
                   - DirectoryFileProvider_ReadText_PathOutsideDirectory_ThrowsArgumentException

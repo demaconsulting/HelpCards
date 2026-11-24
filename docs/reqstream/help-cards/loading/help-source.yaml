@@ -25,11 +25,13 @@ sections:
                   - HelpSource_FromAssembly_NullAssembly_ThrowsArgumentNullException
                   - HelpSource_FromAssembly_EmptyPrefix_ThrowsArgumentException
                   - HelpSource_FromAssembly_DefaultPrefix_ListsEmbeddedFiles
+                  - HelpSource_FromAssembly_GivenPrefix_ReadsOnlyFilesBelowThatPrefix
                   - HelpSource_FromDirectory_EmptyDirectory_ThrowsArgumentException
                   - HelpSource_FromDirectory_ExistingDirectory_ReadsFilesOnDisk
                   - HelpSource_FromFiles_NullFiles_ThrowsArgumentNullException
                   - HelpSource_FromFiles_PathsEqualAfterSeparatorNormalization_ThrowsArgumentException
                   - HelpSource_FromFiles_NullText_ThrowsArgumentException
+                  - HelpSource_FromFiles_EmptyPathOrName_ThrowsArgumentException
                   - HelpSource_FromFiles_WithName_KeepsName
 
               - id: HelpCards-Loading-HelpSource-PathNormalization
