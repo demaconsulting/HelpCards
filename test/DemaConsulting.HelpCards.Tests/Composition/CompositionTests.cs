@@ -102,6 +102,32 @@ public class CompositionTests
     }
 
     /// <summary>
+    ///     Proves that the same example name in related cards is allowed, that a card's own example wins over one
+    ///     of the same name below it, and that composition reports the same name below a card without one.
+    /// </summary>
+    [Fact]
+    public void Composition_ExampleNames_SameNameInTwoCards_IsAllowedAndOwnCardWins()
+    {
+        // Arrange
+        var example = "examples:\n  - name: same\n    kind: command\n    language: shell\n    content: run\n    description: Run.\n";
+        var valid = CatalogBuilding.Compose(
+            ("a.md", SourceReading.Card(extraFrontMatter: example, body: "[[#same]]")),
+            ("a/b.md", SourceReading.Card(extraFrontMatter: example)));
+        var ambiguous = CatalogBuilding.Errors(
+            ("c.md", SourceReading.Card(body: "[[#same]]")),
+            ("c/d.md", SourceReading.Card(extraFrontMatter: example)),
+            ("c/e.md", SourceReading.Card(extraFrontMatter: example)));
+
+        // Act
+        var link = valid.Data!.Find("a")!.Body.Single(part => part.Link is not null).Link!;
+
+        // Assert
+        Assert.Empty(valid.Errors);
+        Assert.Equal(("same", "a"), (link.ExampleName, link.ExampleCardId));
+        Assert.Equal("ambiguous-reference", Assert.Single(ambiguous).RuleId);
+    }
+
+    /// <summary>
     ///     Proves that names, aliases, example names, and roots are checked against their rules.
     /// </summary>
     [Fact]
@@ -111,7 +137,7 @@ public class CompositionTests
         var example = "examples:\n  - name: same\n    kind: command\n    language: shell\n    content: run\n    description: Run.\n";
         var source = HelpSource.FromFiles(
             SourceReading.Files(
-                ("a.md", SourceReading.Card(extraFrontMatter: "aliases:\n  - b\n" + example)),
+                ("a.md", SourceReading.Card(extraFrontMatter: "aliases:\n  - b\n" + example + example.Replace("examples:\n", string.Empty, StringComparison.Ordinal))),
                 ("b.md", SourceReading.Card()),
                 ("a/c.md", SourceReading.Card(extraFrontMatter: example))),
             "test");
@@ -119,9 +145,9 @@ public class CompositionTests
         // Act
         var result = CatalogBuilding.Compose(source, builder => builder.ExpectedRoots(["a"]));
 
-        // Assert: ordinal file order puts the problem without a file first
+        // Assert: ordinal file order puts the problem without a file first; the example of a/c is a different card
         Assert.Equal(
-            [(string.Empty, "roots-mismatch"), ("a/c.md", "duplicate-example"), ("b.md", "name-duplicate")],
+            [(string.Empty, "roots-mismatch"), ("a.md", "duplicate-example"), ("b.md", "name-duplicate")],
             result.Errors.Select(problem => (problem.File, problem.RuleId)));
     }
 

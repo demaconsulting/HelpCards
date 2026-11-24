@@ -151,7 +151,7 @@ sections:
 
           - id: HelpCards-Composition-Uniqueness
             title: >-
-              The subsystem shall report example names that are used twice in one scope and names and aliases that
+              The subsystem shall report example names that are used twice in one card and names and aliases that
               are used twice among siblings or roots, ignoring case.
             justification: |
               A name must lead to exactly one card or example, otherwise a reader cannot reach the other one.
@@ -160,8 +160,9 @@ sections:
               - HelpCards-Composition-ReferenceValidator-SiblingNames
             tests:
               - Composition_Uniqueness_NamesAliasesExamplesAndRoots_AreChecked
-              - Composition_ExampleScope_OverlayExampleRepeatingName_IsDuplicateInTargetScope
-              - Composition_ExampleScope_SameNameInOtherSourcesAndScopes_IsAllowed
+              - Composition_ExampleNames_OverlayExampleRepeatingName_IsDuplicateInTargetCard
+              - Composition_ExampleNames_SameNameInOtherSourcesAndCards_IsAllowed
+              - Composition_ExampleNames_SameNameInTwoCards_IsAllowedAndOwnCardWins
 
           - id: HelpCards-Composition-Vocabulary
             title: >-

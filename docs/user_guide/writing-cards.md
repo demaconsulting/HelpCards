@@ -162,8 +162,8 @@ a forward reference to a card that is defined later is valid.
 | Link | Meaning |
 | --- | --- |
 | `[[build/compile]]` | The card with the local id `build/compile` |
-| `[[build/compile#settings]]` | The example `settings` of that card or of a card below it |
-| `[[#settings]]` | The example `settings` of the card that holds the link |
+| `[[build/compile#settings]]` | The example `settings` of that card, else of the one card below it that has it |
+| `[[#settings]]` | The example `settings` of the card that holds the link, found in the same way |
 | `[[other:build/compile\|the compile card]]` | A card of the declared source `other`, shown as the given text |
 | `[[other:build/compile#settings\|the settings]]` | An example of a card of the source `other` |
 
@@ -178,7 +178,9 @@ contract.
 
 Links are recognized in the body, outside fenced blocks and inline code spans, so `` `[[x]]` `` is plain text. Text
 that starts like a link but is not one is the error `link-syntax`. In an overlay, `[[#name]]` refers to the examples
-of the card that the overlay extends.
+of the card that the overlay extends. A link to an example finds the card's own example first; when the card has none
+of that name and two or more cards below it do, the link is ambiguous (`ambiguous-reference`) and you write
+`[[card#name]]` with the card that owns the example.
 
 How a link is shown depends on the rendering. In plain text a card link reads ``the card `a/b` ``; in the command style
 that the command-line helper uses it becomes the command that prints the card; in Markdown it is a Markdown link.
@@ -209,7 +211,7 @@ An example is a named, ready-to-use piece of text attached to a card. Each item 
 
 | Key | Meaning |
 | --- | --- |
-| `name` | A segment, unique within the card's scope (see below) |
+| `name` | A segment, unique within the card (see below) |
 | `kind` | `command`, `source`, or `snippet` |
 | `language` | One lower-case word such as `shell`, `yaml`, or `csharp` |
 | `description` | One line that says what the example shows |
@@ -246,9 +248,15 @@ dots, hyphens, and underscores, `/` separates folders, and `..`, a leading `/`, 
 of an example is normalized: CRLF becomes LF, a trailing line feed is removed, tokens are replaced, and a file is read
 as UTF-8.
 
-An example name is unique within a *scope*: the source of the card and the first segment of its local id, counting
-examples that overlays add. Two examples of one scope with the same name are the error `duplicate-example`. A reader
-who asks for an example by name alone finds the first one in the subtree; `card#name` is unambiguous.
+An example name is unique within its *card*, counting examples that overlays add: two examples of one card with the
+same name are the error `duplicate-example`, while different cards, including a parent and its children, may use the
+same name (so the example of every card can be called `settings` or `check`). A reader who asks a card for an example
+by name finds the card's own example first; if the card has none of that name, the cards below it are searched, and the
+name must then be unique among them (the command line and the agent tool list the qualified names `card#name` to choose
+from when it is not). `card#name` always names one card.
+
+**Beta note.** Before 0.1.0-beta.3 an example name had to be unique across a card and every card below it (the first
+segment of its id). Cards that were valid stay valid with the same meaning; the new rule only allows more.
 
 ### Expected Results
 

@@ -174,6 +174,16 @@ problem of a clash names the source it clashes with.
 Finds a card by alias path, finds nothing for an unqualified id, lists the valid names of a failed path, and finds
 examples by name and by card form.
 
+### Examples: Names per Card
+
+**Test**: `HelpCards_Examples_Names_AreUniquePerCardAndResolveOwnCardFirst`
+
+Creates a catalog in which a card and its child both have an example of the same name and a card without examples has
+two children that both have it. Asserts that the links of the card name their own owners, that `FindExamples` returns
+every match without a limit, only the card's own example for a limiting card that owns the name, and both cards below
+a card that has none, and that a repeated name in one card is `duplicate-example` and a link that finds the name in
+two cards below it is `ambiguous-reference`.
+
 ### Views: Subsets and Hidden Targets
 
 **Test**: `HelpCards_Views_FilterSourceWhereWithout_ShowSubsetsAndHideTargets`

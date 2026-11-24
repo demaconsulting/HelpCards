@@ -40,7 +40,8 @@ sections:
                   The dispatcher shall print the examples of a card in full and only list the cards below it that have
                   examples, print one example as exactly its content, also by the qualified name, report an example
                   that does not exist with the examples that do, and report a name that matches several examples with
-                  the qualified names to choose from.
+                  report a name that matches several examples below a card that has none of that name with the qualified
+                  names to choose from, and print the card's own example when it has one.
                 justification: |
                   Examples are saved to files and run, so they must come out unchanged, and a miss must lead to a hit.
                 tests:
@@ -48,6 +49,7 @@ sections:
                   - CliDispatcher_Run_Example_PrintsExactlyTheContent
                   - CliDispatcher_Run_ExampleNotFound_ListsTheExamplesOfTheCardAndBelow
                   - CliDispatcher_Run_ExampleNameInTwoRootsBelowAMount_IsAmbiguous
+                  - CliDispatcher_Example_OwnCardExample_BeatsDescendantWithSameName
 
               - id: HelpCards-Integration-CliDispatcher-NotFound
                 title: >-

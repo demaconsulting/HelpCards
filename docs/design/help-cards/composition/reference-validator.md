@@ -22,15 +22,17 @@ state and is used once per build.
   not registered becomes its display text with an informational `external-source-absent` problem. Otherwise the named
   card is looked up by the registry (`link-target` when missing, `ambiguous-reference` when a bare id names a card of
   the source and of an import, nothing when suppressed); a card link keeps the global id, and an example link searches
-  the card, or for `[[#name]]` the containing card, and its subtree depth first with `ExampleResolver` (`example-target`
-  when no example matches). The result records the card the link names, the example, the card that owns the example, and
-  for external links the source and display text. Unresolvable links are left out because the build fails anyway.
+  the card, or for `[[#name]]` the containing card, with `ExampleResolver.FindCandidates`: the card's own example when
+  it has one of that name, otherwise every example of the name below it (`example-target` when none matches,
+  `ambiguous-reference` when the examples belong to two or more cards, naming them and the form that chooses one). The
+  result records the card the link names, the example, the card that owns the example, and for external links the source
+  and display text. Unresolvable links are left out because the build fails anyway.
 - **`ResolveLanding(entry, root)`** resolves the body of `_source.md` for the generated root card of a mounted source.
 - **`ResolveSeeAlso(build)`** resolves the entries of a card and of its overlays in the order written, drops an entry
   for an absent source with the same informational problem, reports an entry that names no card (`see-also-target`) or
   an ambiguous one, and removes duplicates.
-- **`CheckExampleNames(builds)`** reports the second use of an example name within a scope, which is the source of
-  the owning card and the first segment of its id, counting the examples that overlays add (`duplicate-example`, at the
+- **`CheckExampleNames(builds)`** reports the second use of an example name within a card of a source, counting
+  the examples that overlays add to the card they extend (`duplicate-example`, at the
   file and line of the second example, which for an overlay is the overlay file).
 - **`CheckSiblingNames(entry, siblings)`** claims the name and then each alias, normalized to NFC, of every sibling in
   order in a case-insensitive table and reports a claim that is already taken (`name-duplicate`), including a card's own

@@ -577,6 +577,43 @@ public class HelpCardsTests
     }
 
     /// <summary>
+    ///     Proves that an example name is unique within a card, not within a family of cards, that a link finds the
+    ///     card's own example first, and that a name that several cards below a card use is an ambiguous reference.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Examples_Names_AreUniquePerCardAndResolveOwnCardFirst()
+    {
+        // Arrange: p and its child both have the example same; q has none, and its children r and s both have it
+        const string example = "examples:\n  - name: same\n    kind: command\n    language: shell\n    content: run {0}\n    description: Run it.\n";
+        string Own(string text) => string.Format(System.Globalization.CultureInfo.InvariantCulture, example, text);
+        var catalog = CatalogBuilding.FromFiles(
+            ("p.md", SourceReading.Card(extraFrontMatter: Own("p"), body: "Run [[#same]] or [[p/child#same]].")),
+            ("p/child.md", SourceReading.Card(extraFrontMatter: Own("child"))),
+            ("q/r.md", SourceReading.Card(extraFrontMatter: Own("r"))),
+            ("q/s.md", SourceReading.Card(extraFrontMatter: Own("s"))),
+            ("q.md", SourceReading.Card()));
+        var repeated = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(extraFrontMatter: Own("one") + Own("two").Replace("examples:\n", string.Empty, StringComparison.Ordinal)))));
+        var ambiguous = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("q.md", SourceReading.Card(body: "Run [[#same]].")),
+            ("q/r.md", SourceReading.Card(extraFrontMatter: Own("r"))),
+            ("q/s.md", SourceReading.Card(extraFrontMatter: Own("s")))));
+        var json = new HelpRenderOptions { Format = HelpFormat.Json };
+
+        // Act
+        var own = catalog.Render(catalog.Find("p")!, json);
+
+        // Assert: the same name in related cards is valid and the links name their owners
+        Assert.Contains("\"exampleName\":\"same\",\"exampleCardId\":\"p\"", own, StringComparison.Ordinal);
+        Assert.Contains("\"cardId\":\"p/child\",\"exampleName\":\"same\",\"exampleCardId\":\"p/child\"", own, StringComparison.Ordinal);
+        Assert.Equal(["p", "p/child", "q/r", "q/s"], catalog.FindExamples("same").Select(reference => reference.CardId));
+        Assert.Equal(["p"], catalog.FindExamples("same", "p").Select(reference => reference.CardId));
+        Assert.Equal(["q/r", "q/s"], catalog.FindExamples("same", "q").Select(reference => reference.CardId));
+        Assert.Equal("duplicate-example", Assert.Single(repeated.Problems).RuleId);
+        Assert.Equal("ambiguous-reference", Assert.Single(ambiguous.Problems).RuleId);
+    }
+
+    /// <summary>
     ///     Proves that paths, aliases, and example names find cards and examples and failures say what was valid.
     /// </summary>
     [Fact]

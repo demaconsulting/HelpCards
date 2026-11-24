@@ -443,4 +443,29 @@ public partial class CliDispatcherTests
         Assert.Equal(0, chosenCode);
         Assert.Equal("tool y\n", chosen.Output.ToString());
     }
+
+    /// <summary>
+    ///     Proves that <c>--example</c> prints the example of the card itself when a card below it has the same name,
+    ///     and that the card below is chosen by its own command.
+    /// </summary>
+    [Fact]
+    public void CliDispatcher_Example_OwnCardExample_BeatsDescendantWithSameName()
+    {
+        // Arrange: the parent and its child both have an example x
+        const string example = "examples:\n  - name: x\n    kind: command\n    language: shell\n    content: tool x\n    description: An example.\n";
+        var catalog = CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(title: "A", extraFrontMatter: example)),
+            ("a/b.md", SourceReading.Card(title: "B", extraFrontMatter: example.Replace("tool x", "tool y", StringComparison.Ordinal))));
+        var parent = new CliHarness(catalog);
+        var child = new CliHarness(catalog);
+
+        // Act
+        var parentCode = parent.Run("a", "--example", "x");
+        var childCode = child.Run("a/b", "--example", "x");
+
+        // Assert
+        Assert.Equal((0, 0), (parentCode, childCode));
+        Assert.Equal("tool x\n", parent.Output.ToString());
+        Assert.Equal("tool y\n", child.Output.ToString());
+    }
 }

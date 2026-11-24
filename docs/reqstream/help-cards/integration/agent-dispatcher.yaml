@@ -42,8 +42,8 @@ sections:
                 title: >-
                   The dispatcher shall answer an example with its description line and its content in a fence that is
                   longer than any run of backticks in the content, limit the search to the topic and the cards below it,
-                  list the qualified names when several examples match, and suggest the closest example names when
-                  none does.
+                  list the qualified names when several examples match, answer with the topic's own example when it has
+                  one of that name, and suggest the closest example names when none does.
                 justification: |
                   Examples are copied, so the content must be exact and unambiguous.
                 tests:
@@ -51,6 +51,7 @@ sections:
                   - AgentDispatcher_Answer_ExampleWithTopic_SearchesTheSubtreeOnly
                   - AgentDispatcher_Answer_MissingExample_SuggestsClosestNames
                   - AgentDispatcher_Answer_ExampleInSeveralCards_ListsTheChoices
+                  - AgentDispatcher_Example_TopicOwnsName_ReturnsOwn
 
               - id: HelpCards-Integration-AgentDispatcher-Query
                 title: >-

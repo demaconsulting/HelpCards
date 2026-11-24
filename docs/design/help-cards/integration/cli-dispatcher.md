@@ -31,7 +31,8 @@ mode.
 - **Card, examples, example** resolve the path with `HelpCatalog.Resolve`; an unknown card is `not-found` with the
   closest name, the names at that level, and the command for their summaries (built from the command template, also at
   the first level). An example name is searched in the card
-  and below it with `FindExamples`; none is `not-found` with the example names, several is `ambiguous` with the
+  and below it with `FindExamples`, which returns only the card's own example when it has one of the name; none is
+  `not-found` with the example names, several (in cards below a card that has none) is `ambiguous` with the
   qualified names.
 - **Search and tags** validate the sources and tags against the catalog (an unknown one is `not-found` with the known
   ones), then call `Search` or filter by tag; the sources restrict the view first.

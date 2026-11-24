@@ -291,6 +291,30 @@ public partial class HelpCatalogTests
     }
 
     /// <summary>
+    ///     Proves that a limiting card that owns the name returns only its own example, and that without a limit every
+    ///     match is returned.
+    /// </summary>
+    [Fact]
+    public void HelpCatalog_FindExamples_ScopeCardOwnsName_ReturnsOnlyOwn()
+    {
+        // Arrange: a and its child both have the name
+        var catalog = CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(extraFrontMatter: Example("same"))),
+            ("a/b.md", SourceReading.Card(extraFrontMatter: Example("same"))),
+            ("c.md", SourceReading.Card()),
+            ("c/d.md", SourceReading.Card(extraFrontMatter: Example("same"))));
+
+        // Act / Assert
+        Assert.Equal(["a"], catalog.FindExamples("same", "a").Select(reference => reference.CardId));
+        Assert.Equal(["a"], catalog.FindExamples("a#same").Select(reference => reference.CardId));
+        Assert.Equal(["a/b"], catalog.FindExamples("same", "a/b").Select(reference => reference.CardId));
+        Assert.Equal(["c/d"], catalog.FindExamples("same", "c").Select(reference => reference.CardId));
+        Assert.Equal(["a", "a/b", "c/d"], catalog.FindExamples("same").Select(reference => reference.CardId));
+        Assert.Equal("a", catalog.FindExample(catalog.Find("a")!, "same")?.CardId);
+        Assert.Equal("c/d", catalog.FindExample(catalog.Find("c")!, "same")?.CardId);
+    }
+
+    /// <summary>
     ///     Proves that a single example search starts at the card and goes depth first.
     /// </summary>
     [Fact]

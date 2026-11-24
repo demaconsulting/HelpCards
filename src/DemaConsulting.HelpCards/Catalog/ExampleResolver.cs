@@ -34,12 +34,43 @@ internal static class ExampleResolver
     }
 
     /// <summary>
+    ///     Finds the examples a link to an example name can mean from a card.
+    /// </summary>
+    /// <remarks>
+    ///     The card's own example wins: when the card owns the name, only that example is returned. Otherwise every
+    ///     example of the name in the cards below it is returned, in depth-first order, so the caller can tell a
+    ///     unique match (one result) from an ambiguous one (several).
+    /// </remarks>
+    /// <param name="start">The card to start at.</param>
+    /// <param name="name">The example name.</param>
+    /// <param name="children">Gives the children of a card in order.</param>
+    /// <returns>The matches; empty when no card in the subtree has the example.</returns>
+    public static IReadOnlyList<HelpExampleReference> FindCandidates(
+        CardNode start,
+        string name,
+        Func<CardNode, IReadOnlyList<CardNode>> children)
+    {
+        var own = start.Examples.Where(example => IsNamed(example, name)).Select(example => new HelpExampleReference(start.Id, example)).ToList();
+        if (own.Count > 0)
+        {
+            return own;
+        }
+
+        return Enumerate(start, children)
+            .Skip(1)
+            .SelectMany(node => node.Examples.Where(example => IsNamed(example, name)).Select(example => new HelpExampleReference(node.Id, example)))
+            .ToList();
+    }
+
+    /// <summary>
     ///     Finds every example of a name in a catalog view, optionally limited to one card's subtree.
     /// </summary>
     /// <remarks>
     ///     The name may be written <c>card#name</c> to limit the search to the subtree of a card given as a
     ///     global id or a path. When a scope card is also given, the matches must lie in both subtrees. A card
-    ///     that does not exist or is hidden yields no matches.
+    ///     that does not exist or is hidden yields no matches. When the search is limited to a card and that card
+    ///     owns an example of the name, only the card's own example is returned; the cards below it count only when
+    ///     it has none.
     /// </remarks>
     /// <param name="scope">The scope that decides what is visible.</param>
     /// <param name="name">The example name, or <c>card#name</c>.</param>
@@ -76,6 +107,12 @@ internal static class ExampleResolver
         var candidates = limits.Count == 0
             ? scope.Cards
             : Enumerate(limits[0], scope.GetChildren).Where(node => limits.All(limit => IsInSubtree(scope, node, limit))).ToList();
+        if (limits.Count > 0 && candidates.Count > 0 && candidates[0].Examples.Any(example => IsNamed(example, exampleName)))
+        {
+            // The first candidate is the card the limits narrow the search to; its own example wins
+            candidates = [candidates[0]];
+        }
+
         return candidates
             .SelectMany(node => node.Examples.Where(example => IsNamed(example, exampleName)).Select(example => new HelpExampleReference(node.Id, example)))
             .ToList();

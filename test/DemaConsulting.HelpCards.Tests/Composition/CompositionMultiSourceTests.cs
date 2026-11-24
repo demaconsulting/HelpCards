@@ -276,13 +276,13 @@ public class CompositionMultiSourceTests
     }
 
     /// <summary>
-    ///     Proves that example names an overlay adds count in the scope of the card it extends.
+    ///     Proves that example names an overlay adds count in the card it extends.
     /// </summary>
     [Fact]
-    public void Composition_ExampleScope_OverlayExampleRepeatingName_IsDuplicateInTargetScope()
+    public void Composition_ExampleNames_OverlayExampleRepeatingName_IsDuplicateInTargetCard()
     {
         // Arrange: lib-a/graph has the example render; the overlay adds another one with that name, another one is
-        // added to a card in a different scope
+        // added to a different card
         var libA = CatalogBuilding.LibA();
         var example = "examples:\n  - name: render\n    kind: command\n    language: shell\n    content: run\n    description: Run.\n";
         var app = CatalogBuilding.Named(
@@ -293,16 +293,16 @@ public class CompositionMultiSourceTests
         // Act
         var result = CatalogBuilding.Compose(builder => builder.AddMountedSource(libA).AddSource(app));
 
-        // Assert: only the overlay of graph repeats a name in its scope; the same name in shapes and in lib-b is fine
+        // Assert: only the overlay of graph repeats a name of its card; the same name in shapes and in lib-b is fine
         var problem = Assert.Single(result.Errors);
         Assert.Equal(("app", "o1.md", "duplicate-example"), (problem.SourceName, problem.File, problem.RuleId));
     }
 
     /// <summary>
-    ///     Proves that the same example name may be used in different sources and different first-segment scopes.
+    ///     Proves that the same example name may be used in different sources and different cards.
     /// </summary>
     [Fact]
-    public void Composition_ExampleScope_SameNameInOtherSourcesAndScopes_IsAllowed()
+    public void Composition_ExampleNames_SameNameInOtherSourcesAndCards_IsAllowed()
     {
         // Arrange / Act: lib-a/graph and lib-b/chart both have the example render
         var catalog = HelpCatalog.Create(builder => builder.AddSource(CatalogBuilding.LibA()).AddSource(CatalogBuilding.LibB()));

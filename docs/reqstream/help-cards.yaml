@@ -106,6 +106,24 @@ sections:
         tests:
           - HelpCards_Examples_SaveAsAndFile_Schema2SplitsAndSchema1StillReads
 
+      - id: HelpCards-Examples-NameScope
+        title: >-
+          An example name shall be unique within its card and the same name may be used by other cards, a link or
+          command that names a card shall find that card's own example first, and a name that only cards below the
+          card have shall be found when exactly one does and reported as ambiguous when several do.
+        tags: [system]
+        justification: |
+          A card is a unit that its author owns; requiring a name to be unique across a whole family of cards forced
+          awkward names such as setup-yaml, while a link that names a card can still be resolved exactly.
+        children:
+          - HelpCards-Composition-Uniqueness
+          - HelpCards-Composition-References
+          - HelpCards-Catalog-Lookup
+          - HelpCards-Integration-CliModes
+          - HelpCards-Integration-AgentCalls
+        tests:
+          - HelpCards_Examples_Names_AreUniquePerCardAndResolveOwnCardFirst
+
       - id: HelpCards-Tokens-Substitution
         title: >-
           Text of cards shall be able to use tokens that are replaced with the values of the source and the

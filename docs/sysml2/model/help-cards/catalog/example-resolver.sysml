@@ -4,7 +4,7 @@ package HelpCards_ExampleResolver {
     private import HelpCards_PathResolver::*;
 
     part def ExampleResolver {
-        doc /* Finds examples by name: the first example in a card and the cards below it, searched depth first with the children the caller supplies (used by composition over the final tree and by catalogs over a view), and every example in a view, optionally limited to the subtree of a card given as a path or id. */
+        doc /* Finds examples by name: the first example in a card and the cards below it, searched depth first with the children the caller supplies (used by composition over the final tree and by catalogs over a view), the candidates a link can mean from a card (the card's own example, else every example of the name below it), and every example in a view, optionally limited to the subtree of a card given as a path or id; a limiting card that owns the name gives only its own example. */
 
         metadata info : SoftwareInfo {
             sourceFiles = ("src/DemaConsulting.HelpCards/Catalog/ExampleResolver.cs");

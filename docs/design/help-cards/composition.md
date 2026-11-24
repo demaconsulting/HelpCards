@@ -71,15 +71,16 @@ The pipeline runs these steps in order; every step runs on the data that survive
    Title and summary replace those of the target, the body is appended after a blank line, and see-also entries and
    examples are appended. An optional overlay of a source that is not part of the catalog is skipped with the
    informational `overlay-optional-skipped`; any other overlay without a target is an error.
-7. **Resolve references** in one pass over the final tree with `ReferenceValidator`: forward references are as valid
-   as backward ones. Every text is resolved in the scope of the source that wrote it, so the body of an overlay uses
-   its own source and imports while it is shown on the target card. `[[#name]]` searches the subtree of the card it
-   ends up in (the target for an overlay); `[[card#name]]` the subtree of that card. An external link to a registered
-   source resolves like a local link; a link to a source that is not present becomes its display text and an
+7. **Resolve references** in one pass over the final tree with `ReferenceValidator`: forward references are as valid as
+   backward ones. Every text is resolved in the scope of the source that wrote it, so the body of an overlay uses its
+   own source and imports while it is shown on the target card. `[[#name]]` means the example of the card it ends up in
+   (the target for an overlay) and `[[card#name]]` that of the named card: the card's own example first, otherwise the
+   one card below it that has the name; two cards below it are an `ambiguous-reference`. An external link to a
+   registered source resolves like a local link; a link to a source that is not present becomes its display text and an
    informational `external-source-absent` problem.
-8. **Check uniqueness**: example names within a scope (the source of the target card and the first segment of its id,
-   counting the examples that overlays add), names and aliases among siblings, ignoring case (`name-duplicate`), and the
-   expected roots (`roots-mismatch`), which are the mount roots of mounted sources and the roots of flat sources.
+8. **Check uniqueness**: example names within a card (counting the examples that overlays add), names and aliases among
+   siblings, ignoring case (`name-duplicate`), and the expected roots (`roots-mismatch`), which are the mount roots of
+   mounted sources and the roots of flat sources.
 9. **Freeze.** When no error exists, the nodes are put in depth-first order into `CatalogData`: the roots follow the
    registration order, a mounted source being its generated root with the cards below it; informational problems
    become its diagnostics. Warnings are never produced here; only the validator of the Testing subsystem produces them.

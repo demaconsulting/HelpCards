@@ -87,13 +87,16 @@ sections:
               - id: HelpCards-Catalog-HelpCatalog-Examples
                 title: >-
                   The catalog shall find all examples of a name, optionally limited by the form card-hash-name or a
-                  scope card to that card and the cards below it, and the first example of a name in a card and its
-                  subtree searched depth first.
+                  scope card to that card and the cards below it, return only the limiting card's own example when
+                  it has one of that name, and find the first example of a name in a card and its subtree searched
+                  depth first, the card's own example first.
                 justification: |
-                  Tools print one example by name and list the examples of a topic.
+                  Tools print one example by name and list the examples of a topic; an example name is unique within
+                  a card, so a card's own example is the one a reader means.
                 tests:
                   - HelpCatalog_FindExamples_ByName_ReturnsEveryMatchWithOwner
                   - HelpCatalog_FindExamples_CardFormAndScope_LimitToSubtree
+                  - HelpCatalog_FindExamples_ScopeCardOwnsName_ReturnsOnlyOwn
                   - HelpCatalog_FindExample_SearchesCardThenSubtreeDepthFirst
 
               - id: HelpCards-Catalog-HelpCatalog-TagFilter

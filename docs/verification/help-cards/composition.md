@@ -38,7 +38,7 @@ order of the problems or files in the input.
   problem.
 - **References resolve**: forward links, card and example links, an external link to the registered source, and
   see-also entries resolve; a link to an absent source degrades; `[[#name]]` looks only in the card it is written in.
-- **Uniqueness**: a repeated example name in one scope, a name that is also an alias, and a mismatch with the expected
+- **Uniqueness**: a repeated example name in one card, a name that is also an alias, and a mismatch with the expected
   roots are all reported, in ordinal file order.
 - **Mounting**: two mounted libraries give generated root cards with the mount as id, global ids with the mount as
   prefix, children in the order of `_source.md`, the landing text from `_source.md`, and an alias that finds the mount
@@ -53,8 +53,9 @@ order of the problems or files in the input.
   entries, and examples (whose links resolve in the application's scope and whose `[[#name]]` refers to the target
   subtree); a bare overlay extends a card of the imported library; an optional overlay of an absent library is skipped
   with an informational problem; overlays apply in registration order and then by file path.
-- **Example scope and links between sources**: the same example name in two libraries is allowed, an overlay that
-  repeats a name of its target scope is reported in the overlay file; links to a present library resolve with the
+- **Example names and links between sources**: the same example name in two libraries or two cards is allowed (the
+  card's own example wins, two cards below a card with the name are ambiguous), an overlay that
+  repeats a name of its target card is reported in the overlay file; links to a present library resolve with the
   global id and a missing card is an error, links to an absent library degrade to their display text.
 - **Collisions**: the same global id, mount, source name, or root alias in two sources, and a card under a card of
   another source, are each one problem that names both sources, and the later card or source is left out silently.

@@ -293,10 +293,12 @@ release must reference at least that version in its `PackageReference`.
 | `x-*` (extensions) | 0.1.0 |
 | `exit`, `expect` (command examples) | 0.1.0-beta.3 |
 | `save-as` (examples), with `schema: 2` | 0.1.0-beta.3 |
+| Same example name in several cards of one source (per-card names) | 0.1.0-beta.3 |
 
 Omitting `schema` means schema 1. Schema 2 splits the `file` key of an example into `save-as` (the name to save it as)
 and `file` (a companion data file); schema 1 is still read exactly as before and stays supported. A source that declares
-a schema newer than the library supports fails with the rule `schema-unsupported`.
+a schema newer than the library supports fails with the rule `schema-unsupported`. Example names are unique within a
+card, not within a family of cards; a card that has none of a name is searched below, where the name must be unique.
 
 ## Target frameworks
 

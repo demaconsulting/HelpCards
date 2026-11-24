@@ -121,7 +121,7 @@ not reported):
    extends.
 7. **Resolve references** in a final pass over the final tree, in the scope of the source that wrote
    each text and its imports: links, see-also entries, and examples. Links to absent sources degrade.
-8. **Check uniqueness**: example names, expected roots, and sibling and root names and aliases.
+8. **Check uniqueness**: example names (per card), expected roots, and sibling and root names and aliases.
 9. **Freeze**: build the immutable catalog data. Warnings are produced only by the validator.
 
 Rendering is a pure function of the immutable catalog and the render options; no rendered output is cached (only the

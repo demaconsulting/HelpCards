@@ -66,7 +66,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>collision</c></term><description>Error. Two sources contribute the same global id, mount, or name.</description></item>
 ///         <item><term><c>example-invalid</c></term><description>Error. The content of an example is not valid: it is empty, it starts with a blank line, it is a list, or a <c>command</c> is not exactly one line.</description></item>
 ///         <item><term><c>example-file-missing</c></term><description>Error. The data file named by an example does not exist next to the card.</description></item>
-///         <item><term><c>duplicate-example</c></term><description>Error. An example name is used twice in one scope.</description></item>
+///         <item><term><c>duplicate-example</c></term><description>Error. An example name is used twice in one card; names are unique per card, so two cards may use the same name.</description></item>
 ///         <item><term><c>tag-unknown</c></term><description>Error. A tag is not in the closed vocabulary set with <c>HelpCatalogBuilder.TagVocabulary</c>.</description></item>
 ///         <item><term><c>tag-required</c></term><description>Error. A card has none of the tags that the vocabulary requires.</description></item>
 ///         <item><term><c>roots-mismatch</c></term><description>Error. The root cards differ from those set with <c>HelpCatalogBuilder.ExpectedRoots</c>.</description></item>
@@ -76,7 +76,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>import-order</c></term><description>Error. A source is added before a source it imports; add the imported source first.</description></item>
 ///         <item><term><c>import-missing</c></term><description>Error. An imported source is not registered.</description></item>
 ///         <item><term><c>import-cycle</c></term><description>Error. Sources import each other in a cycle.</description></item>
-///         <item><term><c>ambiguous-reference</c></term><description>Error. A bare reference matches cards of two sources; write <c>source:id</c>.</description></item>
+///         <item><term><c>ambiguous-reference</c></term><description>Error. A bare reference matches cards of two sources, or an example link <c>[[#x]]</c> or <c>[[card#x]]</c> finds no <c>x</c> in the card itself and finds it in two cards below it; write <c>source:id</c> or <c>[[card#x]]</c> with the card that owns the example.</description></item>
 ///         <item><term><c>schema-unsupported</c></term><description>Error. A source declares a <c>schema</c> newer than this library supports (the highest is 2).</description></item>
 ///         <item><term><c>translation-orphan</c></term><description>Error. A translation file has no neutral file.</description></item>
 ///         <item><term><c>translation-key</c></term><description>Error. A translation contains a key that translations may not contain.</description></item>

@@ -67,7 +67,7 @@ public sealed class HelpExample
     }
 
     /// <summary>
-    ///     Gets the name of the example, unique within its scope, as used in <c>--example</c> and links.
+    ///     Gets the name of the example, unique within its card, as used in <c>--example</c> and links.
     /// </summary>
     public string Name { get; }
 

@@ -36,6 +36,22 @@ public class ExampleResolverTests
     }
 
     /// <summary>
+    ///     Gets the scope of a tree where <c>p</c> and its child <c>p/child</c> both own the name <c>dup</c>, and the
+    ///     cards <c>q/r</c> and <c>q/s</c> below <c>q</c> (which has no examples) own <c>dup</c> too; only <c>q/s</c>
+    ///     owns <c>single</c>.
+    /// </summary>
+    /// <returns>The scope.</returns>
+    private static CatalogScope FamilyScope()
+    {
+        return CatalogScope.All(CatalogBuilding.Compose(
+            ("p.md", SourceReading.Card(extraFrontMatter: Examples("dup"))),
+            ("p/child.md", SourceReading.Card(extraFrontMatter: Examples("dup"))),
+            ("q.md", SourceReading.Card()),
+            ("q/r.md", SourceReading.Card(extraFrontMatter: Examples("dup"))),
+            ("q/s.md", SourceReading.Card(extraFrontMatter: Examples("dup", "single")))).Data!);
+    }
+
+    /// <summary>
     ///     Proves that a subtree search finds a card's own example, ignoring case.
     /// </summary>
     [Fact]
@@ -83,6 +99,56 @@ public class ExampleResolverTests
 
         // Assert
         Assert.Null(found);
+    }
+
+    /// <summary>
+    ///     Proves that a card's own example is the only candidate even when a card below it uses the same name.
+    /// </summary>
+    [Fact]
+    public void ExampleResolver_FindCandidates_OwnExample_Wins()
+    {
+        // Arrange
+        var scope = FamilyScope();
+
+        // Act
+        var found = ExampleResolver.FindCandidates(scope.Data.Find("p")!, "DUP", scope.GetChildren);
+
+        // Assert
+        Assert.Equal(["p"], found.Select(reference => reference.CardId));
+    }
+
+    /// <summary>
+    ///     Proves that without an own example every match below the card is a candidate, in depth-first order.
+    /// </summary>
+    [Fact]
+    public void ExampleResolver_FindCandidates_TwoDescendants_ReturnsBoth()
+    {
+        // Arrange
+        var scope = FamilyScope();
+
+        // Act / Assert
+        Assert.Equal(["q/r", "q/s"], ExampleResolver.FindCandidates(scope.Data.Find("q")!, "dup", scope.GetChildren).Select(reference => reference.CardId));
+        Assert.Equal(["q/s"], ExampleResolver.FindCandidates(scope.Data.Find("q")!, "single", scope.GetChildren).Select(reference => reference.CardId));
+        Assert.Empty(ExampleResolver.FindCandidates(scope.Data.Find("q/r")!, "single", scope.GetChildren));
+        Assert.Empty(ExampleResolver.FindCandidates(scope.Data.Find("q")!, "dup", _ => []));
+    }
+
+    /// <summary>
+    ///     Proves that a search limited to a card returns only the card's own example when it has one.
+    /// </summary>
+    [Fact]
+    public void ExampleResolver_FindAll_LimitCardOwnsName_ReturnsOnlyOwn()
+    {
+        // Arrange
+        var scope = FamilyScope();
+
+        // Act / Assert: the limit card owns the name (own wins) or does not (every match below it)
+        Assert.Equal(["p"], ExampleResolver.FindAll(scope, "dup", "p").Select(reference => reference.CardId));
+        Assert.Equal(["p"], ExampleResolver.FindAll(scope, "p#dup", null).Select(reference => reference.CardId));
+        Assert.Equal(["q/r", "q/s"], ExampleResolver.FindAll(scope, "dup", "q").Select(reference => reference.CardId));
+        Assert.Equal(["p", "p/child", "q/r", "q/s"], ExampleResolver.FindAll(scope, "dup", null).Select(reference => reference.CardId));
+        Assert.Equal(["p/child"], ExampleResolver.FindAll(scope, "dup", "p/child").Select(reference => reference.CardId));
+        Assert.Equal(["p/child"], ExampleResolver.FindAll(scope, "p#dup", "p/child").Select(reference => reference.CardId));
     }
 
     /// <summary>

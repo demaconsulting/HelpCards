@@ -161,7 +161,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     </para>
 ///     <para>
 ///         <b>Examples.</b> Each item of <c>examples</c> is a named, ready-to-use piece of text. Its keys are
-///         <c>name</c> (a segment, unique in the scope: the source and the first segment of the card id),
+///         <c>name</c> (a segment, unique within the card),
 ///         <c>kind</c> (<c>command</c>, <c>source</c> or <c>snippet</c>), <c>language</c> (one lower-case word such as
 ///         <c>shell</c>, <c>yaml</c> or <c>csharp</c>), <c>description</c> (one line), <c>file</c>, <c>content</c>,
 ///         <c>save-as</c> (schema 2), and, for a <c>command</c> only, the expected result <c>exit</c> and <c>expect</c>;
@@ -208,7 +208,8 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         digits, dots, hyphens and underscores, with <c>/</c> between folders; <c>..</c>, a leading <c>/</c> and a
 ///         drive are not allowed, and the name does not end in <c>.md</c> (<c>value-invalid</c>). Two <c>source</c>
 ///         examples of one card that are saved under the same name are the validator warning <c>save-as-duplicate</c>.
-///         Duplicate example names in one scope are <c>duplicate-example</c>; empty or blank-first content, or a
+///         Duplicate example names in one card (counting the examples that overlays add) are <c>duplicate-example</c>;
+///         the same name in two cards of one source is fine. Empty or blank-first content, or a
 ///         <c>command</c> on several lines, is <c>example-invalid</c>.
 ///     </para>
 ///     <para>
@@ -220,8 +221,8 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     <list type="table">
 ///         <listheader><term>Link</term><description>Meaning</description></listheader>
 ///         <item><term><c>[[build/compile]]</c></term><description>The card with the local id <c>build/compile</c> in this source (or a source it imports). A bare id that exists in both is <c>ambiguous-reference</c>.</description></item>
-///         <item><term><c>[[build/compile#settings]]</c></term><description>The example <c>settings</c> of that card or of a card below it.</description></item>
-///         <item><term><c>[[#settings]]</c></term><description>The example <c>settings</c> of the card that holds the link.</description></item>
+///         <item><term><c>[[build/compile#settings]]</c></term><description>The example <c>settings</c> of that card; when that card has none of that name, the one card below it that has it (two such cards are <c>ambiguous-reference</c>; name the card to choose).</description></item>
+///         <item><term><c>[[#settings]]</c></term><description>The example <c>settings</c> of the card that holds the link, found in the same way.</description></item>
 ///         <item><term><c>[[other:build/compile|the compile card]]</c></term><description>A cross-source link: the card of the declared source <c>other</c> (the <c>name</c> in its <c>_source.md</c>), shown as the text after the bar (1 to 120 characters).</description></item>
 ///         <item><term><c>[[other:build/compile#settings|the settings]]</c></term><description>An example of a card of the source <c>other</c>.</description></item>
 ///     </list>
