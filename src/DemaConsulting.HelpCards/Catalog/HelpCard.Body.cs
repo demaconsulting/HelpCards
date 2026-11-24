@@ -2,9 +2,8 @@ using System.Text;
 
 namespace DemaConsulting.HelpCards.Catalog;
 
-/// <summary>
-///     The body of a card: applying the hiding rules of a view and writing the plain style.
-/// </summary>
+// The body of a card: applying the hiding rules of a view and writing the plain style. (Not an XML doc comment on
+// purpose: the type summary lives on HelpCard.cs, and a second summary here would win in generated API references.)
 public sealed partial class HelpCard
 {
     /// <summary>

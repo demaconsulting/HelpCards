@@ -18,12 +18,18 @@ public sealed class HelpCliOptions
     /// <summary>
     ///     Gets the name of the tool as the user types it; it appears in usage text, hints, and commands.
     /// </summary>
+    /// <remarks>
+    ///     This is the name in the printed commands (<c>tool help ...</c>). The catalog has its own tool name,
+    ///     <c>HelpCatalogBuilder.ToolName</c>, which is the value of the <c>{{tool}}</c> token in the cards; set both to
+    ///     the same value.
+    /// </remarks>
     public required string ToolName { get; init; }
 
     /// <summary>
     ///     Gets the version of the tool for information, or <see langword="null"/> when it has none. The helper does not
-    ///     print it: the version that the help shows comes from <c>HelpCatalogBuilder.ToolVersion</c> of the catalog
-    ///     that <see cref="CatalogFactory"/> creates.
+    ///     print it: the version that the help shows (the <c>{{version}}</c> token and the <c>version</c> field of the JSON
+    ///     documents) comes from <c>HelpCatalogBuilder.ToolVersion</c> of the catalog that <see cref="CatalogFactory"/>
+    ///     creates. Set both to the same value.
     /// </summary>
     public string? Version { get; init; }
 
@@ -76,6 +82,12 @@ public sealed class HelpCliOptions
     ///     Gets the template of the command that prints a card, such as <c>{tool} help {path}</c>, or
     ///     <see langword="null"/> for the tool name, the verb, and the path.
     /// </summary>
+    /// <remarks>
+    ///     The helper writes every link in the command style, so the template decides how card links read in the
+    ///     printed help: with the default, <c>[[getting-started/install]]</c> reads <c>`tool help getting-started install`</c>
+    ///     (<c>{path}</c> is the card id with each <c>/</c> replaced by a space), and a link to an example of the same
+    ///     card reads <c>`--example load`</c>. The plain style (<c>the card `id`</c>) is not used by the helper.
+    /// </remarks>
     public string? CommandTemplate { get; init; }
 
     /// <summary>
@@ -87,6 +99,11 @@ public sealed class HelpCliOptions
     /// <summary>
     ///     Gets a value indicating whether the <c>--lang</c> option is accepted; <see langword="false"/> unless set.
     /// </summary>
+    /// <remarks>
+    ///     When it is <see langword="false"/>, <c>--lang</c> is rejected like any unknown option (usage error, exit code
+    ///     2) and the catalog factory always receives <see langword="null"/>. When it is <see langword="true"/>,
+    ///     <c>--lang de-DE</c> passes that culture to <see cref="CatalogFactory"/>.
+    /// </remarks>
     public bool EnableLanguageOption { get; init; }
 
     /// <summary>

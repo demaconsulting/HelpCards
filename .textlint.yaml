@@ -49,6 +49,8 @@ words:
   - demaconsulting
   - distinguishability
   - lintmark
+  - mylib
+  - mytool
   - ncipollo
   - nestings
   - netstandard
@@ -79,3 +81,5 @@ ignorePaths:
   - "**/.agent-logs/**"
   - "**/bin/**"
   - "**/obj/**"
+  # ApiMark-generated API reference (regenerated on every build)
+  - "src/**/api/**"

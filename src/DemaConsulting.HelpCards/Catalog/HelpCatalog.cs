@@ -17,8 +17,8 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     <para>
 ///         Every public member is safe for concurrent use. A caller-supplied predicate runs on the calling
 ///         thread and is not kept. Defective sources make <see cref="Create"/> throw a
-///         <see cref="HelpCatalogException"/> that lists every problem; bad arguments throw
-///         <see cref="ArgumentException"/> or <see cref="ArgumentNullException"/>.
+///         <see cref="HelpCatalogException"/> that lists the problems it found (in stages; see <see cref="Create"/>);
+///         bad arguments throw <see cref="ArgumentException"/> or <see cref="ArgumentNullException"/>.
 ///     </para>
 /// </remarks>
 public sealed partial class HelpCatalog
@@ -87,8 +87,20 @@ public sealed partial class HelpCatalog
     ///     Creates a catalog from the sources and settings the callback configures.
     /// </summary>
     /// <remarks>
-    ///     The callback receives a builder, which is used only during this call. Creation reads every file of
-    ///     every source, collects all problems, and fails after the last check when any error exists.
+    ///     <para>
+    ///         The callback receives a builder, which is used only during this call. Creation reads every file of
+    ///         every source, collects the problems it can find, and fails after the last check when any error exists.
+    ///     </para>
+    ///     <para>
+    ///         <b>Problems are collected in stages, not all at once.</b> Every file is read independently, so the errors
+    ///         of different files appear together. Within one file the checks run in order: a front matter that cannot
+    ///         be decoded (<c>syntax</c>) hides every other finding of that file; a file with a key or value error
+    ///         (<c>key-unknown</c>, <c>key-missing</c>, <c>value-invalid</c>) still reports <c>token-unknown</c> and
+    ///         <c>link-syntax</c> in its body, but its links, see-also entries and examples are not resolved
+    ///         (<c>link-target</c>, <c>example-target</c>, <c>see-also-target</c> are skipped), and a link to such a file
+    ///         is not reported either. Fixing the listed errors can therefore reveal more errors; repeat until
+    ///         creation succeeds. The quality warnings of <c>HelpCardValidator</c> are produced only once there is no error.
+    ///     </para>
     /// </remarks>
     /// <param name="configure">Configures the builder. Must not be null.</param>
     /// <returns>The immutable catalog.</returns>

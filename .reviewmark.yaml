@@ -113,6 +113,7 @@ reviews:
       - "docs/reqstream/help-cards/loading.yaml"                    # subsystem requirements
       - "docs/design/help-cards/loading.md"                         # subsystem design
       - "docs/verification/help-cards/loading.md"                   # subsystem verification
+      - "src/DemaConsulting.HelpCards/Loading/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Loading/LoadingTests.cs"  # subsystem tests
 
   # HelpCards-Loading-HelpSource Review (one per unit)
@@ -252,6 +253,7 @@ reviews:
       - "docs/reqstream/help-cards/composition.yaml"                # subsystem requirements
       - "docs/design/help-cards/composition.md"                     # subsystem design
       - "docs/verification/help-cards/composition.md"               # subsystem verification
+      - "src/DemaConsulting.HelpCards/Composition/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionTests.cs"  # subsystem tests
       - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionMultiSourceTests.cs"  # subsystem tests
 
@@ -389,6 +391,7 @@ reviews:
       - "docs/reqstream/help-cards/catalog.yaml"                    # subsystem requirements
       - "docs/design/help-cards/catalog.md"                         # subsystem design
       - "docs/verification/help-cards/catalog.md"                   # subsystem verification
+      - "src/DemaConsulting.HelpCards/Catalog/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Catalog/CatalogTests.cs"  # subsystem tests
 
   # HelpCards-Catalog-HelpCatalog Review (one per unit)
@@ -556,6 +559,7 @@ reviews:
       - "docs/reqstream/help-cards/presentation.yaml"   # subsystem requirements
       - "docs/design/help-cards/presentation.md"   # subsystem design
       - "docs/verification/help-cards/presentation.md"   # subsystem verification
+      - "src/DemaConsulting.HelpCards/Presentation/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Presentation/PresentationTests.cs"   # subsystem tests
       - "test/DemaConsulting.HelpCards.Tests/Fixtures/render/**"   # golden files the renderers are compared with
       - "test/DemaConsulting.HelpCards.Tests/Fixtures/simple/**"   # fixture cards the subsystem tests render
@@ -674,6 +678,7 @@ reviews:
       - "docs/reqstream/help-cards/integration.yaml"   # subsystem requirements
       - "docs/design/help-cards/integration.md"   # subsystem design
       - "docs/verification/help-cards/integration.md"   # subsystem verification
+      - "src/DemaConsulting.HelpCards/Integration/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Integration/IntegrationTests.cs"   # subsystem tests
 
   # HelpCards-Integration-HelpCli Review (one per unit)
@@ -800,6 +805,7 @@ reviews:
       - "docs/reqstream/help-cards/testing.yaml"   # subsystem requirements
       - "docs/design/help-cards/testing.md"   # subsystem design
       - "docs/verification/help-cards/testing.md"   # subsystem verification
+      - "src/DemaConsulting.HelpCards/Testing/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Testing/TestingTests.cs"   # subsystem tests
 
   # HelpCards-Testing-HelpCardValidator Review (one per unit)
@@ -870,6 +876,14 @@ reviews:
       - "src/DemaConsulting.HelpCards/Testing/MarkdownLine.cs"   # unit source
       - "src/DemaConsulting.HelpCards/Testing/MarkdownLineKind.cs"   # unit source
       - "test/DemaConsulting.HelpCards.Tests/Testing/HelpCardMarkdownTests.cs"   # unit tests
+
+  # OTS-ApiMark Review (one per OTS item)
+  - id: OTS-ApiMark
+    title: Review that ApiMark Provides Required Functionality
+    paths:
+      - "docs/reqstream/ots/apimark.yaml"                                   # OTS requirements
+      - "docs/design/ots/apimark.md"                                        # OTS integration design
+      - "docs/verification/ots/apimark.md"                                  # OTS verification
 
   # OTS-BuildMark Review (one per OTS item)
   - id: OTS-BuildMark

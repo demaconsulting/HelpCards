@@ -93,18 +93,115 @@ public sealed class HelpAgentTool
     /// <summary>
     ///     Gets the JSON schema of the arguments, on one line.
     /// </summary>
+    /// <remarks>
+    ///     The schema is a JSON object with the optional string properties <c>topic</c> (a card id or path),
+    ///     <c>example</c> (an example name, or <c>card-id#name</c>), <c>query</c> (words to search for), <c>source</c>
+    ///     and <c>tag</c> (filters for the index and the search), and the integer <c>maxResults</c> (1 to 20), with
+    ///     <c>additionalProperties</c> false. Register it as the parameter schema of the tool with your agent
+    ///     framework; the text is a constant, the same for every catalog. Its descriptions are generic: the example id
+    ///     <c>svg/framed-figure</c> in the description of <c>topic</c> is a placeholder that shows the shape of an id,
+    ///     not a card of your catalog. <c>topic</c> takes the global id of a card (with the mount in front when the
+    ///     source was added with <c>AddMountedSource</c>), and <c>source</c> takes the declared name of a source (the
+    ///     <c>name</c> of its <c>_source.md</c>), not its mount.
+    /// </remarks>
     public string ParametersSchema { get; } = Schema;
 
     /// <summary>
     ///     Answers one call of the tool.
     /// </summary>
     /// <remarks>
-    ///     The arguments are a JSON object with the optional properties <c>topic</c>, <c>example</c>, <c>query</c>,
-    ///     <c>source</c>, <c>tag</c>, and <c>maxResults</c>; without any property the answer is the index. Arguments that
-    ///     cannot be used, names that match nothing, and a catalog that cannot answer all give a plain-text message that
-    ///     says what to send instead. An answer longer than the limit of the options is cut at a line end and says how
-    ///     much was left out. The method does not catch out-of-memory, cancellation, or stack overflow conditions.
+    ///     <para>
+    ///         The arguments are a JSON object with the optional properties <c>topic</c>, <c>example</c>, <c>query</c>,
+    ///         <c>source</c>, <c>tag</c>, and <c>maxResults</c>; without any property the answer is the index. Arguments that
+    ///         cannot be used, names that match nothing, and a catalog that cannot answer all give a plain-text message that
+    ///         says what to send instead. An answer longer than the limit of the options is cut at a line end and says how
+    ///         much was left out. The method does not catch out-of-memory, cancellation, or stack overflow conditions.
+    ///     </para>
+    ///     <para>
+    ///         The three call shapes are: the index (no property, or only <c>source</c> and <c>tag</c>), a card or an
+    ///         example (<c>topic</c>, <c>example</c>, or both), and a search (<c>query</c>). The <c>topic</c> is the
+    ///         global id of a card, that is the id with the mount in front when the source was added with
+    ///         <c>AddMountedSource</c> (<c>core/getting-started</c>). A bare local id (<c>getting-started</c>) also works
+    ///         when exactly one card has it; when several do, the answer lists their global ids. The <c>source</c>
+    ///         argument (a filter for the index and the search) is the <em>declared name</em> of the source, the
+    ///         <c>name</c> in its <c>_source.md</c> (<c>plot</c>), and not the mount that the application chose
+    ///         (<c>b</c>); the ids in the answers carry the mount. A card is answered in
+    ///         Markdown with its examples in full, links written in the plain style (<c>the card `id`</c>).
+    ///     </para>
     /// </remarks>
+    /// <example>
+    ///     A catalog with one flat source and one call of each kind. The output follows the code.
+    ///     <code language="csharp">
+    /// using System;
+    /// using System.Collections.Generic;
+    /// using DemaConsulting.HelpCards.Catalog;
+    /// using DemaConsulting.HelpCards.Integration;
+    /// using DemaConsulting.HelpCards.Loading;
+    ///
+    /// HelpSource cards = HelpSource.FromFiles(new Dictionary&lt;string, string&gt;
+    /// {
+    ///     ["_source.md"] = "---\nname: demo\ntitle: Demo tool\nsummary: Help cards of the demo tool.\n---\nThe demo tool loads data files.",
+    ///     ["getting-started.md"] = "---\ntitle: Getting started\nsummary: Install the tool and run it for the first time.\ntags:\n  - tutorial\nexamples:\n  - name: load\n    kind: command\n    language: shell\n    content: '{{tool}} load data.csv'\n    description: Load a data file.\n---\nInstall the package, then run [[#load]]. Next, see [[reports]].",
+    ///     ["reports.md"] = "---\ntitle: Reports\nsummary: Write a report from loaded data.\n---\nReports are written as Markdown files.",
+    /// }, name: "demo");
+    ///
+    /// HelpCatalog catalog = HelpCatalog.Create(builder => builder.AddSource(cards).ToolName("tool"));
+    /// HelpAgentTool tool = HelpAgentTools.Create(catalog, new HelpAgentToolOptions { Name = "tool_help" });
+    ///
+    /// string?[] calls =
+    /// [
+    ///     null,                                          // the index
+    ///     """{"topic":"getting-started"}""",             // a card
+    ///     """{"example":"load"}""",                      // one example, found by name
+    ///     """{"query":"report"}""",                      // a search
+    ///     """{"topic":"nothing"}""",                     // a miss: the answer says what to send
+    /// ];
+    ///
+    /// foreach (string? call in calls)
+    /// {
+    ///     Console.WriteLine($"-- {call ?? "(no arguments)"}");
+    ///     Console.WriteLine(tool.Invoke(call));
+    /// }
+    /// </code>
+    ///     <code language="text">
+    /// -- (no arguments)
+    /// Help index. Read a card with the topic argument, get an example with the example argument, or search with the query argument.
+    ///
+    /// getting-started  Install the tool and run it for the first time.
+    /// reports          Write a report from loaded data.
+    /// -- {"topic":"getting-started"}
+    /// # Getting started
+    ///
+    /// Install the tool and run it for the first time.
+    /// **Tags:** tutorial
+    ///
+    /// Install the package, then run the example `load`. Next, see the card `reports`.
+    ///
+    /// ## Examples
+    ///
+    /// ### load [command]
+    ///
+    /// Load a data file.
+    ///
+    /// ```shell
+    /// tool load data.csv
+    /// ```
+    /// -- {"example":"load"}
+    /// Example `load` of `getting-started` (command, shell): Load a data file.
+    ///
+    /// ```shell
+    /// tool load data.csv
+    /// ```
+    /// -- {"query":"report"}
+    /// Cards matching 'report':
+    ///
+    /// reports  Write a report from loaded data.
+    ///
+    /// Read one with the topic argument.
+    /// -- {"topic":"nothing"}
+    /// No help card matches 'nothing'. Call with no arguments for the index.
+    /// </code>
+    /// </example>
     /// <param name="argumentsJson">The arguments as JSON text, or <see langword="null"/> for none.</param>
     /// <returns>The answer; never <see langword="null"/>.</returns>
     public string Invoke(string? argumentsJson)

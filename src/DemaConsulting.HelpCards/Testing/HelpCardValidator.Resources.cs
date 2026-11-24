@@ -24,9 +24,64 @@ public static partial class HelpCardValidator
     ///     </para>
     ///     <para>
     ///         Only the presence of each file is compared, by its path below the help root (ordinal comparison, with
-    ///         <c>/</c> as the separator). Every difference is a <c>resources-mismatch</c> warning.
+    ///         <c>/</c> as the separator). Every difference is a <c>resources-mismatch</c> warning, with line 0 (see
+    ///         <see cref="HelpProblem"/> for the table of rule ids). The comparison covers every file below the folder,
+    ///         data files of examples included, not only the cards.
+    ///     </para>
+    ///     <para>
+    ///         <b>Locating the folder in a test.</b> The method needs the path of the <c>Help</c> folder of the library
+    ///         in the repository; a test project has no path to it by default. The robust way is to let the test project
+    ///         copy the folder to its output with an item in the test project file, so the test finds it next to the test
+    ///         assembly whatever the working directory or the build server is:
+    ///     </para>
+    ///     <code language="xml">
+    /// &lt;ItemGroup&gt;
+    ///   &lt;Content Include="..\MyLib\Help\**\*" Link="MyLibHelp\%(RecursiveDir)%(Filename)%(Extension)"
+    ///            CopyToOutputDirectory="PreserveNewest" /&gt;
+    /// &lt;/ItemGroup&gt;
+    /// </code>
+    ///     <para>
+    ///         Then the folder is <c>Path.Combine(AppContext.BaseDirectory, "MyLibHelp")</c>. When you cannot change the
+    ///         project file, walk up from <c>AppContext.BaseDirectory</c> until a folder <c>MyLib/Help</c> exists.
     ///     </para>
     /// </remarks>
+    /// <example>
+    ///     An xUnit test that proves the embedded cards of <c>MyLibHelp.Source</c> are exactly the files of the folder
+    ///     (the folder is copied to the output by the item above):
+    ///     <code language="csharp">
+    /// using System;
+    /// using System.IO;
+    /// using DemaConsulting.HelpCards.Testing;
+    /// using Xunit;
+    ///
+    /// public class EmbeddingTests
+    /// {
+    ///     [Fact]
+    ///     public void EmbeddedCards_MatchTheFolderOnDisk()
+    ///     {
+    ///         string folder = Path.Combine(AppContext.BaseDirectory, "MyLibHelp");
+    ///
+    ///         // Empty when both sides agree; otherwise one resources-mismatch warning per file on only one side.
+    ///         Assert.Empty(HelpCardValidator.CompareToDirectory(MyLibHelp.Source, folder));
+    ///     }
+    ///
+    ///     // Alternative without a project item: walk up from the test output to the library's folder.
+    ///     private static string FindHelpFolder()
+    ///     {
+    ///         for (DirectoryInfo? directory = new(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+    ///         {
+    ///             string candidate = Path.Combine(directory.FullName, "MyLib", "Help");
+    ///             if (Directory.Exists(candidate))
+    ///             {
+    ///                 return candidate;
+    ///             }
+    ///         }
+    ///
+    ///         throw new DirectoryNotFoundException("The Help folder of MyLib was not found above the test output.");
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
     /// <param name="assemblySource">The source made with <see cref="HelpSource.FromAssembly"/>. Must not be null.</param>
     /// <param name="directory">The directory that holds the cards on disk. Must exist.</param>
     /// <returns>One warning for each file that is on only one side, in path order; empty when both sides agree.</returns>

@@ -8,7 +8,11 @@ namespace DemaConsulting.HelpCards.Integration;
 /// </summary>
 /// <remarks>
 ///     One tool serves the whole catalog; a catalog that combines several libraries is still one tool, and its sources
-///     are told apart by the <c>source</c> argument. Per-source tools are not part of this release.
+///     are told apart by the <c>source</c> argument. Per-source tools are not part of this release. To serve several
+///     libraries, add each <c>HelpSource</c> to one catalog with <c>AddMountedSource</c>; the agent then uses global
+///     ids (<c>core/getting-started</c>) as <c>topic</c>. The complete three-library sample, with its output, is on
+///     the page of <c>DemaConsulting.HelpCards.Integration</c>; the sample answers of each call shape are in the
+///     remarks of <see cref="HelpAgentTool.Invoke"/>.
 /// </remarks>
 public static partial class HelpAgentTools
 {

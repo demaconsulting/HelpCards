@@ -7,8 +7,10 @@ namespace DemaConsulting.HelpCards.Loading;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         A source is the unit a library exposes to its adopters: one place for the cards, an optional
-///         declared name, the values of the <c>{{tokens}}</c> its cards use, and the sources it imports. It is
+///         A source is the unit a library exposes to its adopters: one place for the cards, a name (required: from
+///         the <c>name:</c> key of <c>_source.md</c> or from <see cref="WithName"/>; without one the catalog fails
+///         with <c>source-invalid</c>), the values of the <c>{{tokens}}</c> its cards use, and the sources it imports.
+///         It is
 ///         deliberately cheap: creating a source performs no I/O, so a library can keep one in a static field
 ///         without slowing its start-up. Files are listed and read only when a catalog is built.
 ///     </para>
@@ -75,8 +77,26 @@ public sealed class HelpSource
     ///     Creates a source from the embedded resources of an assembly.
     /// </summary>
     /// <remarks>
-    ///     The resources are the files that the packaged MSBuild targets embed under the logical name prefix.
-    ///     The assembly is not inspected until a catalog is built.
+    ///     <para>
+    ///         The resources are the files that the packaged MSBuild targets embed under the logical name prefix.
+    ///         The assembly is not inspected until a catalog is built.
+    ///     </para>
+    ///     <para>
+    ///         The targets embed the <c>Help</c> folder (property <c>HelpCardsDirectory</c>, default <c>Help</c>) of the
+    ///         project under the prefix <c>$(AssemblyName).Help</c> (property <c>HelpCardsPrefix</c>) when the project
+    ///         has a <c>PackageReference</c> to <c>DemaConsulting.HelpCards</c>; <c>HelpCardsEnabled</c> (default
+    ///         <c>true</c>) switches it off. Only a project with its own direct reference embeds: an application that
+    ///         merely references your library embeds nothing. A card <c>a/b</c> needs the card <c>a</c>
+    ///         (<c>parent-missing</c>). The details and the complete card grammar are on the page of the
+    ///         <c>DemaConsulting.HelpCards.Loading</c> namespace.
+    ///     </para>
+    ///     <para>
+    ///         <b>The source needs a name.</b> The files of the folder must include <c>_source.md</c> with a
+    ///         <c>name:</c> line (<c>name: mylib</c>), or the source must be given a name with <see cref="WithName"/>
+    ///         (<c>HelpSource.FromAssembly(assembly).WithName("mylib")</c>). A source without a name makes
+    ///         <c>HelpCatalog.Create</c> fail with <c>source-invalid</c>; a command-line tool then exits with 70. All
+    ///         other keys of <c>_source.md</c> are optional.
+    ///     </para>
     /// </remarks>
     /// <param name="assembly">The assembly that holds the cards. Must not be null.</param>
     /// <param name="resourcePrefix">
@@ -105,7 +125,10 @@ public sealed class HelpSource
     ///     the keys may be <c>/</c> or <c>\</c>; both are stored as <c>/</c>.
     /// </remarks>
     /// <param name="files">The UTF-8 text of each file by path under the help root. Must not be null.</param>
-    /// <param name="name">The declared name of the source, or <see langword="null"/> to take it from <c>_source.md</c>.</param>
+    /// <param name="name">
+    ///     The declared name of the source, or <see langword="null"/> to take it from the <c>name:</c> key of
+    ///     <c>_source.md</c>. One of the two is required; a source without a name fails with <c>source-invalid</c>.
+    /// </param>
     /// <returns>The new source.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="files"/> is null.</exception>
     /// <exception cref="ArgumentException">
@@ -159,7 +182,9 @@ public sealed class HelpSource
     ///     Returns a copy of this source with a declared name.
     /// </summary>
     /// <remarks>
-    ///     A name given here takes precedence over a <c>name</c> in <c>_source.md</c>. The grammar of the
+    ///     A name given here takes precedence over a <c>name</c> in <c>_source.md</c>, and it replaces the need for one:
+    ///     a source needs a name from one of the two, otherwise <c>HelpCatalog.Create</c> fails with <c>source-invalid</c>.
+    ///     The grammar of the
     ///     name is checked when the catalog is built, where a violation is reported as a problem together
     ///     with the other defects of the source.
     /// </remarks>

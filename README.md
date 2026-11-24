@@ -32,7 +32,7 @@ Presentation, Integration, and Testing build on that catalog.
 - **Resource Embedding**: A packaged MSBuild targets file embeds the `Help` folder of a project in its assembly
 - **Links and Tokens**: `[[card]]` links checked at build time and `{{token}}` values per library
 - **Multi-Library Composition**: Several libraries expose a `HelpSource`; an application mounts them, imports,
-  overlays, and links across them, and reports every defect at once
+  overlays, and links across them, and reports the defects it finds in every source
 - **Cultures**: Translations in culture-suffixed files with a per-file fallback chain
 - **Presentation**: Text, Markdown, and JSON output with three link styles and a versioned JSON contract
 - **Command-Line Helper**: `HelpCli` answers `help`, `help <path>`, `--examples`, `--example`, `--search`, and
@@ -40,6 +40,8 @@ Presentation, Integration, and Testing build on that catalog.
 - **Agent Tool**: `HelpAgentTool` is a provider-neutral knowledge tool (index, card, example, and search) with a
   JSON schema and output budgets
 - **Testing Helpers**: `HelpCardValidator` and example helpers prove in your own tests that your cards are valid
+- **API Reference**: A generated Markdown API reference in the package's `api/` folder, organized for gradual
+  disclosure so a developer or a coding agent reads one small page at a time
 - **Dependency-Free**: Built only on the .NET Base Class Library, with its own restricted front-matter parser
 - **Continuous Compliance**: Requirements, design, verification, and a SysML2 model, following the
   [Continuous Compliance][link-continuous-compliance] methodology
@@ -59,7 +61,9 @@ project references the package.
 
 ### A library that ships cards
 
-Put the cards in a `Help` folder of the project. A `_source.md` file names the source and describes it:
+Put the cards in a `Help` folder of the project. A `_source.md` file names the source and describes it; every source
+needs a name, so its `name:` line is required (or call `HelpSource.WithName` instead), and without a name the catalog
+fails with the rule `source-invalid`:
 
 ```text
 MyLib/
@@ -306,6 +310,20 @@ pwsh ./fix.ps1 -Changed     # auto-fix the changed file types
 The HelpCards User Guide is available on the
 [HelpCards releases page](https://github.com/demaconsulting/HelpCards/releases).
 
+## API Reference
+
+The package ships its API reference as Markdown in the package's `api/` folder, generated from the XML doc comments by
+[ApiMark][link-apimark] and organized for gradual disclosure, so a developer or a coding agent can read a small targeted
+page instead of one large document. Start at `api/api.md` (the index, one row per namespace), open a namespace page for
+an overview, the common usage steps, and a complete usage example, then follow the links to type and member pages. For
+example, the `DemaConsulting.HelpCards.Integration` namespace page shows how to wire `HelpCli` into a command-line tool
+and how to expose the cards to an AI agent with `HelpAgentTools`; the `DemaConsulting.HelpCards.Loading` page shows how
+a library exposes its embedded cards as a `HelpSource` and is the complete card-format reference (front-matter keys,
+links, examples, tokens, cultures, and the MSBuild embedding properties); the remarks of `HelpProblem` list every rule
+id. To read it from a restored package, open the package folder in
+the NuGet global-packages cache, or unzip the `.nupkg`. When building from source, the same files are written to
+`src/DemaConsulting.HelpCards/api/`.
+
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md][link-contributing] for development setup, coding
@@ -344,4 +362,5 @@ By contributing to this project, you agree that your contributions will be licen
 [link-security]: https://sonarcloud.io/dashboard?id=demaconsulting_HelpCards
 [link-nuget]: https://www.nuget.org/packages/DemaConsulting.HelpCards
 [link-continuous-compliance]: https://github.com/demaconsulting/ContinuousCompliance
+[link-apimark]: https://github.com/demaconsulting/ApiMark
 [link-contributing]: https://github.com/demaconsulting/HelpCards/blob/main/CONTRIBUTING.md

@@ -20,6 +20,7 @@ The OTS items are modeled in SysML2 (docs/sysml2/model/ots.sysml) and rendered b
 
 | OTS Item | Purpose |
 | --- | --- |
+| ApiMark | Generates the Markdown API reference shipped in the `api/` folder of the NuGet package |
 | BuildMark | Generates build-notes documentation from GitHub Actions metadata |
 | FileAssert | Validates generated documents (HTML/PDF) against acceptance criteria |
 | Pandoc | Converts Markdown documentation to HTML |
