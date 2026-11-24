@@ -11,11 +11,11 @@ command-line library.
 #### Data Model
 
 An immutable object holding the verb and a `CliDispatcher` created from the checked options. The public supporting types
-are `HelpCliOptions` (tool name, version, which is for information only and not printed, verb, catalog factory, usage lines, preamble, index sections, fallback
-resolver, output and error writers, command template, default width, language option, and width provider),
-`HelpCliSection` (a heading and lines), and `HelpCliAnswer` (text and exit code). The helper keeps the options object by
-reference; the checks are made at `Create`, and the writers, usage lines, sections, fallback, and other settings are read
-from the object each time a command runs.
+are `HelpCliOptions` (tool name, version, which is for information only and not printed, verb, catalog factory, usage
+lines, preamble, index sections, fallback resolver, output and error writers, command template, default width, language
+option, and width provider), `HelpCliSection` (a heading and lines), and `HelpCliAnswer` (text and exit code). The
+helper keeps the options object by reference; the checks are made at `Create`, and the writers, usage lines, sections,
+fallback, and other settings are read from the object each time a command runs.
 
 #### Key Methods
 

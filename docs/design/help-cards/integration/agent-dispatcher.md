@@ -22,8 +22,8 @@ time. The class is partial: `AgentDispatcher.cs` holds the choice of the answer 
   example is given; the spec requires a notice for the query only.
 - **Index** is a first line that says how to use the tool and the index in Markdown to the depth of the options; with
   several sources and no restriction, one block for each source with its title and summary. A `source` or `tag` argument
-  restricts the index to a view; an unknown name is answered with the valid names, and a tag in a catalog that has no tag
-  at all with `No cards have the tag '{tag}'; this help has no tags.`
+  restricts the index to a view; an unknown name is answered with the valid names, and a tag in a catalog that has no
+  tag at all with `No cards have the tag '{tag}'; this help has no tags.`
 - **Topic** resolves the exact path or global id with `Find`, else an unqualified local id when exactly one card has it.
   A card is rendered in Markdown with plain links and the content of its examples. An ambiguous local id lists the
   global ids; an unknown topic gets up to five suggestions and a pointer to the index.

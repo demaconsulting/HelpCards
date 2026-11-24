@@ -20,11 +20,11 @@ mode.
 
 - **`Run(arguments)`** parses the arguments; a usage error is reported before any catalog exists, as JSON when the
   arguments ask for JSON. It creates the render options (the command link style, the command template, and the width),
-  offers a card command to the fallback resolver, and then calls the catalog factory with the culture of the request. The
-  fallback is offered for plain card commands only: `--examples` and `--example` with a subject that only the tool owns
-  are answered by the catalog as not found. A
-  `HelpCatalogException` becomes exit code 70 with `Help is unavailable: {first problem}`; so does a factory that
-  returns nothing. The mode then selects the answer and the outcome is written.
+  offers a card command to the fallback resolver, and then calls the catalog factory with the culture of the request.
+  The fallback is offered for plain card commands only: `--examples` and `--example` with a subject that only the tool
+  owns are answered by the catalog as not found. A `HelpCatalogException` becomes exit code 70 with
+  `Help is unavailable: {first problem}`; so does a factory that returns nothing. The mode then selects the answer and
+  the outcome is written.
 - **Index** writes, in text, the usage lines under `Usage:`, the preamble, each section as its heading and indented
   lines, `Help topics:` with the index lines of the roots (the whole tree for `--all`), and the footer, separated by
   blank lines; in JSON it is the index document with the usage lines.

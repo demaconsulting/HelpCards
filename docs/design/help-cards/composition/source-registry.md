@@ -23,11 +23,12 @@ index of its source. `SourceRegistration` is the immutable record of what the ad
   problems of Loading, and registers the name; a name that an earlier source already uses is
   `source-name-duplicate` and excludes the later source.
 - **Import resolution.** An import is matched to a registered source when both read the same files (a copy made with
-  `WithName`, `WithTokens`, or `Imports` shares them) or when the import has a declared name that equals the name of
-  a registered source. A match that is the importing source is `import-cycle`. An import that no earlier source
-  matches is classified once every source has been read, because a later source may take its name from its
-  `_source.md`, which is known only after it was read: a later source that matches is `import-order`, no match at
-  all is `import-missing`. Such an import is not used and marks the source as having a broken import. The imports of a source are listed together with the imports of those imports, each once, in search order.
+  `WithName`, `WithTokens`, or `Imports` shares them) or when the import has a declared name that equals the name of a
+  registered source. A match that is the importing source is `import-cycle`. An import that no earlier source matches is
+  classified once every source has been read, because a later source may take its name from its `_source.md`, which is
+  known only after it was read: a later source that matches is `import-order`, no match at all is `import-missing`. Such
+  an import is not used and marks the source as having a broken import. The imports of a source are listed together with
+  the imports of those imports, each once, in search order.
 - **Token scope.** Tokens come from what the source declares it imports (transitively, each source once) rather than
   from the registration, so a misplaced or missing import does not also make its tokens unknown. A name defined twice,
   or a built-in redefined, is `token-redefined`.
