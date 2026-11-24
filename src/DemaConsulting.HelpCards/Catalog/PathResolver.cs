@@ -86,8 +86,14 @@ internal static class PathResolver
     /// <returns>The outcome with the visible names of the searched level.</returns>
     private static PathMatch Failure(CatalogScope scope, CardNode? parent, string? segment, IReadOnlyList<CardNode> level)
     {
-        var names = level.Where(node => scope.IsVisible(node.Id)).Select(node => node.Name).ToList();
-        return new PathMatch(null, parent?.Id, segment, names);
+        var visible = level.Where(node => scope.IsVisible(node.Id)).ToList();
+        var names = visible.Select(node => node.Name).ToList();
+
+        // The closest name or alias at the level that failed, if any is close enough to be a likely slip
+        var suggestion = segment is null
+            ? null
+            : SearchIndex.Suggest(segment, visible.SelectMany(node => node.Aliases.Prepend(node.Name)), 1).FirstOrDefault();
+        return new PathMatch(null, parent?.Id, segment, names, suggestion);
     }
 
     /// <summary>

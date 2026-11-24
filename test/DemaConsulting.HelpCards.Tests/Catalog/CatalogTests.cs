@@ -235,4 +235,52 @@ public class CatalogTests
         Assert.Equal("---\nlimit: 42\nmode: fast", example);
         Assert.Throws<ArgumentException>(() => view.Render(catalog.Find("reference")!));
     }
+
+    /// <summary>
+    ///     Proves that search ranks the visible cards of the twelve-card fixture, restricts them by source, tag, and view,
+    ///     and limits the results.
+    /// </summary>
+    [Fact]
+    public void Catalog_Search_BigFixture_RanksAndRestrictsVisibleCards()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("big"));
+        var view = catalog.Without(["build/clean"]);
+
+        // Act
+        var ranked = catalog.Search("build");
+        var limited = catalog.Search("build", new HelpSearchOptions { MaxResults = 2 });
+        var tagged = catalog.Search("build", new HelpSearchOptions { Tags = ["quality"] });
+        var seen = view.Search("build");
+
+        // Assert
+        Assert.Equal(["build", "build/clean", "build/compile", "build/package"], ranked.Select(result => result.Id));
+        Assert.Equal([190, 90, 90, 90], ranked.Select(result => result.Score));
+        Assert.Equal(["id", "title", "tag"], ranked[0].MatchedOn);
+        Assert.Equal(["build", "build/clean"], limited.Select(result => result.Id));
+        Assert.Empty(tagged);
+        Assert.DoesNotContain(seen, result => result.Id == "build/clean");
+    }
+
+    /// <summary>
+    ///     Proves that suggestions and path resolution offer the closest visible name for a word that was not found.
+    /// </summary>
+    [Fact]
+    public void Catalog_Suggestions_UnknownNames_AreTheClosestVisibleNames()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("big"));
+        var view = catalog.Without(["build/clean"]);
+
+        // Act
+        var suggested = catalog.Suggest("shipp");
+        var resolved = catalog.Resolve("build compil");
+        var hidden = view.Suggest("clen");
+
+        // Assert
+        Assert.Equal(["ship"], suggested);
+        Assert.Equal("compile", resolved.Suggestion);
+        Assert.Equal("build", resolved.ParentId);
+        Assert.DoesNotContain("clean", hidden);
+    }
 }

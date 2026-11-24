@@ -132,6 +132,26 @@ public class PathResolverTests
     }
 
     /// <summary>
+    ///     Proves that a failed walk suggests the closest name at the level that failed, and none when nothing is close.
+    /// </summary>
+    [Fact]
+    public void PathResolver_Resolve_UnknownSegment_SuggestsClosestNameAtThatLevel()
+    {
+        // Arrange
+        var scope = TreeScope();
+
+        // Act
+        var close = PathResolver.Resolve(scope, "a c");
+        var far = PathResolver.Resolve(scope, "a qqqqqq");
+        var empty = PathResolver.Resolve(scope, string.Empty);
+
+        // Assert
+        Assert.Equal("b", close.Suggestion);
+        Assert.Null(far.Suggestion);
+        Assert.Null(empty.Suggestion);
+    }
+
+    /// <summary>
     ///     Proves that null arguments are rejected.
     /// </summary>
     [Fact]

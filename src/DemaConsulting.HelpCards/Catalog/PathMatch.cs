@@ -11,8 +11,10 @@ namespace DemaConsulting.HelpCards.Catalog;
 /// <param name="ParentId">The global id of the card whose children were searched, or <see langword="null"/>.</param>
 /// <param name="UnknownSegment">The segment that matched nothing, or <see langword="null"/>.</param>
 /// <param name="ValidNames">The names of the visible cards at the level that failed.</param>
+/// <param name="Suggestion">The closest name or alias at the level that failed, or <see langword="null"/> when none is close.</param>
 internal sealed record PathMatch(
     CardNode? Card,
     string? ParentId,
     string? UnknownSegment,
-    IReadOnlyList<string> ValidNames);
+    IReadOnlyList<string> ValidNames,
+    string? Suggestion = null);

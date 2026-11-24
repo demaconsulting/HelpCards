@@ -1,0 +1,8 @@
+Help topics:
+tool help guide               How to set up and use the tool.
+  tool help guide setup       Prepare the tool before the first run.
+  tool help guide usage       Everyday use of the tool.
+tool help reference           Facts about limits and options.
+  tool help reference limits  The numbers the tool enforces.
+
+Run 'tool help' for topics and examples.

@@ -24,6 +24,11 @@ internal sealed class CatalogData
     private readonly Dictionary<string, CardNode> _byId;
 
     /// <summary>
+    ///     The search index, built on the first search.
+    /// </summary>
+    private readonly Lazy<SearchIndex> _search;
+
+    /// <summary>
     ///     Creates the data.
     /// </summary>
     /// <param name="culture">The culture the catalog was configured with.</param>
@@ -52,6 +57,7 @@ internal sealed class CatalogData
         ToolName = toolName;
         ToolVersion = toolVersion;
         AllowedTags = allowedTags;
+        _search = new Lazy<SearchIndex>(() => SearchIndex.Build(this));
         _byId = cards.ToDictionary(node => node.Id, StringComparer.OrdinalIgnoreCase);
         TagNames = CardNode.Freeze(cards.SelectMany(node => node.Tags).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal));
     }
@@ -100,6 +106,11 @@ internal sealed class CatalogData
     ///     Gets the distinct tags of all cards in ordinal order.
     /// </summary>
     public IReadOnlyList<string> TagNames { get; }
+
+    /// <summary>
+    ///     Gets the search index of the cards, which is built once, on first use, and then shared by every view.
+    /// </summary>
+    public SearchIndex Search => _search.Value;
 
     /// <summary>
     ///     Finds a node by global id, ignoring case.

@@ -150,7 +150,7 @@ public sealed partial class HelpCatalog
     {
         var match = PathResolver.Resolve(Scope, path);
         var card = match.Card is null ? null : _byId[match.Card.Id];
-        return new HelpPathResolution(card, match.ParentId, match.UnknownSegment, CardNode.Freeze(match.ValidNames), null);
+        return new HelpPathResolution(card, match.ParentId, match.UnknownSegment, CardNode.Freeze(match.ValidNames), match.Suggestion);
     }
 
     /// <summary>

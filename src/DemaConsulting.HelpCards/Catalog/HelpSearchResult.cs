@@ -4,9 +4,9 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     One hit of a search over a catalog.
 /// </summary>
 /// <remarks>
-///     In this release the type is data only: the renderers format a list of results that a caller supplies, so
-///     a search result can be rendered and tested without a search engine. The record is immutable and compares
-///     by value.
+///     One hit of a search over a catalog. The record is immutable and compares by value. The ranking and the
+///     matched field names are defined by <see cref="HelpCatalog.Search"/>; a caller may also build results itself
+///     to have them rendered.
 /// </remarks>
 /// <param name="Id">The global id of the card that matched.</param>
 /// <param name="Title">The title of the card.</param>

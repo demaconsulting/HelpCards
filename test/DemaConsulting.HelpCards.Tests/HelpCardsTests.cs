@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Reflection;
 using DemaConsulting.HelpCards.Catalog;
+using DemaConsulting.HelpCards.Integration;
 using DemaConsulting.HelpCards.Loading;
 using DemaConsulting.HelpCards.Presentation;
 using DemaConsulting.HelpCards.Testing;
@@ -868,22 +869,27 @@ public class HelpCardsTests
     [Fact]
     public void HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface()
     {
-        // Arrange: the surface of the specification without search, suggestions, and the integration
-        // namespace, which later releases add
+        // Arrange: the surface of the specification without the agent tool of the integration namespace, which a
+        // later stage adds
         string[] expected =
         [
             "DemaConsulting.HelpCards.Catalog.HelpCard: Aliases, Body, ChildIds, Culture, Examples, Extensions, Id, LocalId, Name, ParentId, SeeAlsoIds, SourceName, Summary, Tags, Title",
-            "DemaConsulting.HelpCards.Catalog.HelpCatalog: Cards, Create, Culture, Diagnostics, Filter, FilterSource, Find, FindExample, FindExamples, FormatBody, GetChildren, GetSeeAlso, Render, RenderCardList, RenderExample, RenderExamples, RenderIndex, RenderSearch, Resolve, Roots, Sources, TagNames, Where, Without",
+            "DemaConsulting.HelpCards.Catalog.HelpCatalog: Cards, Create, Culture, Diagnostics, Filter, FilterSource, Find, FindExample, FindExamples, FormatBody, GetChildren, GetSeeAlso, Render, RenderCardList, RenderExample, RenderExamples, RenderIndex, RenderSearch, Resolve, Roots, Search, Sources, Suggest, TagNames, Where, Without",
             "DemaConsulting.HelpCards.Catalog.HelpCatalogException: Problems",
             "DemaConsulting.HelpCards.Catalog.HelpExample: CommandKind, Content, Description, FileName, Kind, Language, Name, SnippetKind, SourceKind, SourceName",
             "DemaConsulting.HelpCards.Catalog.HelpExampleReference: .ctor, CardId, Example",
             "DemaConsulting.HelpCards.Catalog.HelpLink: CardId, ExampleCardId, ExampleName, SourceName, Text, Title",
             "DemaConsulting.HelpCards.Catalog.HelpPathResolution: Card, ParentId, Suggestion, UnknownSegment, ValidNames",
             "DemaConsulting.HelpCards.Catalog.HelpProblem: .ctor, File, Line, Message, RuleId, Severity, SourceName",
+            "DemaConsulting.HelpCards.Catalog.HelpSearchOptions: .ctor, MaxResults, Sources, Tags",
             "DemaConsulting.HelpCards.Catalog.HelpSearchResult: .ctor, Id, MatchedOn, Score, SourceName, Summary, Title",
             "DemaConsulting.HelpCards.Catalog.HelpSeverity: Error, Info, Warning",
             "DemaConsulting.HelpCards.Catalog.HelpSourceInfo: .ctor, Language, Mount, Name, Schema, Summary, Title",
             "DemaConsulting.HelpCards.Composition.HelpCatalogBuilder: AddMountedSource, AddSource, Culture, ExpectedRoots, TagVocabulary, ToolName, ToolVersion",
+            "DemaConsulting.HelpCards.Integration.HelpCli: Create, Footer, Run, TryRun",
+            "DemaConsulting.HelpCards.Integration.HelpCliAnswer: .ctor, ExitCode, Text",
+            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, DefaultWidth, EnableLanguageOption, Error, FallbackResolver, IndexPreamble, IndexSections, Output, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
+            "DemaConsulting.HelpCards.Integration.HelpCliSection: .ctor, Heading, Lines",
             "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromDirectory, FromFiles, Imports, WithName, WithTokens",
             "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
             "DemaConsulting.HelpCards.Presentation.HelpLinkStyle: Command, Markdown, Plain",
@@ -1060,5 +1066,156 @@ public class HelpCardsTests
         // Assert
         Assert.Equal(["added.md", "guide.md"], problems.Select(problem => problem.File));
         Assert.All(problems, problem => Assert.Equal(RuleIds.ResourcesMismatch, problem.RuleId));
+    }
+
+    /// <summary>
+    ///     Proves that search ranks the cards of a twelve-card catalog exactly as the golden report pins, whatever the
+    ///     current culture of the machine is.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Search_BigFixture_MatchesRankingGolden()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("big"));
+        var original = CultureInfo.CurrentCulture;
+
+        try
+        {
+            // Act: the Turkish culture changes the case of the letter i, which must not change a ranking
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+            var report = RankingReport.Describe(catalog);
+
+            // Assert
+            GoldenFiles.AssertEqual("cli", "ranking.expected.txt", report);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    /// <summary>
+    ///     Proves that a word that was not found gets the closest names, aliases, and ids of visible cards.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Suggestions_UnknownNames_SuggestClosest()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Create(CatalogBuilding.Fixture("big"));
+
+        // Act
+        var name = catalog.Suggest("buid");
+        var alias = catalog.Suggest("shipp");
+        var id = catalog.Suggest("deploy/rolback");
+        var path = catalog.Resolve("deploy stagin");
+
+        // Assert
+        Assert.Equal("build", name[0]);
+        Assert.Equal(["ship"], alias);
+        Assert.Equal(["deploy/rollback"], id);
+        Assert.Equal("staging", path.Suggestion);
+        Assert.Empty(catalog.Suggest("qqqqqqqq"));
+    }
+
+    /// <summary>
+    ///     Proves that a tool answers the help verb with the helper and leaves every other command alone, without ever
+    ///     creating its catalog for those.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_HelpVerb_RunsHelpAndLeavesOtherCommandsAlone()
+    {
+        // Arrange
+        var harness = new CliHarness(factory: _ => throw new InvalidOperationException("No catalog is needed."));
+        var simple = new CliHarness(CatalogBuilding.Simple());
+
+        // Act
+        string[][] commands = [[], ["--help"], ["build"]];
+        var others = commands.Select(args => harness.Cli.TryRun(args, out _)).ToList();
+        var handled = simple.Cli.TryRun(["help", "guide"], out var exitCode);
+
+        // Assert
+        Assert.All(others, Assert.False);
+        Assert.Equal("Run 'tool help' for topics and examples.", harness.Cli.Footer);
+        Assert.Equal(0, harness.FactoryCalls);
+        Assert.True(handled);
+        Assert.Equal(0, exitCode);
+        GoldenFiles.AssertEqual("cli", "card.text.expected.txt", simple.Output.ToString().TrimEnd('\n'));
+    }
+
+    /// <summary>
+    ///     Proves that the options of the help command select the index, a card, examples, an example, a search, and a
+    ///     tag listing, in text and JSON, as the golden files record.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_Options_SelectModesAndFormats()
+    {
+        // Arrange
+        var simple = new CliHarness(CatalogBuilding.Simple(), usage: ["tool [options]", "tool help [PATH]"]);
+        var examples = new CliHarness(CatalogBuilding.Simple());
+        var search = new CliHarness(CatalogBuilding.Create(CatalogBuilding.Fixture("big")));
+        var tags = new CliHarness(CatalogBuilding.Create(CatalogBuilding.Fixture("big")));
+
+        // Act
+        simple.Run("--json");
+        examples.Run("guide", "--examples");
+        search.Run("--search", "build", "--json");
+        tags.Run("--tag", "quality", "--json");
+
+        // Assert
+        GoldenFiles.AssertEqual("cli", "index.expected.json", simple.Output.ToString().TrimEnd('\n'));
+        GoldenFiles.AssertEqual("cli", "examples.text.expected.txt", examples.Output.ToString().TrimEnd('\n'));
+        GoldenFiles.AssertEqual("cli", "search.expected.json", search.Output.ToString().TrimEnd('\n'));
+        GoldenFiles.AssertEqual("cli", "tags.expected.json", tags.Output.ToString().TrimEnd('\n'));
+    }
+
+    /// <summary>
+    ///     Proves that wrong arguments and unknown names exit with 2, a defective catalog exits with 70, and the error is
+    ///     written to the channel of the format.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_Failures_UseExitCodes()
+    {
+        // Arrange
+        var broken = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]]."))), "test");
+        var unknown = new CliHarness(CatalogBuilding.Simple());
+        var json = new CliHarness(CatalogBuilding.Simple());
+        var defective = new CliHarness(factory: _ => CatalogBuilding.Create(broken));
+
+        // Act
+        var unknownCode = unknown.Run("guide", "usag");
+        var jsonCode = json.Run("guide", "setupp", "--json");
+        var defectiveCode = defective.Run("--json");
+
+        // Assert
+        Assert.Equal((2, 2, 70), (unknownCode, jsonCode, defectiveCode));
+        GoldenFiles.AssertEqual("cli", "notfound.text.expected.txt", unknown.Error.ToString().TrimEnd('\n'));
+        GoldenFiles.AssertEqual("cli", "notfound.expected.json", json.Output.ToString().TrimEnd('\n'));
+        Assert.Contains("\"code\":\"catalog-error\"", defective.Output.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that a tool can add sections to the index, answer subjects of its own, choose the width, and pass a
+    ///     culture to its catalog factory.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_Extensions_FallbackSectionsWidthAndLanguage()
+    {
+        // Arrange
+        var harness = new CliHarness(
+            CatalogBuilding.Simple(),
+            language: true,
+            sections: [new HelpCliSection("Commands:", ["run  Run the tool"])],
+            fallback: words => words[0] == "run" ? new HelpCliAnswer("Help of run.", 5) : null,
+            width: () => 50);
+
+        // Act
+        var index = harness.Run("--lang", "de-DE", "--width", "auto");
+        var answered = harness.Run("run");
+
+        // Assert
+        Assert.Equal((0, 5), (index, answered));
+        Assert.Contains("Commands:\n  run  Run the tool\n\nHelp topics:", harness.Output.ToString(), StringComparison.Ordinal);
+        Assert.EndsWith("Help of run.\n", harness.Output.ToString(), StringComparison.Ordinal);
+        Assert.Equal("de-DE", harness.LastCulture!.Name);
     }
 }

@@ -7,8 +7,9 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     A successful resolution has a <see cref="Card"/> and nothing else. A failed one names the card whose
 ///     children were searched (<see cref="ParentId"/>, <see langword="null"/> at the top level), the segment that
 ///     matched nothing, and the names that would have been valid there, so a caller can write a helpful message.
-///     <see cref="Suggestion"/> is reserved for a closest-name suggestion and is always <see langword="null"/>
-///     in this release. The type is immutable and therefore safe for concurrent use.
+///     <see cref="Suggestion"/> is the closest name or alias at that level by the rules of
+///     <see cref="HelpCatalog.Suggest"/>, or <see langword="null"/> when none is close. The type is immutable and
+///     therefore safe for concurrent use.
 /// </remarks>
 public sealed class HelpPathResolution
 {
@@ -56,7 +57,8 @@ public sealed class HelpPathResolution
     public IReadOnlyList<string> ValidNames { get; }
 
     /// <summary>
-    ///     Gets a suggested replacement for <see cref="UnknownSegment"/>; always <see langword="null"/> in this release.
+    ///     Gets the closest name or alias to <see cref="UnknownSegment"/> at the level that failed, or
+    ///     <see langword="null"/> when the path resolved or no name is close.
     /// </summary>
     public string? Suggestion { get; }
 }
