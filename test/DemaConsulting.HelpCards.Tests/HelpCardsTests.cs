@@ -872,6 +872,11 @@ public class HelpCardsTests
         Assert.Contains("Start with `simple help guide setup`", command, StringComparison.Ordinal);
         Assert.Contains("Start with [Setup](guide/setup)", markdown, StringComparison.Ordinal);
         Assert.Contains("Start with <guide/setup> and then read <guide/usage>.", custom, StringComparison.Ordinal);
+
+        // Assert: an example of the card that holds the link is the full command or a link that names the card
+        Assert.Contains("Run it with the example `run` or", plain, StringComparison.Ordinal);
+        Assert.Contains("Run it with `simple help guide --example run` or", command, StringComparison.Ordinal);
+        Assert.Contains("Run it with [run](guide#run) or", markdown, StringComparison.Ordinal);
     }
 
     /// <summary>

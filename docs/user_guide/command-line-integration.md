@@ -121,8 +121,10 @@ Run 'tool help' for topics and examples.
 ```
 
 Links in cards appear as commands that the user can paste. A card printed with `tool help guide` says ``Start with
-`tool help guide setup` `` and ``Run it with `--example run` ``, and ends with the lists of child cards, examples, and
-related cards. A path that does not exist gives a hint:
+`tool help guide setup` `` and ``Run it with `tool help guide --example run` ``, and ends with the lists of child
+cards, examples, and related cards. A link to an example is always the full command, also when the example belongs to
+the card that holds the link, so it works wherever it is copied (the Markdown style likewise names the card in the
+target, `[run](guide#run)`). A path that does not exist gives a hint:
 
 ```text
 Error: Unknown help card 'usages' under 'guide'.

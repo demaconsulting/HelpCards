@@ -31,7 +31,8 @@ only generated lines, and the output must not depend on the culture of the machi
 - **Markdown**: the guide card as Markdown equals the golden file and does not change when a narrow width is set.
 - **JSON golden files**: the card, the index, and the examples document as JSON.
 - **Link styles**: the command and the Markdown link style golden files, the JSON command, and a custom command
-  template.
+  template; a link to an example of the containing card is the full command in the command style, a link that names the
+  card in the Markdown style, and short in the plain style, and the JSON body and its links agree.
 - **Examples**: the examples document with the own examples in full and the descendants only listed, the card with the
   content of its examples in fences, and one example alone as exactly its content.
 - **Expected results**: the examples document of the `runnable` fixture shows the exit code and the expected output

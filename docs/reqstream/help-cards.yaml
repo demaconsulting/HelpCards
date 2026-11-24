@@ -342,10 +342,12 @@ sections:
       - id: HelpCards-Rendering-LinkStyles
         title: >-
           A catalog shall write the links of card bodies and lists in a plain, a command, and a Markdown style or
-          through a callback of the caller, and never point at a card that a view hides.
+          through a callback of the caller, write a link to an example as the full command that prints it (or a link
+          that names the card) whichever card holds the link, and never point at a card that a view hides.
         tags: [system]
         justification: |
-          The same card is read in a terminal, in a document, and inside a tool with its own links.
+          The same card is read in a terminal, in a document, and inside a tool with its own links; a link that is
+          copied out of a card must still work.
         children:
           - HelpCards-Presentation-LinkStyles
         tests:

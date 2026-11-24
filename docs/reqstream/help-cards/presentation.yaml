@@ -71,7 +71,9 @@ sections:
           - id: HelpCards-Presentation-LinkStyles
             title: >-
               The subsystem shall write links in bodies and lists in the plain, command, and Markdown styles or
-              through a callback, only for visible targets, with a configurable command template.
+              through a callback, only for visible targets, with a configurable command template, and write a link
+              to an example as the full command, or as a link that names the card, in the command and Markdown
+              styles, also for an example of the card that holds the link.
             justification: |
               The same card is read in a terminal, in a document, and inside a tool with its own links.
             children:
@@ -86,6 +88,7 @@ sections:
               - HelpCards-Presentation-TextRenderer-LinkStyles
             tests:
               - Presentation_LinkStyles_GuideCard_WriteLinksAndLists
+              - Presentation_Links_LocalExample_IsTheFullCommandInCommandStyle
 
           - id: HelpCards-Presentation-Examples
             title: >-

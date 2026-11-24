@@ -85,8 +85,9 @@ public sealed class HelpCliOptions
     /// <remarks>
     ///     The helper writes every link in the command style, so the template decides how card links read in the
     ///     printed help: with the default, <c>[[getting-started/install]]</c> reads <c>`tool help getting-started install`</c>
-    ///     (<c>{path}</c> is the card id with each <c>/</c> replaced by a space), and a link to an example of the same
-    ///     card reads <c>`--example load`</c>. The plain style (<c>the card `id`</c>) is not used by the helper.
+    ///     (<c>{path}</c> is the card id with each <c>/</c> replaced by a space), and a link to an example reads the full
+    ///     command, <c>`tool help getting-started --example load`</c>, also for an example of the card that holds the
+    ///     link. The plain style (<c>the card `id`</c>) is not used by the helper.
     /// </remarks>
     public string? CommandTemplate { get; init; }
 

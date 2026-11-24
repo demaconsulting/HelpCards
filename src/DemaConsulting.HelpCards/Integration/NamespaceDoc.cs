@@ -44,10 +44,9 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         (<c>HelpLinkStyle.Command</c>), not the plain style that <c>HelpRenderOptions</c> defaults to. A card link
 ///         <c>[[getting-started/install]]</c> reads <c>`tool help getting-started install`</c> (the command that prints
 ///         that card, from <c>HelpCliOptions.CommandTemplate</c>), a link to an example of the same card
-///         (<c>[[#load]]</c>) reads <c>`--example load`</c> (the option to add to the card's own command; it is not a
-///         complete command), and a link to an example of another card reads
-///         <c>`tool help other-card --example load`</c>. Markdown output (<c>--format markdown</c>) keeps the command
-///         style. In contrast, <c>HelpAgentTool</c> and <c>HelpCatalog.Render</c> without options write
+///         (<c>[[#load]]</c>) reads the full command <c>`tool help this-card --example load`</c>, like a link to an
+///         example of another card, <c>`tool help other-card --example load`</c>, so every link can be run as written. Markdown output
+///         (<c>--format markdown</c>) keeps the command style. In contrast, <c>HelpAgentTool</c> and <c>HelpCatalog.Render</c> without options write
 ///         <c>the card `id`</c> and <c>the example `name`</c>, and a Markdown link style exists only through
 ///         <c>HelpRenderOptions</c>.
 ///     </para>

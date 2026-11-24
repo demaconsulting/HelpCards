@@ -230,9 +230,10 @@ with its golden file exactly. A golden file holds the output followed by one lin
 **Tests**: `HelpCards_Rendering_LinkStyles_WriteTargetsInEachStyle`,
 `HelpCards_Rendering_Examples_ArePrintedInFullOrAlone`
 
-Formats the guide body in the plain, command, and Markdown styles and with a callback, and asserts one link of each.
-Renders the examples document of the guide card in the command style and compares it with its golden file, and prints
-one example of a card below it alone, asserting that the result is exactly its content.
+Formats the guide body in the plain, command, and Markdown styles and with a callback, and asserts one link of each,
+including the link to an example of the guide card itself (short only in the plain style; the full command or a link
+that names the card in the others). Renders the examples document of the guide card in the command style and compares it
+with its golden file, and prints one example of a card below it alone, asserting that the result is exactly its content.
 
 ### Examples: Save-As and File
 

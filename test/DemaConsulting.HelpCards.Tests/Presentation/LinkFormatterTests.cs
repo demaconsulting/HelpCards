@@ -54,7 +54,7 @@ public class LinkFormatterTests
     private static HelpLink ExternalLink() => new("s/a/b", null, null, "Bee", "the text", "s");
 
     /// <summary>
-    ///     Proves that the plain style names a card, an example, a local example, and an external card in words.
+    ///     Proves that the plain style names a card, an example, and an external card in words.
     /// </summary>
     [Fact]
     public void LinkFormatter_FormatLink_PlainStyle_WritesWords()
@@ -65,7 +65,6 @@ public class LinkFormatterTests
         // Act / Assert
         Assert.Equal("the card `a/b`", LinkFormatter.FormatLink(context, CardLink(), Containing));
         Assert.Equal("the example `x` of the card `a/b`", LinkFormatter.FormatLink(context, ExampleLink(), Containing));
-        Assert.Equal("the example `x`", LinkFormatter.FormatLink(context, LocalLink(), Containing));
         Assert.Equal("the card `s/a/b`", LinkFormatter.FormatLink(context, ExternalLink(), Containing));
     }
 
@@ -81,7 +80,6 @@ public class LinkFormatterTests
         // Act / Assert
         Assert.Equal("`tool help a b`", LinkFormatter.FormatLink(context, CardLink(), Containing));
         Assert.Equal("`tool help a b --example x`", LinkFormatter.FormatLink(context, ExampleLink(), Containing));
-        Assert.Equal("`--example x`", LinkFormatter.FormatLink(context, LocalLink(), Containing));
         Assert.Equal("`tool help s a b`", LinkFormatter.FormatLink(context, ExternalLink(), Containing));
     }
 
@@ -97,8 +95,57 @@ public class LinkFormatterTests
         // Act / Assert
         Assert.Equal("[Bee](a/b)", LinkFormatter.FormatLink(context, CardLink(), Containing));
         Assert.Equal("[x of Bee](a/b#x)", LinkFormatter.FormatLink(context, ExampleLink(), Containing));
-        Assert.Equal("[x](#x)", LinkFormatter.FormatLink(context, LocalLink(), Containing));
         Assert.Equal("[the text](s/a/b)", LinkFormatter.FormatLink(context, ExternalLink(), Containing));
+    }
+
+    /// <summary>
+    ///     Proves that the plain style writes the short form for an example of the containing card, which is prose
+    ///     about the card being read.
+    /// </summary>
+    [Fact]
+    public void LinkFormatter_FormatLink_PlainStyleLocalExample_IsShort()
+    {
+        // Arrange / Act
+        var text = LinkFormatter.FormatLink(Context(null), LocalLink(), Containing);
+
+        // Assert
+        Assert.Equal("the example `x`", text);
+    }
+
+    /// <summary>
+    ///     Proves that the command style writes the full command for an example of the containing card, so the text can
+    ///     be run from anywhere.
+    /// </summary>
+    [Fact]
+    public void LinkFormatter_FormatLink_CommandStyleLocalExample_WritesFullCommand()
+    {
+        // Arrange
+        var context = Context(new HelpRenderOptions { LinkStyle = HelpLinkStyle.Command, CommandTemplate = "{tool} man {path}" });
+
+        // Act
+        var text = LinkFormatter.FormatLink(context, LocalLink(), Containing);
+        var withTemplate = LinkFormatter.FormatLink(Context(new HelpRenderOptions { LinkStyle = HelpLinkStyle.Command }), LocalLink(), Containing);
+
+        // Assert
+        Assert.Equal("`tool man guide --example x`", text);
+        Assert.Equal("`tool help guide --example x`", withTemplate);
+    }
+
+    /// <summary>
+    ///     Proves that the Markdown style writes a link whose target names the card of the example, with the example
+    ///     name as text, for an example of the containing card.
+    /// </summary>
+    [Fact]
+    public void LinkFormatter_FormatLink_MarkdownStyleLocalExample_NamesTheCard()
+    {
+        // Arrange
+        var context = Context(new HelpRenderOptions { LinkStyle = HelpLinkStyle.Markdown });
+
+        // Act
+        var text = LinkFormatter.FormatLink(context, LocalLink(), Containing);
+
+        // Assert
+        Assert.Equal("[x](guide#x)", text);
     }
 
     /// <summary>
@@ -226,7 +273,7 @@ public class LinkFormatterTests
 
         // Assert: local example, example link, external card, and absent external text
         Assert.Contains("Start with `simple help guide setup` and then read `simple help guide usage`.", body, StringComparison.Ordinal);
-        Assert.Contains("Run it with `--example run` or see `simple help guide --example settings` for", body, StringComparison.Ordinal);
+        Assert.Contains("Run it with `simple help guide --example run` or see `simple help guide --example settings` for", body, StringComparison.Ordinal);
         Assert.Contains("`simple help reference limits`", body, StringComparison.Ordinal);
         Assert.Contains("the thing", body, StringComparison.Ordinal);
         Assert.DoesNotContain("[[other", body, StringComparison.Ordinal);

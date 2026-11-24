@@ -231,8 +231,8 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         note <c>external-source-absent</c>; <c>HelpValidationOptions.RequireExternalSources</c> turns it into an
 ///         error); when the source is present but has no such card it is the error <c>link-target</c> (or
 ///         <c>example-target</c> for an example). How a link reads in the output depends on the renderer: the
-///         command-line helper writes a card link as the command that prints the card and a local example link as
-///         <c>--example name</c>; the agent tool and <c>Render</c> write <c>the card `id`</c>; Markdown output writes a
+///         command-line helper writes a card link as the command that prints the card and an example link as the
+///         full command <c>tool help card --example name</c>; the agent tool and <c>Render</c> write <c>the card `id`</c>; Markdown output writes a
 ///         Markdown link (see <c>HelpLinkStyle</c> in <c>DemaConsulting.HelpCards.Presentation</c> and
 ///         <c>HelpCliOptions</c>).
 ///     </para>

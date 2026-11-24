@@ -183,7 +183,10 @@ of that name and two or more cards below it do, the link is ambiguous (`ambiguou
 `[[card#name]]` with the card that owns the example.
 
 How a link is shown depends on the rendering. In plain text a card link reads ``the card `a/b` ``; in the command style
-that the command-line helper uses it becomes the command that prints the card; in Markdown it is a Markdown link.
+that the command-line helper uses it becomes the command that prints the card, and a link to an example becomes the full
+command that prints the example (`tool help guide --example run`), also when the example belongs to the card that holds
+the link; in Markdown it is a Markdown link whose target names the card (`[run](guide#run)`). Only the plain text style,
+which is prose for the card being read, writes the short ``the example `run` ``.
 
 ## Tokens
 

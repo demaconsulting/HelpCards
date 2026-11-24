@@ -58,8 +58,8 @@ and padded to the widest.
 
 **Links.** The formatter takes the parsed pieces of the body and writes each visible link: plain words, a command, or a
 Markdown link, or whatever the callback returns. A link to an example of the card that holds the link is written in a
-short form. Links to hidden targets were already turned into text by the catalog view, so the formatter and the
-callback see visible targets only.
+short form only in the plain style; the command and Markdown styles name the card. Links to hidden targets were already
+turned into text by the catalog view, so the formatter and the callback see visible targets only.
 
 **Wrapping.** Only generated lines are wrapped, at the configured width, never inside a word, with the prefix counted
 and a hanging indent; the authored body is copied as it is.

@@ -5,7 +5,7 @@ Also known as: start
 Tags: tutorial, authoring
 
 Start with `tool help guide setup` and then read `tool help guide usage`.
-Run it with `--example run` or see `tool help guide --example settings` for the settings file.
+Run it with `tool help guide --example run` or see `tool help guide --example settings` for the settings file.
 The limits are described in `tool help reference limits`, and
 the thing lives in another library.
 A code span such as `[[x]]` is not a link.

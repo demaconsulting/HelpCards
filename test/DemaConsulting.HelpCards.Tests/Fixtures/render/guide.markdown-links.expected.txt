@@ -5,7 +5,7 @@ How to set up and use the tool.
 **Tags:** tutorial, authoring
 
 Start with [Setup](guide/setup) and then read [Usage](guide/usage).
-Run it with [run](#run) or see [settings of Guide](guide#settings) for the settings file.
+Run it with [run](guide#run) or see [settings of Guide](guide#settings) for the settings file.
 The limits are described in [the limits card](reference/limits), and
 the thing lives in another library.
 A code span such as `[[x]]` is not a link.

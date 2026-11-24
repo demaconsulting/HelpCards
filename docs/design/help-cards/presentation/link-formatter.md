@@ -17,7 +17,7 @@ The class is static and stateless. It reads the options through the `RenderConte
 | --- | --- | --- | --- |
 | Card | the card `a/b` | `tool help a b` | `[Title](a/b)` |
 | Example | the example `x` of the card `a/b` | `tool help a b --example x` | `[x of Title](a/b#x)` |
-| Example of the containing card | the example `x` | `--example x` | `[x](#x)` |
+| Example of the containing card (`g`) | the example `x` | `tool help g --example x` | `[x](g#x)` |
 | External card | the card `s/a/b` | `tool help s a b` | `[text](s/a/b)` |
 
 #### Key Methods
@@ -25,7 +25,9 @@ The class is static and stateless. It reads the options through the `RenderConte
 - **`FormatBody(context, card)`** walks the body pieces of the card in order, copies text, and replaces each visible
   link with `FormatLink`.
 - **`FormatLink(context, link, containingCardId)`** calls the callback when one is set; otherwise it writes the style of
-  the options. The short form applies only to the `[[#x]]` form whose example belongs to the containing card.
+  the options. The short form applies only in the plain style and only to the `[[#x]]` form whose example belongs to the
+  containing card; the command style writes the full command and the Markdown style a target with the card, so a
+  copied link works from anywhere (a bare `#x` fragment would point at an anchor that the generated headings lack).
 - **`FormatLabel(context, id, title, sourceName)`** writes the label of a card in a list: the id, the command, a
   Markdown link, or what the callback writes for a link to the card.
 - **`Command(context, id)`** fills in the command template with the tool name and the id with slashes replaced by
