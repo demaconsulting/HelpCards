@@ -254,7 +254,7 @@ tests:
             - field: "Author"
               contains: "DEMA Consulting"
             - field: "Subject"
-              contains: "knowledge cards"
+              contains: "User Guide"
           pages:
             min: 3
           text:
