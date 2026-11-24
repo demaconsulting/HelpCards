@@ -31,7 +31,7 @@ The subsystem contains these units:
 | Interface | Direction | Purpose |
 | --- | --- | --- |
 | `Validate`, `AssertValid` | Inbound (adopters) | Get the problems of a source, or fail a test |
-| `CompareToDirectory` | Inbound (adopters) | Compare embedded resources with a directory |
+| `CompareToDirectory` | Inbound (adopters) | Compare embedded resources with a folder (packaging check) |
 | `HelpValidationOptions`, `IHelpCardRule` | Inbound (adopters) | Set limits, add product rules |
 | `HelpExamples.Enumerate` | Inbound (adopters) | List examples with their cards |
 | `ExampleCommandLine.TryParse` | Inbound (adopters) | Read the arguments of a command |

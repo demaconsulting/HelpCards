@@ -2,7 +2,7 @@ namespace DemaConsulting.HelpCards.Testing;
 
 /// <summary>
 ///     Helpers that prove, in your own tests, that your help cards are valid, that your command examples parse and
-///     that the embedded files match the files on disk: <c>HelpCardValidator</c> (with <c>HelpValidationOptions</c>
+///     that the embedded files match what you ship: <c>HelpCardValidator</c> (with <c>HelpValidationOptions</c>
 ///     and your own <c>IHelpCardRule</c> rules), <c>HelpExamples</c>, <c>ExampleCommandLine</c>, <c>HelpExampleRunner</c>
 ///     (which runs your command examples through your own delegate and compares the result they state) and
 ///     <c>HelpCardMarkdown</c>. Start at <c>HelpCardValidator.AssertValid</c>. The helpers do not depend on a test
@@ -28,9 +28,7 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         </description></item>
 ///         <item><description>
 ///             Check the examples. <c>HelpExamples.Enumerate</c> lists the examples of a catalog by kind, and
-///             <c>ExampleCommandLine.TryParse</c> proves that a <c>command</c> example splits into arguments. Use
-///             <c>HelpCardValidator.CompareToDirectory</c> to prove the embedded files match the folder that holds
-///             your cards.
+///             <c>ExampleCommandLine.TryParse</c> proves that a <c>command</c> example splits into arguments.
 ///         </description></item>
 ///         <item><description>
 ///             Run the examples. A <c>command</c> example can state the exit code (<c>exit</c>) and the output text
@@ -58,8 +56,11 @@ namespace DemaConsulting.HelpCards.Testing;
 ///         <c>CommandExamples_Parse</c> test below, calls <c>HelpCatalog.Create</c>, which throws a
 ///         <c>HelpCatalogException</c> (not an assertion failure) for an invalid card. A broken card therefore fails
 ///         every test that builds a catalog, not only the one that calls <c>AssertValid</c>; read the first failure.
-///         To prove the embedded files match the folder on disk, add a test with <c>CompareToDirectory</c>; its
-///         remarks show how to find the <c>Help</c> folder from a test.
+///         <c>HelpCardValidator.CompareToDirectory</c> compares the embedded files with a folder on disk. It is not part
+///         of the pattern above: a test that reads the checked-in files of the repository is not a unit test of the
+///         product, and the packaged targets embed every file below <c>Help</c>, so <c>AssertValid</c> and the runner
+///         already prove what ships. Keep <c>CompareToDirectory</c> for a packaging or release check outside the unit
+///         tests; its remarks give the reason.
 ///     </para>
 /// </remarks>
 /// <example>

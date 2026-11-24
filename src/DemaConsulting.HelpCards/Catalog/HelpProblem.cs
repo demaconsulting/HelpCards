@@ -85,7 +85,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>external-source-missing</c></term><description>Error, validator only. An external link names a source that is absent while <c>HelpValidationOptions.RequireExternalSources</c> is set.</description></item>
 ///         <item><term><c>external-source-absent</c></term><description>Info. An external link names a source that is not in the catalog; the link shows its text. Never fails anything.</description></item>
 ///         <item><term><c>overlay-optional-skipped</c></term><description>Info. An <c>optional</c> overlay was skipped because its target source is absent.</description></item>
-///         <item><term><c>summary-length</c></term><description>Warning. A summary is longer than <c>MaxSummaryChars</c> (100) or, for a root card, <c>MaxRootSummaryChars</c> (60).</description></item>
+///         <item><term><c>summary-length</c></term><description>Warning. A summary is longer than <c>MaxSummaryChars</c> (100) or, for a root card, <c>MaxRootSummaryChars</c> (80, so that the summary fits two lines of the topic index).</description></item>
 ///         <item><term><c>card-size</c></term><description>Warning. A card renders as more than <c>MaxCardChars</c> (6000) characters, or <c>MaxRootIndexChars</c> (3500) for a root card with children.</description></item>
 ///         <item><term><c>heading-reserved</c></term><description>Warning. A body has a level-one heading or one of the generated headings <c>## Cards</c>, <c>## Examples</c>, <c>## See also</c>.</description></item>
 ///         <item><term><c>fence-language</c></term><description>Warning. A fenced code block names no language.</description></item>
@@ -94,7 +94,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>line-length</c></term><description>Warning. A body line is longer than <c>MaxLineLength</c> (off unless set).</description></item>
 ///         <item><term><c>command-parse</c></term><description>Warning. A <c>command</c> example cannot be split into arguments by <c>ExampleCommandLine</c>.</description></item>
 ///         <item><term><c>save-as-duplicate</c></term><description>Warning. Two <c>source</c> examples of one card are saved under the same name, so <c>HelpExampleRunner</c> would keep only the last one.</description></item>
-///         <item><term><c>resources-mismatch</c></term><description>Warning. <c>CompareToDirectory</c> found a file on only one side: on disk but not embedded, or embedded but not on disk.</description></item>
+///         <item><term><c>resources-mismatch</c></term><description>Warning. <c>CompareToDirectory</c> (a packaging check, not a unit test) found a file on only one side: on disk but not embedded, or embedded but not on disk.</description></item>
 ///         <item><term><c>example-parse</c></term><description>Error, example runner only. A <c>command</c> example cannot be split into arguments by <c>ExampleCommandLine</c>, so <c>HelpExampleRunner</c> did not run it. It is reported in the run report, never by <c>HelpCatalog.Create</c>.</description></item>
 ///         <item><term><c>example-exit-code</c></term><description>Error, example runner only. A command ended with another exit code than the <c>exit</c> key of its example states (0 when absent).</description></item>
 ///         <item><term><c>example-output</c></term><description>Error, example runner only. The output of a command does not contain a fragment of the <c>expect</c> key of its example; one problem for each missing fragment.</description></item>

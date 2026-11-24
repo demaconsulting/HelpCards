@@ -459,7 +459,8 @@ sections:
           get every file that exists on one side only.
         tags: [system]
         justification: |
-          Authors work in a directory while the product ships embedded resources; they must not differ.
+          Authors work in a directory while the product ships embedded resources; a packaging or release check must be
+          able to find a difference, while the unit tests of a product prove its cards through the embedded source.
         children:
           - HelpCards-Testing-Resources
         tests:

@@ -41,11 +41,13 @@ sections:
               - id: HelpCards-Testing-HelpCardValidator-SummaryLength
                 title: >-
                   The validator shall report a "summary-length" warning for a summary that is longer than the
-                  limit, which is shorter for a root card, and shall not report a summary at the limit.
+                  limit, which is 100 characters and, for a root card, 80, so that a root summary takes at most two
+                  lines of the topic index at the default width, and shall not report a summary at the limit.
                 justification: |
                   Summaries are listed in indexes; long ones break the layout of every list.
                 tests:
                   - HelpCardValidator_Validate_LongSummary_ReportsSummaryLength
+                  - HelpValidationOptions_RootSummaryAtDefaultLimit_FitsTwoIndexLines
 
               - id: HelpCards-Testing-HelpCardValidator-CardSize
                 title: >-
@@ -156,7 +158,7 @@ sections:
               - id: HelpCards-Testing-HelpCardValidator-Options
                 title: >-
                   The options shall default to a card limit of 6000, an index limit of 3500, a summary limit of 100
-                  for cards and 60 for roots, no line limit, no rules, no required sources, and warnings that do not
+                  for cards and 80 for roots, no line limit, no rules, no required sources, and warnings that do not
                   fail; shall return every value that is set, copying the rules; and shall reject limits that are
                   not positive and null rules where they are set.
                 justification: |
@@ -173,7 +175,9 @@ sections:
                   a directory but not embedded and every embedded file that is not in the directory, and none when
                   both have the same files.
                 justification: |
-                  A card that exists on disk but is not embedded never reaches the reader, and the other way round.
+                  A card that exists on disk but is not embedded never reaches the reader, and the other way round. The
+                  comparison reads a folder that is given to it, so it serves checks outside the requirement-linked
+                  unit tests, which must not assert on the checked-in files of a repository.
                 tests:
                   - HelpCardValidator_CompareToDirectory_SameFiles_ReturnsNoProblems
                   - HelpCardValidator_CompareToDirectory_DifferentFiles_ReportsBothDirections

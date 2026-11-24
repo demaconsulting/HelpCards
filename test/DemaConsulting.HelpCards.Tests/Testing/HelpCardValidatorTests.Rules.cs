@@ -65,10 +65,10 @@ public partial class HelpCardValidatorTests
         // Act
         var problems = ValidateFiles(
             null,
-            ("a.md", SourceReading.Card(summary: new string('r', 61))),
+            ("a.md", SourceReading.Card(summary: new string('r', 81))),
             ("a/b.md", SourceReading.Card(summary: new string('c', 101))),
             ("a/c.md", SourceReading.Card(summary: new string('c', 100))),
-            ("d.md", SourceReading.Card(summary: new string('r', 60))));
+            ("d.md", SourceReading.Card(summary: new string('r', 80))));
 
         // Assert
         Assert.Equal(2, problems.Count);
@@ -80,8 +80,8 @@ public partial class HelpCardValidatorTests
             Assert.Equal(0, problem.Line);
         });
         Assert.Equal("a.md", problems[0].File);
-        Assert.Contains("61 characters", problems[0].Message);
-        Assert.Contains("at most 60", problems[0].Message);
+        Assert.Contains("81 characters", problems[0].Message);
+        Assert.Contains("at most 80", problems[0].Message);
         Assert.Equal("a/b.md", problems[1].File);
         Assert.Contains("at most 100", problems[1].Message);
     }

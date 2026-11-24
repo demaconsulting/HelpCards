@@ -13,14 +13,26 @@ public static partial class HelpCardValidator
     /// </summary>
     /// <remarks>
     ///     <para>
+    ///         <b>Prefer a unit test of the embedded cards.</b> The packaged build targets embed every file below the
+    ///         <c>Help</c> folder, so <c>HelpCardValidator.AssertValid</c> on the embedded source, together with
+    ///         <c>HelpExampleRunner</c>, proves what the product ships. This method compares the embedded files with
+    ///         the files of a directory, usually the checked-in <c>Help</c> folder of the repository. A test that reads
+    ///         the checked-in source files of the repository is not a unit test of the product: the DEMA testing
+    ///         standard does not allow requirement-linked tests to assert on checked-in source or configuration files,
+    ///         because such a test depends on where the repository is on the build machine and not on the behavior of
+    ///         the product. The method stays for a check outside the unit tests, for example a packaging or release
+    ///         check that compares the embedded files with a folder that the product itself exports, or a script of the
+    ///         build. It is not marked obsolete, and it is not planned to be removed before a major release.
+    ///     </para>
+    ///     <para>
     ///         Authors edit cards in a directory while the product ships them as embedded resources. A card that
     ///         exists only on disk was forgotten by the build (for example because it sits outside the embedded
     ///         folder); a resource that exists only in the assembly was deleted or renamed on disk but the
-    ///         assembly was not rebuilt. Either way the two views of the help differ, and a test should say so.
+    ///         assembly was not rebuilt. Either way the two views of the help differ, and the check should say so.
     ///     </para>
     ///     <para>
-    ///         The directory is only listed, never read, and links are not resolved: pass the source folder of your own
-    ///         repository, never a path from the input of a user.
+    ///         The directory is only listed, never read, and links are not resolved: pass a folder of your own
+    ///         build, never a path from the input of a user.
     ///     </para>
     ///     <para>
     ///         Only the presence of each file is compared, by its path below the help root (ordinal comparison, with
@@ -28,56 +40,27 @@ public static partial class HelpCardValidator
     ///         <see cref="HelpProblem"/> for the table of rule ids). The comparison covers every file below the folder,
     ///         data files of examples included, not only the cards.
     ///     </para>
-    ///     <para>
-    ///         <b>Locating the folder in a test.</b> The method needs the path of the <c>Help</c> folder of the library
-    ///         in the repository; a test project has no path to it by default. The robust way is to let the test project
-    ///         copy the folder to its output with an item in the test project file, so the test finds it next to the test
-    ///         assembly whatever the working directory or the build server is:
-    ///     </para>
-    ///     <code language="xml">
-    /// &lt;ItemGroup&gt;
-    ///   &lt;Content Include="..\MyLib\Help\**\*" Link="MyLibHelp\%(RecursiveDir)%(Filename)%(Extension)"
-    ///            CopyToOutputDirectory="PreserveNewest" /&gt;
-    /// &lt;/ItemGroup&gt;
-    /// </code>
-    ///     <para>
-    ///         Then the folder is <c>Path.Combine(AppContext.BaseDirectory, "MyLibHelp")</c>. When you cannot change the
-    ///         project file, walk up from <c>AppContext.BaseDirectory</c> until a folder <c>MyLib/Help</c> exists.
-    ///     </para>
     /// </remarks>
     /// <example>
-    ///     An xUnit test that proves the embedded cards of <c>MyLibHelp.Source</c> are exactly the files of the folder
-    ///     (the folder is copied to the output by the item above):
+    ///     A check in a packaging or release tool, outside the unit tests of the product, that lists every difference
+    ///     between the embedded cards of <c>MyLibHelp.Source</c> and the folder of a build:
     ///     <code language="csharp">
     /// using System;
-    /// using System.IO;
+    /// using DemaConsulting.HelpCards.Catalog;
     /// using DemaConsulting.HelpCards.Testing;
-    /// using Xunit;
     ///
-    /// public class EmbeddingTests
+    /// internal static class PackageCheck
     /// {
-    ///     [Fact]
-    ///     public void EmbeddedCards_MatchTheFolderOnDisk()
+    ///     public static int Run(string helpFolder)
     ///     {
-    ///         string folder = Path.Combine(AppContext.BaseDirectory, "MyLibHelp");
-    ///
     ///         // Empty when both sides agree; otherwise one resources-mismatch warning per file on only one side.
-    ///         Assert.Empty(HelpCardValidator.CompareToDirectory(MyLibHelp.Source, folder));
-    ///     }
-    ///
-    ///     // Alternative without a project item: walk up from the test output to the library's folder.
-    ///     private static string FindHelpFolder()
-    ///     {
-    ///         for (DirectoryInfo? directory = new(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+    ///         var differences = HelpCardValidator.CompareToDirectory(MyLibHelp.Source, helpFolder);
+    ///         foreach (HelpProblem difference in differences)
     ///         {
-    ///             string candidate = Path.Combine(directory.FullName, "MyLib", "Help");
-    ///             if (Directory.Exists(candidate))
-    ///             {
-    ///                 return candidate;
-    ///             }
+    ///             Console.Error.WriteLine($"{difference.File}: {difference.Message}");
     ///         }
     ///
-    ///         throw new DirectoryNotFoundException("The Help folder of MyLib was not found above the test output.");
+    ///         return differences.Count == 0 ? 0 : 1;
     ///     }
     /// }
     /// </code>

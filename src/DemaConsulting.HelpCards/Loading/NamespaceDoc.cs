@@ -103,7 +103,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     <list type="table">
 ///         <listheader><term>Key</term><description>Value, and meaning (Card / Overlay / Translation / <c>_source.md</c>)</description></listheader>
 ///         <item><term><c>title</c></term><description>One-line text. R / O / O / O. The heading of the card.</description></item>
-///         <item><term><c>summary</c></term><description>One-line text. R / O / O / O. Shown in lists and search results; keep it to 100 characters (60 for a root card), or the validator warns <c>summary-length</c>.</description></item>
+///         <item><term><c>summary</c></term><description>One-line text. R / O / O / O. Shown in lists and search results; keep it to 100 characters (80 for a root card, which the topic index shows beside a command), or the validator warns <c>summary-length</c>.</description></item>
 ///         <item><term><c>aliases</c></term><description>List of alternative names, each a segment. O / - / O (added) / O. Another way to type the card name; unique among siblings. In <c>_source.md</c> they name the mount root.</description></item>
 ///         <item><term><c>tags</c></term><description>List of unique segments. O / - / - / -. Group cards across the tree; filter with <c>--tag</c> or <c>Filter</c>.</description></item>
 ///         <item><term><c>order</c></term><description>Integer of at most 7 digits (a leading minus is allowed). O / - / - / -. Sorts siblings; a card without <c>order</c> sorts after every card that has one, ties by name.</description></item>
@@ -166,6 +166,16 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <c>shell</c>, <c>yaml</c> or <c>csharp</c>), <c>description</c> (one line), <c>file</c>, <c>content</c>,
 ///         <c>save-as</c> (schema 2), and, for a <c>command</c> only, the expected result <c>exit</c> and <c>expect</c>;
 ///         <c>name</c>, <c>kind</c>, <c>language</c> and <c>description</c> are always required.
+///     </para>
+///     <para>
+///         <b>What to show.</b> Show a complete <c>source</c> file only for a format that a user authors; explain a file
+///         that the tool itself produces in prose and prove it with <c>expect</c> on the command that produces it, and
+///         keep test data in the test project, not in a card. A data file below <c>Help</c> is embedded like a card, so
+///         check that <c>.gitignore</c> does not exclude its name (for example <c>*.xml</c> or <c>*.trx</c>); an ignored
+///         file is present on your machine and missing in a clean checkout. Quote a <c>command</c> content that starts
+///         with <c>{{tool}}</c>, because a plain value cannot start with a brace. Besides <c>#</c>, only the generated
+///         headings <c>## Cards</c>, <c>## Examples</c> and <c>## See also</c> are reserved; other <c>##</c> subheadings
+///         are fine.
 ///     </para>
 ///     <para>
 ///         <b>Schema 2: <c>save-as</c> and <c>file</c>.</b> A source that declares <c>schema: 2</c> in <c>_source.md</c>
@@ -262,8 +272,9 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         base class library types, so it can appear in the API of any library. Wrong arguments throw
 ///         <c>ArgumentException</c> or <c>ArgumentNullException</c>; defects in the cards are never reported here,
 ///         but by <c>HelpCatalog.Create</c> as a <c>HelpCatalogException</c>. A source cannot be created from a
-///         folder on disk; ship the cards embedded. To check in a test that the embedded files match the folder, use
-///         <c>HelpCardValidator.CompareToDirectory</c> (see <c>DemaConsulting.HelpCards.Testing</c>).
+///         folder on disk; ship the cards embedded. Every file below the <c>Help</c> folder is embedded by the packaged
+///         targets, so <c>HelpCardValidator.AssertValid</c> on the embedded source proves what ships (see
+///         <c>DemaConsulting.HelpCards.Testing</c>; <c>CompareToDirectory</c> there is for checks outside the unit tests).
 ///     </para>
 /// </remarks>
 /// <example>

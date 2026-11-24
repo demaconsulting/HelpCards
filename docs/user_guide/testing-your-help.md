@@ -49,7 +49,7 @@ defect of a card. `AssertValid` fails on errors, and also on warnings when `Warn
 | `MaxCardChars` | 6000 | The longest rendered text of a card |
 | `MaxRootIndexChars` | 3500 | The longest rendered text of the index of the roots |
 | `MaxSummaryChars` | 100 | The longest summary |
-| `MaxRootSummaryChars` | 60 | The longest summary of a root card |
+| `MaxRootSummaryChars` | 80 | The longest summary of a root card (two lines of the topic index) |
 | `MaxLineLength` | Off | The longest line of a body |
 | `Rules` | None | Your own `IHelpCardRule` objects |
 | `RequireExternalSources` | `false` | Turns each absent external source into the error `external-source-missing` |
@@ -78,8 +78,18 @@ var options = new HelpValidationOptions { Rules = [new NoCommandLineTextRule()],
 HelpCardValidator.AssertValid(MyLibHelp.Source, options);
 ```
 
+### Embedded Files and the Folder on Disk
+
+The packaged build targets embed every file below the `Help` folder, so `AssertValid(MyLibHelp.Source)` and the example
+runner already prove what the product ships. Do not add a unit test that compares the embedded files with the checked-in
+`Help` folder of your repository: the testing standard of DEMA Consulting does not allow a requirement-linked test to
+assert on checked-in source files, because such a test depends on where the repository is on the build machine and not
+on what the product does.
+
 `HelpCardValidator.CompareToDirectory(source, directory)` compares the embedded resources of an assembly source with
-the files of a folder and reports the differences as `resources-mismatch`.
+the files of a folder and reports the differences as `resources-mismatch`. It stays available for a check outside the
+unit tests, such as a packaging or release step that compares the package with a folder it produced. It is not marked
+obsolete, but the unit-test use is discouraged and the method may be deprecated in a later release.
 
 ## Running Examples
 

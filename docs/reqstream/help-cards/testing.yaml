@@ -124,8 +124,10 @@ sections:
               The subsystem shall compare the files embedded in an assembly with the files of a directory and
               report every file that exists on one side only.
             justification: |
-              Authors edit cards in a directory while the product ships embedded resources; a forgotten or
-              outdated embedding must fail a test, not reach a reader.
+              Authors edit cards in a directory while the product ships embedded resources; a packaging or release
+              check outside the unit tests must be able to find a forgotten or outdated embedding before it reaches
+              a reader. A unit test of a product proves its cards through the embedded source, not by reading the
+              checked-in files of its repository.
             children:
               - HelpCards-Testing-HelpCardValidator-Directory
             tests:

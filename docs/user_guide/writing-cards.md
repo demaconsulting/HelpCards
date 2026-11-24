@@ -106,6 +106,10 @@ title: 'Setup: first steps'
 summary: "Use the \"help\" command"
 ```
 
+A command example starts with the token `{{tool}}`, and a plain scalar must not start with a brace, so always quote
+the content of a command (`content: '{{tool}} check *.yaml'`). The same goes for any value that starts with a
+character of the list above, for example a glob that starts with `*`.
+
 Tabs in the indentation, duplicate keys, flow collections such as `[a, b]`, anchors, aliases, tags, trailing
 comments, and nesting deeper than a list of maps are errors. `title` and `summary` are single lines.
 
@@ -122,8 +126,9 @@ block anywhere else is the error `block-scalar-not-allowed`.
 
 The body is Markdown. It must not contain a line that starts with `# ` outside a fenced block, because the title is
 the first-level heading, and it must not contain the generated headings `## Cards`, `## Examples`, and `## See also`.
-The test helpers report both as the warning `heading-reserved`. Give every fenced block a language so that readers and
-tools can format it.
+The test helpers report both as the warning `heading-reserved`. Only those four headings are reserved: you may use `##`
+subheadings of your own, and deeper levels, to structure a long card. Give every fenced block a language so that readers
+and tools can format it.
 
 ## Names, Aliases, and Tags
 
@@ -260,6 +265,26 @@ from when it is not). `card#name` always names one card.
 
 **Beta note.** Before 0.1.0-beta.3 an example name had to be unique across a card and every card below it (the first
 segment of its id). Cards that were valid stay valid with the same meaning; the new rule only allows more.
+
+### What to Put in an Example
+
+Use an example to show text that a **user writes or copies**, in a form that a **user authors**:
+
+- A `command` is the command line to run. State what it gives with `exit` and `expect` (see below) instead of showing
+  the output.
+- A `source` is a complete file in a format that a user writes by hand, such as a settings file, a requirements file,
+  or a source file of the tool. Show a whole file, not a fragment, so a test can save it and run the commands on it;
+  use a `snippet` for a fragment.
+- Do not show a file that the tool itself produces (a report, a log, a results file, an export). Explain its format in
+  the text of the card, and prove it with `expect` on the command that produces it. A produced file in a card
+  goes stale silently when the tool changes, and a test cannot tell.
+- Test data belongs in the test project of the product, not in a card. A data file next to a card is for an
+  example that a user reads and saves, not for data that a test of the product needs.
+
+A data file below the `Help` folder is embedded like a card. Check that your `.gitignore` does not exclude its name
+(for example `*.xml` or `*.trx`): an ignored file exists on your machine and is missing in a clean checkout, and the
+catalog then reports `example-file-missing` only in the build of the server. `git status --ignored` lists what is
+ignored.
 
 ### Expected Results
 

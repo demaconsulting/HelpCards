@@ -58,8 +58,9 @@ A library that has its own card loader can move to HelpCards one source at a tim
 - **Agent arguments are untrusted.** The agent tool treats them as text to search for and never as a path. The
   catalog performs no file input or output after it is created.
 - **No public directory source.** Sources come from embedded resources or memory. The only disk access is
-  `HelpCardValidator.CompareToDirectory`, which lists the file names below the folder you give it (it never reads their
-  content); pass it the folder of your own repository and never a path from the input of a user.
+  `HelpCardValidator.CompareToDirectory` (a packaging check, not a unit test), which lists the file names below the
+  folder you give it (it never reads their content); pass it the folder of your own repository and never a path from the
+  input of a user.
 - **Example file names cannot leave the card's folder.** The names allow letters, digits, dots, hyphens, and
   underscores with `/` between folders, and forbid `..`, a leading slash, and a drive.
 - **No dependencies.** The library uses only the Base Class Library, so it adds nothing to the supply chain of an

@@ -16,7 +16,7 @@ of the adopting product).
 | --- | --- |
 | `MaxCardChars` | Longest text rendering of a card; 6000 by default |
 | `MaxRootIndexChars` | Longest text rendering of a root card that has cards below it; 3500 by default |
-| `MaxSummaryChars`, `MaxRootSummaryChars` | Longest summary of a card and of a root card; 100 and 60 by default |
+| `MaxSummaryChars`, `MaxRootSummaryChars` | Longest summary of a card and of a root card; 100 and 80 by default |
 | `MaxLineLength` | Longest body line, or null for no limit (the default) |
 | `Rules` | The rules of the product, `IHelpCardRule`, applied to every card; none by default |
 | `RequireExternalSources` | Turns every absent external source into an error; off by default |
@@ -45,7 +45,12 @@ of the adopting product).
 - **`CompareToDirectory(source, directory)`** lists the embedded files and the files of the directory and returns a
   `resources-mismatch` warning for each path that is on one side only, in path order. It only lists file names and
   never reads the content of a file. The directory is the developer's own source folder at test time: paths are
-  validated lexically and links are not resolved, so it must not be a path from the input of a user.
+  validated lexically and links are not resolved, so it must not be a path from the input of a user. It is kept for
+  checks outside the unit tests of a product (a packaging or release check): a requirement-linked test that reads the
+  checked-in files of a repository is not allowed by the testing standard, and `AssertValid` on the embedded source
+  already proves what ships because the packaged targets embed every file below `Help`. The method is not obsolete.
+  The default limit of a root summary is 80 characters: at the default width of 78 and a 32-character command label the
+  summary has 44 columns on each line, so 80 characters take the two lines that an index may spend on one topic.
 
 #### Error Handling
 

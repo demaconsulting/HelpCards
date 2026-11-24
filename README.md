@@ -30,7 +30,9 @@ Presentation, Integration, and Testing build on that catalog.
 
 - **Markdown Cards**: One file per topic, with a title, summary, aliases, tags, see-also links, and examples
 - **Examples with Expected Results**: A command example can state the exit code and the output it gives (`exit:` and
-  `expect:`), so a test can run every example and compare; HelpCards itself never starts a process
+  `expect:`), so a test can run every example and compare; HelpCards itself never starts a process. Show a
+  complete file only for a format that users author; explain what the tool produces in prose, and keep test data in the
+  test project
 - **Resource Embedding**: A packaged MSBuild targets file embeds the `Help` folder of a project in its assembly
 - **Links and Tokens**: `[[card]]` links checked at build time and `{{token}}` values per library
 - **Multi-Library Composition**: Several libraries expose a `HelpSource`; an application mounts them, imports,

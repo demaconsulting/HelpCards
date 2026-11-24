@@ -1171,9 +1171,9 @@ public class HelpCardsTests
         // Arrange: a valid embedded source and a source with a broken link and a summary that is too long
         var valid = CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" });
         var broken = HelpSource.FromFiles(
-            SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]].")), ("b.md", SourceReading.Card(summary: new string('x', 80)))),
+            SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]].")), ("b.md", SourceReading.Card(summary: new string('x', 90)))),
             "test");
-        var longSummary = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card(summary: new string('x', 80)))), "test");
+        var longSummary = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card(summary: new string('x', 90)))), "test");
 
         // Act
         var validProblems = HelpCardValidator.Validate(valid);

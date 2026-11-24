@@ -22,8 +22,9 @@ All tests in the four test files pass.
   vocabulary of a callback is applied.
 - **Order**: errors come first and each severity is ordered by source, file, line, and rule; a first source with a later
   file name is listed before a second source.
-- **Summary and size**: summaries at and over the limits for roots and other cards; a card over the card limit; a root
-  with children over the index limit only.
+- **Summary and size**: summaries at and over the limits for roots (80) and other cards (100), and an 80-character root
+  summary rendered in the topic index beside a 32-character label, which takes two lines at the default width; a card
+  over the card limit; a root with children over the index limit only.
 - **Body rules**: the reserved headings with their file lines and not inside a fence; a fence without a language and
   one never closed with their lines; long lines only when a limit is set.
 - **Tokens**: a defined token that no file uses; a token used in a title; built-in tokens are never reported; a data
