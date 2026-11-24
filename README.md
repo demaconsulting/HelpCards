@@ -150,6 +150,9 @@ An application adds the sources of its libraries to one catalog. Mounting puts a
 card `getting-started` of `demo` becomes `demo/getting-started`:
 
 ```csharp
+using DemaConsulting.HelpCards.Catalog;
+using DemaConsulting.HelpCards.Integration;
+
 var catalog = HelpCatalog.Create(builder => builder
     .AddMountedSource(MyLibHelp.Source)
     .AddMountedSource(OtherLibHelp.Source, "other")
@@ -164,6 +167,12 @@ string answer = tool.Invoke("""{"query":"install"}""");
 ```
 
 The user guide covers imports, overlays, links across libraries, cultures, and the testing helpers.
+
+The public types are in these namespaces: `DemaConsulting.HelpCards.Loading` (`HelpSource`),
+`DemaConsulting.HelpCards.Composition` (`HelpCatalogBuilder`), `DemaConsulting.HelpCards.Catalog` (`HelpCatalog`,
+`HelpCard`, and the result types), `DemaConsulting.HelpCards.Presentation` (`HelpRenderOptions`),
+`DemaConsulting.HelpCards.Integration` (`HelpCli`, `HelpAgentTools`), and `DemaConsulting.HelpCards.Testing`
+(`HelpCardValidator` and the example and Markdown helpers).
 
 ## Supported front matter
 

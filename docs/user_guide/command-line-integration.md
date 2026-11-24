@@ -159,16 +159,28 @@ object in later minor releases; keys are never removed or reordered within versi
 
 | `kind` | Content |
 | --- | --- |
-| `index` | `tool`, `version`, `usage`, `sources`, and `cards` (`id`, `title`, `summary`, `aliases`, `tags`, `depth`) |
+| `index` | `tool`, `version`, `usage`, `sources`, and `cards` |
 | `card` | `id`, `title`, `summary`, `aliases`, `tags`, `source`, `culture`, `body`, `children`, `seeAlso`, `examples` |
-| `examples` | `id`, `examples`, and `cards`: the descendants with their example names |
-| `example` | `id` and `example` (`card`, `name`, `kind`, `language`, `fileName`, `description`, `content`) |
-| `search` | `query` and `results` (`id`, `title`, `summary`, `source`, `score`, `matchedOn`) |
+| `examples` | `id`, `examples`, and `cards`: the descendants with examples |
+| `example` | `id` and `example` |
+| `search` | `query` and `results` |
 | `cards` | `filter` with `tags` and `sources`, and `cards` for the tag listing |
 | `error` | `ok` is `false`, `code`, `message`, `hint`, and `candidates` |
 
-The `command` key appears on cards when the document is made by the command-line helper, and a `card` document also has
-a `links` list of the visible link targets of the body. The error codes are
+The entries of the lists have these keys:
+
+- `sources` of an index: `name`, `title`, `summary`.
+- `cards` of an index: `id`, `title`, `summary`, `aliases`, `tags`, `source`, `depth`, `command`.
+- `children` and `seeAlso` of a card: `id`, `title`, `summary`.
+- `examples` of a card or an examples document, and `example` of an example document (which adds `card`): `name`,
+  `kind`, `language`, `fileName`, `description`, `content`.
+- `cards` of an examples document: `id`, `summary`, `command`, and `examples`, the names of the examples.
+- `results` of a search: `id`, `title`, `summary`, `source`, `score`, `matchedOn`, `command`.
+- `cards` of a tag listing: `id`, `title`, `summary`, `tags`, `source`, `command`.
+- `links` of a card: `cardId`, and `text`, `exampleName`, and `exampleCardId` when they apply.
+
+The `command` key appears on cards only when the document is made by the command-line helper (it is the command that
+shows the card). A `card` document also has a `links` list of the visible link targets of the body. The error codes are
 `usage-error`, `not-found`, `ambiguous`, and `catalog-error`. This is a not-found error, formatted here for reading:
 
 ```json

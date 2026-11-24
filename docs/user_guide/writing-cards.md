@@ -132,6 +132,11 @@ card `guide`. Aliases are listed in the key `aliases`, each alias is unique amon
 and the lookup ignores case. An alias of a translation is added to the aliases of the neutral file for the readers of
 that culture.
 
+The grammar of an alias depends on the file that declares it. An alias in a neutral file is a segment like a card name:
+lower-case ASCII letters and digits in groups separated by single hyphens, 1 to 48 characters. An alias in a translation
+may use any Unicode lower-case letters (and other letters) and digits in groups separated by single hyphens, 1 to 48
+characters, and is normalized to Unicode form NFC; it never contains `/`, `:`, `#`, `|`, or white space.
+
 Tags group cards across the tree. They are free-form segments by default. A catalog can declare a closed vocabulary
 and a set of tags that every card must have at least one of; see the chapter *Composing Sources*. Readers filter by
 tag with `catalog.Filter(...)` and with the option `--tag` of the command-line helper.
