@@ -22,10 +22,11 @@ The class is static and stateless. It works on the `SourceEntry` objects of the 
   mount of a mounted source, then its cards in ordinal order. A mount that is not a segment is `mount-invalid` and
   excludes the source; a mount that another id already uses is `collision` and excludes the source; a mounted source
   without a usable name (so its mount would fall back to the placeholder name) is excluded without a problem, because
-  Loading already reported `source-invalid`; a card whose id is
-  taken is `collision` and is recorded in `Dropped`. The message names the later source and file and the source and
-  file that hold the id. It returns the owner of every claimed id, which the tree placement uses to tell
-  `tree-foreign` from `parent-missing`.
+  Loading already reported `source-invalid`; a card whose id is taken is `collision` and is recorded in `Dropped`, and
+  the cards below it (visited after it, in ordinal order) claim no id unless another source already holds it (which is
+  still a `collision`), so a dropped subtree never reserves ids that another source could use. The message names the
+  later source and file and the source and file that hold the id. It returns the owner of every claimed id, which the
+  tree placement uses to tell `tree-foreign` from `parent-missing`.
 - **`CreateRoot(entry)`** builds the generated root card of a mounted source: the id, name, and `ParentId` are the mount
   and none; the title, summary, aliases, culture, extension keys, and body come from `_source.md` (the title defaults to
   the name and the summary to `Help cards of {name}.`); the card has no tags and no examples; its children are the

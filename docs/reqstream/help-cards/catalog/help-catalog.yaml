@@ -191,11 +191,13 @@ sections:
               - id: HelpCards-Catalog-HelpCatalog-RenderArguments
                 title: >-
                   The catalog shall reject a null card with an argument null exception and a card that the catalog
-                  view does not show with an argument exception, for every rendering member.
+                  view does not show with an argument exception, for every rendering member that takes a card or a
+                  list of cards.
                 justification: |
                   Rendering a hidden card would leak it.
                 tests:
                   - HelpCatalog_Render_NullOrHiddenCard_ThrowsArgumentException
+                  - HelpCatalog_RenderCardList_CardsOfOtherView_AreMappedOrRejected
 
               - id: HelpCards-Catalog-HelpCatalog-RenderIndex
                 title: >-

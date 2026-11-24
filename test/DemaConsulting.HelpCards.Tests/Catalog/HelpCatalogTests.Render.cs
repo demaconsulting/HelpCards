@@ -70,6 +70,30 @@ public partial class HelpCatalogTests
     }
 
     /// <summary>
+    ///     Proves that a list of cards is mapped to the rendering view: a visible card of another view is listed and a
+    ///     card that the view hides is rejected in every format.
+    /// </summary>
+    [Fact]
+    public void HelpCatalog_RenderCardList_CardsOfOtherView_AreMappedOrRejected()
+    {
+        // Arrange: the view hides 'reference', which the full catalog shows
+        var catalog = CatalogBuilding.Simple();
+        var view = catalog.Without(["reference"]);
+        var json = new HelpRenderOptions { Format = HelpFormat.Json };
+        var guide = catalog.Find("guide")!;
+        var reference = catalog.Find("reference")!;
+
+        // Act / Assert: a card that the view shows is listed whichever view it came from
+        Assert.Equal(view.RenderCardList(view.Cards), view.RenderCardList(catalog.Cards.Where(card => card.Id != "reference").ToList()));
+        Assert.Equal(catalog.RenderCardList([guide]), view.RenderCardList([guide]));
+
+        // Act / Assert: a hidden card is rejected, by the public and by the internal overload
+        Assert.Throws<ArgumentException>(() => view.RenderCardList([reference]));
+        Assert.Throws<ArgumentException>(() => view.RenderCardList([guide, reference], json));
+        Assert.Throws<ArgumentException>(() => view.RenderCardList([reference], [], [], null));
+    }
+
+    /// <summary>
     ///     Proves that a card is rendered with the rules of the view that renders it, not of the view it came from.
     /// </summary>
     [Fact]

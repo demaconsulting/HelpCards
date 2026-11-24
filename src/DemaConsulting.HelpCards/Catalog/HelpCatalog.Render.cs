@@ -105,10 +105,11 @@ public sealed partial class HelpCatalog
     /// <summary>
     ///     Renders a list of cards, one entry each, without a tree.
     /// </summary>
-    /// <param name="cards">The cards to list. Must not be null and must not contain null.</param>
+    /// <param name="cards">The cards to list. Must not be null and must not contain null; each must be visible in this catalog.</param>
     /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
     /// <returns>The document, with LF line endings and no trailing line feed.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="cards"/> is null or contains null.</exception>
+    /// <exception cref="ArgumentException">Thrown when a card is not visible in this catalog.</exception>
     public string RenderCardList(IReadOnlyList<HelpCard> cards, HelpRenderOptions? options = null)
     {
         return RenderCardList(cards, [], [], options);
@@ -158,6 +159,7 @@ public sealed partial class HelpCatalog
     /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
     /// <returns>The document.</returns>
     /// <exception cref="ArgumentNullException">Thrown when an argument is null or <paramref name="cards"/> contains null.</exception>
+    /// <exception cref="ArgumentException">Thrown when a card is not visible in this catalog.</exception>
     internal string RenderCardList(
         IReadOnlyList<HelpCard> cards,
         IReadOnlyList<string> tags,
@@ -174,9 +176,12 @@ public sealed partial class HelpCatalog
             throw new ArgumentNullException(nameof(cards), "The list of cards must not contain null.");
         }
 
+        // Every card is mapped to this view, so a card of another view is shown as this view shows it and a
+        // card that this view hides is rejected instead of being revealed
         var context = RenderContext.Create(this, options);
+        var own = cards.Select(context.Own).ToList();
         return context.Options.Format == HelpFormat.Json
-            ? JsonDocumentWriter.WriteCardList(context, cards, tags, sources)
-            : TextRenderer.RenderCardList(context, cards);
+            ? JsonDocumentWriter.WriteCardList(context, own, tags, sources)
+            : TextRenderer.RenderCardList(context, own);
     }
 }

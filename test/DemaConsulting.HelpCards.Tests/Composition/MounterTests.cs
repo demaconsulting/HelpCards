@@ -101,6 +101,31 @@ public class MounterTests
     }
 
     /// <summary>
+    ///     Proves that the cards below a dropped card claim no ids, so they cannot cause collisions for other sources.
+    /// </summary>
+    [Fact]
+    public void Mounter_Register_DroppedCard_DoesNotClaimItsDescendants()
+    {
+        // Arrange: 'two' loses 'a' to 'one'; its 'a/b' must not reserve the id that 'three' uses
+        var registry = Read(
+            (CatalogBuilding.Named("one", ("a.md", SourceReading.Card())), false, null),
+            (CatalogBuilding.Named("two", ("a.md", SourceReading.Card()), ("a/b.md", SourceReading.Card()), ("a/b/c.md", SourceReading.Card())), false, null),
+            (CatalogBuilding.Named("three", ("a/b.md", SourceReading.Card())), false, null));
+        var problems = new ProblemCollector();
+
+        // Act
+        var owners = Mounter.Register(registry, problems);
+
+        // Assert: only the card 'a' is reported, 'a/b' is owned by 'three', and 'a/b/c' is claimed by nobody
+        var problem = Assert.Single(problems.GetOrdered());
+        Assert.Equal(("two", "collision"), (problem.SourceName, problem.RuleId));
+        Assert.Equal(["a"], registry.Entries[1].Dropped);
+        Assert.Empty(registry.Entries[2].Dropped);
+        Assert.Equal("three", owners["a/b"].Name);
+        Assert.False(owners.ContainsKey("a/b/c"));
+    }
+
+    /// <summary>
     ///     Proves that the generated root card takes its text from the source file and has the roots as children.
     /// </summary>
     [Fact]

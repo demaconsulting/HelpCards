@@ -43,7 +43,9 @@ internal static class Mounter
     /// <remarks>
     ///     Sources are visited in registration order. The first holder of an id keeps it. A source whose mount is
     ///     invalid or already taken is excluded as a whole; a card whose global id is taken is recorded in
-    ///     <see cref="SourceEntry.Dropped"/> so that the tree placement leaves it, and the cards below it, out.
+    ///     <see cref="SourceEntry.Dropped"/> so that the tree placement leaves it, and the cards below it, out. The
+    ///     cards below a dropped card are left out of the claims too, so a dropped subtree never reserves an id that
+    ///     another source may use. A card below a dropped card whose own id another source holds is still a collision.
     /// </remarks>
     /// <param name="registry">The registry of the read sources. Must not be null.</param>
     /// <param name="problems">Receives the problems. Must not be null.</param>
@@ -62,11 +64,24 @@ internal static class Mounter
                 continue;
             }
 
-            foreach (var card in entry.Definition.Cards)
+            // Ordinal order puts every parent before its children, so a lost subtree is known before its cards
+            var lost = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var card in entry.Definition.Cards.OrderBy(card => card.LocalId, StringComparer.Ordinal))
             {
+                var slash = card.LocalId.LastIndexOf('/');
+                var belowLost = slash >= 0 && lost.Contains(card.LocalId[..slash]);
                 var id = GlobalId(entry, card.LocalId);
-                if (owners.TryGetValue(id, out var holder))
+                var held = owners.TryGetValue(id, out var holder);
+                if (!held && belowLost)
                 {
+                    // The id is free but its card is cut off from the tree: it must not reserve the id
+                    lost.Add(card.LocalId);
+                    continue;
+                }
+
+                if (held)
+                {
+                    lost.Add(card.LocalId);
                     entry.Dropped.Add(card.LocalId);
                     problems.Add(entry.Index, HelpProblem.CreateError(
                         RuleIds.Collision,

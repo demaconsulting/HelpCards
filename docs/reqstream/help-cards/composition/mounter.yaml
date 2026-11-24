@@ -25,12 +25,14 @@ sections:
                   The unit shall let the first source in registration order keep a global id, report a later card or
                   mount that uses the same id as collision naming both sources and files, report a mount that is
                   not a valid segment as mount-invalid, and leave the later card or source out without further
-                  reports, including a mounted source that has no usable name, which Loading already reported.
+                  reports (the cards below a dropped card claim no ids), including a mounted
+                  source that has no usable name, which Loading already reported.
                 justification: |
                   Nothing may shadow another card silently, and one clash must be one problem.
                 tests:
                   - Mounter_Register_DistinctIds_ReturnsOwners
                   - Mounter_Register_ContestedIdAndMount_DropsTheLaterHolder
+                  - Mounter_Register_DroppedCard_DoesNotClaimItsDescendants
                   - Mounter_Register_MountedSourceWithoutName_ExcludesSilently
 
               - id: HelpCards-Composition-Mounter-MountRoot

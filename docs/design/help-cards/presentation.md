@@ -42,11 +42,11 @@ JSON). The Catalog subsystem calls it only from the partial `HelpCatalog.Render.
 
 **One context per call.** Every `Render` member creates a `RenderContext` from the catalog view and the options. The
 members that take one card (`Render`, `RenderExamples`, `RenderExample`, and `FormatBody`) map the card to the card of
-that view (so a card of another view is rendered with the rules of this one and a hidden card is rejected). The list
-members `RenderCardList` and `RenderSearch` do not map or validate their cards or results: they label them as given, so
-a caller passes cards found in the same view. The context is then handed to a renderer. The context holds the tool name
-(the one given to the builder, else the name of the first source), the effective wrapping width (zero for Markdown), and
-the tree walks.
+that view (so a card of another view is rendered with the rules of this one and a hidden card is rejected).
+`RenderCardList` maps every card of its list the same way. `RenderSearch` does not map or validate its results: it
+labels them as given, so a caller passes results found in the same view. The context is then handed to a renderer. The
+context holds the tool name (the one given to the builder, else the name of the first source), the effective wrapping
+width (zero for Markdown), and the tree walks.
 
 **Layout.** The text layout is fixed: title, summary, aliases, tags, body, then the sections Cards, Examples, and See
 also, each left out when empty. Markdown is the same layout without wrapping and with bold labels. Examples are listed
