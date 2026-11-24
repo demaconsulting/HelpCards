@@ -165,8 +165,12 @@ and exit 1.
 # Scoped Validation (ALL Agents Must Follow)
 
 HelpCards has one library and two test projects (`DemaConsulting.HelpCards.Tests`, which references the
-`DemaConsulting.HelpCards.Tests.EmbeddingDefault` fixture library), so `build.ps1` has no `-Project` switch:
-`-Changed` selects the test projects a change affects through the project reference graph. A change to the
+`DemaConsulting.HelpCards.Tests.EmbeddingDefault` fixture library). `build.ps1 -Changed` selects the test
+projects a change affects through the project reference graph, and `build.ps1 -Project <names>` selects them
+from named projects by full or short name (`Core` is the library, `Tests` the main test project;
+`-Help` lists the accepted names, so `$ProjectAliases` stays empty). The test platform (Microsoft.Testing.Platform,
+from `global.json`) is detected by the script, which owns the `dotnet test` arguments. The fixture library has no
+tests, so `$BuildOnly` in `build.ps1` makes scoped runs build it without passing it to `dotnet test`. A change to the
 library, a build-wide file (solution, project, props/targets, `global.json`, `.editorconfig`, `nuget.config`,
 tool manifest, `build.ps1`, `scripts/ProjectScripts.psm1`) runs the full build and tests; documentation-only
 changes build nothing. The tests read no repository files at run time, so `$RuntimeReads` in `build.ps1` is empty;
