@@ -309,7 +309,26 @@ internal sealed partial class CardReader
             return string.Empty;
         }
 
-        return TryReadText(path, out var text) ? NormalizeContent(text, path, 1, kind) : string.Empty;
+        return TryReadExampleText(path, out var text) ? NormalizeContent(text, path, 1, kind) : string.Empty;
+    }
+
+    /// <summary>
+    ///     Reads the text of an example data file once, however many examples name it.
+    /// </summary>
+    /// <param name="path">The path of the data file inside the source.</param>
+    /// <param name="text">The raw text, or an empty string on failure.</param>
+    /// <returns><see langword="true"/> when the file was read, now or earlier.</returns>
+    private bool TryReadExampleText(string path, out string text)
+    {
+        if (_exampleTexts.TryGetValue(path, out var cached))
+        {
+            text = cached ?? string.Empty;
+            return cached is not null;
+        }
+
+        var read = TryReadText(path, out text);
+        _exampleTexts[path] = read ? text : null;
+        return read;
     }
 
     /// <summary>

@@ -40,6 +40,8 @@ subsystem:
 | `CardReader.Read(source, culture, factory)` | Inbound (Composition) | Read a source into a `SourceDefinition` |
 | `TokenResolver.Create(...)` | Inbound (Composition) | Build the token scope of a source from its imports |
 | `CardReader.IsSegment`, `CardReader.IsLocalId` | Inbound (Composition) | Shared grammar checks for names and ids |
+| `TokenResolver.FindNames(text)` | Inbound (Testing) | Find the token names in a text, for the card validator |
+| `BodyParser.TryGetFenceOpen`, `BodyParser.IsFenceClose` | Inbound (Testing) | The fence rules of the loader, so the validator agrees with it |
 | `HelpProblem` records in `SourceDefinition.Problems` | Outbound | Report every defect found |
 
 The subsystem depends on the problem model (`HelpProblem`, `HelpSeverity`, and the rule identifiers) of the

@@ -213,14 +213,17 @@ sections:
                   - CardReader_Read_SeveralDefectiveFiles_CollectsEveryProblem
                   - CardReader_Read_FileReadFails_ReportsSourceReadAndContinues
                   - CardReader_Read_ListFails_ReportsSourceReadWithoutCards
+                  - CardReader_Read_ListFails_StillReportsTokenScopeProblems
                   - CardReader_Read_MissingDirectory_ReportsSourceRead
 
               - id: HelpCards-Loading-CardReader-ReadOnce
                 title: >-
-                  The reader shall list the files of a source once and read each Markdown file once, and shall
-                  not read data files that no example uses.
+                  The reader shall list the files of a source once and read each Markdown file and each data file
+                  that an example uses once, however many examples use it, and shall not read data files that no
+                  example uses.
                 justification: |
                   Reading cost grows with the size of the help; each file must be read exactly once and never
                   unnecessarily.
                 tests:
                   - CardReader_Read_NormalSource_ListsOnceAndReadsEachMarkdownFileOnce
+                  - CardReader_Read_SharedExampleDataFile_IsReadOnce

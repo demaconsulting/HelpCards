@@ -79,6 +79,11 @@ internal sealed partial class CardReader
     private readonly HashSet<string> _files = new(StringComparer.Ordinal);
 
     /// <summary>
+    ///     The raw text of the example data files read so far by path, or <see langword="null"/> when a read failed.
+    /// </summary>
+    private readonly Dictionary<string, string?> _exampleTexts = new(StringComparer.Ordinal);
+
+    /// <summary>
     ///     The neutral card and overlay files by local id.
     /// </summary>
     private readonly SortedDictionary<string, string> _cards = new(StringComparer.Ordinal);
@@ -158,6 +163,7 @@ internal sealed partial class CardReader
         if (!TryListFiles())
         {
             _tokens = _resolverFactory(_name);
+            _problems.AddRange(_tokens.ScopeProblems);
             return CreateHeader(null, DefaultLanguage, 1);
         }
 

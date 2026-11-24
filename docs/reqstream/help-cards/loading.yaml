@@ -106,6 +106,7 @@ sections:
               - HelpCards-Loading-CardReader-TranslationValidation
             tests:
               - Loading_Cultures_SelectTranslationPerFile
+              - Loading_Cultures_BodyFileIsNeutralOrSelectedTranslation
 
           - id: HelpCards-Loading-Links
             title: >-

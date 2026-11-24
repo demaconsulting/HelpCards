@@ -28,9 +28,13 @@ order.
   resources whose names start with `{prefix}/`, converts `\` (which MSBuild writes for nested folders on
   Windows) to `/`, and remembers the real resource name for reading. `DirectoryFileProvider` enumerates all
   files below the directory.
-- **`ReadText(path)`** returns the text of a listed file. All implementations decode strict UTF-8 and remove a
-  byte order mark (`DecodeUtf8`); bytes that are not valid UTF-8 raise an exception instead of being replaced.
-  `DirectoryFileProvider` refuses a path that resolves outside its directory.
+- **`ReadText(path)`** returns the text of a listed file. `AssemblyFileProvider` and `DirectoryFileProvider` decode
+  strict UTF-8 and remove a byte order mark (`DecodeUtf8`); bytes that are not valid UTF-8 raise an exception instead
+  of being replaced. `MemoryFileProvider` holds text that is already decoded and only removes a leading byte order
+  mark character. `MemoryFileProvider` and `AssemblyFileProvider` refuse a path that is not one of their files
+  (`ArgumentException`). `DirectoryFileProvider` refuses a path that resolves outside its directory (parent-relative
+  or absolute, `ArgumentException`); a path inside the directory that does not exist raises the natural
+  `FileNotFoundException`.
 
 #### Error Handling
 

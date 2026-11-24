@@ -158,6 +158,26 @@ public class LoadingTests
     }
 
     /// <summary>
+    ///     Proves that the file that supplied the body is recorded: the neutral file, or the selected translation file.
+    /// </summary>
+    [Fact]
+    public void Loading_Cultures_BodyFileIsNeutralOrSelectedTranslation()
+    {
+        // Arrange
+        var files = SourceReading.Files(
+            ("a.md", SourceReading.Card(body: "English.")),
+            ("a.de.md", "---\ntitle: Eins\n---\nDeutsch."));
+
+        // Act
+        var neutral = SourceReading.Read(files);
+        var german = SourceReading.Read(files, culture: CultureInfo.GetCultureInfo("de"));
+
+        // Assert: the definition keeps the neutral file and records where the body came from
+        Assert.Equal(("a.md", "a.md"), (Assert.Single(neutral.Cards).File, Assert.Single(neutral.Cards).BodyFile));
+        Assert.Equal(("a.md", "a.de.md"), (Assert.Single(german.Cards).File, Assert.Single(german.Cards).BodyFile));
+    }
+
+    /// <summary>
     ///     Proves that the tokens of an imported source are in scope for the cards of the importing source.
     /// </summary>
     [Fact]

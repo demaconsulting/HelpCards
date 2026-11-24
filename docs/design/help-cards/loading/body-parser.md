@@ -26,7 +26,10 @@ valid.
    backtick line with more backticks later on the same line is an inline span, not a fence) and closes at a
    line that is a run of at least the same length of the same character; an unclosed fence runs to the end.
    An inline span opens with a run of backticks and closes at the next run of exactly the same length in the
-   same paragraph; a span may cross a line break; an unmatched run is literal text.
+   same paragraph; a span may cross a line break; an unmatched run is literal text. A fence line may be indented
+   by any number of leading spaces (the parser trims them), a fence inside a block quote (`> ```) is not recognized,
+   and an indented (four-space) code block is not code: links inside it are links. Authors who need a literal link
+   in such places put it in a fence or a code span.
 2. Outside code, at each `[[` the external pattern `[[source:id#example|text]]` and then the local patterns
    `[[id]]`, `[[id#example]]`, `[[#example]]` are tried. Ids are canonical lower-case local ids of at most
    eight segments of at most 48 characters; display text has 1 to 120 characters, no `]`, no line break, and

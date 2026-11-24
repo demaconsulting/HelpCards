@@ -43,6 +43,8 @@ and no scenario depends on the machine's culture.
 - **Translation validation**: structural keys, a syntax error of an unused culture, example keys, alias normalization,
   orphans (including the source file), aliases of overlay translations, every translation read.
 - **Source file**: every key, defaults, name precedence, missing or invalid names, unsupported schema (no
-  cards read), schema values, invalid language, card keys rejected, syntax error reported once.
+  cards read), schema values, invalid language (`culture-invalid` at the line of `language`, falling back to `en`),
+  card keys rejected, syntax error reported once.
 - **Collect all problems**: a null argument; a syntax error ends only its file; several defective files; a
-  failing read; a failing listing; a missing directory; one listing and one read per Markdown file.
+  failing read; a failing listing (which still reports the problems of the token scope); a missing directory; one
+  listing and one read per Markdown file, and one read of a data file that several examples share.
