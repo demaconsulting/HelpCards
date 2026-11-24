@@ -225,6 +225,32 @@ public class LoadingTests
     }
 
     /// <summary>
+    ///     Proves that the embedded runnable fixture is read with the exit codes and expected output of its commands,
+    ///     through the decoder, the reader, and the token resolver together.
+    /// </summary>
+    [Fact]
+    public void Loading_ExpectedResults_RunnableFixture_ReadsExitAndExpect()
+    {
+        // Arrange: the runnable fixture compiled into this test assembly by the packaged targets
+        var source = CatalogBuilding.Fixture("runnable");
+
+        // Act
+        var definition = SourceReading.Read(source);
+
+        // Assert: no problems; a block gives two fragments and a plain value one, with tokens replaced
+        Assert.Empty(definition.Problems);
+        var check = definition.Cards.Single(card => card.LocalId == "check");
+        var ok = check.Examples.Single(example => example.Name == "ok");
+        Assert.Equal(0, ok.ExitCode);
+        Assert.Equal(["Checked 1 file", "No problems"], ok.Expect);
+        var missing = check.Examples.Single(example => example.Name == "missing");
+        Assert.Equal(2, missing.ExitCode);
+        Assert.Equal(["Cannot open absent.yaml"], missing.Expect);
+        var verbose = definition.Cards.Single(card => card.LocalId == "check/details").Examples.Single();
+        Assert.Equal(["Verbose output for demo"], verbose.Expect);
+    }
+
+    /// <summary>
     ///     Proves that a front-matter error names the file and the line.
     /// </summary>
     [Fact]

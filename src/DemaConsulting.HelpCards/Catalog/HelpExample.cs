@@ -8,9 +8,11 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///     normalized to LF, trailing line feeds are removed, and tokens are replaced. The type is immutable and
 ///     therefore safe for concurrent use. Instances are created by the catalog and cannot be created by callers.
 ///     In a card file an example is an item of the front-matter key <c>examples</c> with the keys <c>name</c>,
-///     <c>kind</c>, <c>language</c>, <c>description</c>, <c>file</c> and <c>content</c> (the <c>file</c> key is
+///     <c>kind</c>, <c>language</c>, <c>description</c>, <c>file</c>, <c>content</c>, <c>exit</c> and <c>expect</c>
+///     (the <c>file</c> key is
 ///     <see cref="FileName"/>; it is required for the kinds <c>source</c> and <c>snippet</c> and not allowed for a
-///     <c>command</c>). The complete grammar is on the page of the <c>DemaConsulting.HelpCards.Loading</c> namespace.
+///     <c>command</c>; <c>exit</c> is <see cref="ExitCode"/> and <c>expect</c> is <see cref="Expect"/>, and only a
+///     <c>command</c> has them). The complete grammar is on the page of the <c>DemaConsulting.HelpCards.Loading</c> namespace.
 /// </remarks>
 public sealed class HelpExample
 {
@@ -39,6 +41,8 @@ public sealed class HelpExample
     /// <param name="description">The one-line description.</param>
     /// <param name="content">The normalized content.</param>
     /// <param name="sourceName">The name of the source the example comes from.</param>
+    /// <param name="exitCode">The exit code a command is expected to end with, from 0 to 255.</param>
+    /// <param name="expect">The fragments the output of a command must contain; <see langword="null"/> for none.</param>
     internal HelpExample(
         string name,
         string kind,
@@ -46,7 +50,9 @@ public sealed class HelpExample
         string? fileName,
         string description,
         string content,
-        string sourceName)
+        string sourceName,
+        int exitCode = 0,
+        IReadOnlyList<string>? expect = null)
     {
         Name = name;
         Kind = kind;
@@ -55,6 +61,8 @@ public sealed class HelpExample
         Description = description;
         Content = content;
         SourceName = sourceName;
+        ExitCode = exitCode;
+        Expect = expect is null || expect.Count == 0 ? [] : Array.AsReadOnly(expect.ToArray());
     }
 
     /// <summary>
@@ -91,4 +99,23 @@ public sealed class HelpExample
     ///     Gets the name of the source the example comes from.
     /// </summary>
     public string SourceName { get; }
+
+    /// <summary>
+    ///     Gets the exit code a command example is expected to end with, from 0 to 255.
+    /// </summary>
+    /// <remarks>
+    ///     It is 0 for a command without an <c>exit</c> key and for every example that is not a command. The library
+    ///     never runs a command; a test runs it and compares the result (see
+    ///     <c>DemaConsulting.HelpCards.Testing.HelpExampleRunner</c>).
+    /// </remarks>
+    public int ExitCode { get; }
+
+    /// <summary>
+    ///     Gets the fragments the output of a command example must contain, in the order they are written.
+    /// </summary>
+    /// <remarks>
+    ///     The list is empty when the example has no <c>expect</c> key and for every example that is not a command.
+    ///     Every fragment is one line of text after token replacement.
+    /// </remarks>
+    public IReadOnlyList<string> Expect { get; }
 }

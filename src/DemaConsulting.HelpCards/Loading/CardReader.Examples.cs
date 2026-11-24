@@ -24,9 +24,14 @@ internal sealed partial class CardReader
     private const string SnippetKind = "snippet";
 
     /// <summary>
+    ///     The highest exit code an example may expect, the portable range of a process exit code.
+    /// </summary>
+    private const int MaximumExitCode = 255;
+
+    /// <summary>
     ///     The keys an example may have.
     /// </summary>
-    private static readonly string[] ExampleKeys = ["name", "kind", "language", "description", "file", "content"];
+    private static readonly string[] ExampleKeys = ["name", "kind", "language", "description", "file", "content", "exit", "expect"];
 
     /// <summary>
     ///     The keys an example of a translation may have.
@@ -125,12 +130,93 @@ internal sealed partial class CardReader
         }
 
         var content = ReadExampleContent(map, kind, fileName, file, item.Line);
+        var exitCode = ReadExampleExit(map, kind, file);
+        var expect = ReadExampleExpect(map, kind, file);
         if (_structureErrors > before || name is null || kind is null || language is null)
         {
             return null;
         }
 
-        return new ExampleDefinition(name, kind, language, kind == CommandKind ? null : fileName, description, content, file, item.Line);
+        return new ExampleDefinition(
+            name,
+            kind,
+            language,
+            kind == CommandKind ? null : fileName,
+            description,
+            content,
+            exitCode,
+            expect,
+            file,
+            item.Line);
+    }
+
+    /// <summary>
+    ///     Reads the <c>exit</c> of an example: the exit code a command is expected to end with.
+    /// </summary>
+    /// <param name="map">The entries of the example.</param>
+    /// <param name="kind">The kind of the example, or <see langword="null"/> when invalid.</param>
+    /// <param name="file">The path of the file.</param>
+    /// <returns>The exit code from 0 to 255; 0 when the key is absent or invalid.</returns>
+    private int ReadExampleExit(IReadOnlyList<FrontMatterEntry> map, string? kind, string file)
+    {
+        var entry = Find(map, "exit");
+        if (entry is null)
+        {
+            return 0;
+        }
+
+        if (kind is SourceKind or SnippetKind)
+        {
+            ReportStructure(RuleIds.ValueInvalid, file, entry.Line, "Only a command example has 'exit'.");
+            return 0;
+        }
+
+        var text = entry.Scalar?.Text ?? string.Empty;
+        if (!int.TryParse(text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var code) || code > MaximumExitCode)
+        {
+            ReportStructure(RuleIds.ValueInvalid, file, entry.Line, "The 'exit' of an example must be an integer from 0 to 255.");
+            return 0;
+        }
+
+        return code;
+    }
+
+    /// <summary>
+    ///     Reads the <c>expect</c> of an example: the fragments the output of a command must contain.
+    /// </summary>
+    /// <remarks>
+    ///     The value is one line of text, or a literal block in which every non-blank line is one fragment. Line endings
+    ///     become LF and tokens are replaced.
+    /// </remarks>
+    /// <param name="map">The entries of the example.</param>
+    /// <param name="kind">The kind of the example, or <see langword="null"/> when invalid.</param>
+    /// <param name="file">The path of the file.</param>
+    /// <returns>The fragments; empty when the key is absent or invalid.</returns>
+    private List<string> ReadExampleExpect(IReadOnlyList<FrontMatterEntry> map, string? kind, string file)
+    {
+        var fragments = new List<string>();
+        var entry = Find(map, "expect");
+        if (entry is null)
+        {
+            return fragments;
+        }
+
+        if (kind is SourceKind or SnippetKind)
+        {
+            ReportStructure(RuleIds.ValueInvalid, file, entry.Line, "Only a command example has 'expect'.");
+            return fragments;
+        }
+
+        var raw = entry.Scalar?.Text.Replace("\r\n", "\n", StringComparison.Ordinal).TrimEnd('\n') ?? string.Empty;
+        if (raw.Length == 0 || string.IsNullOrWhiteSpace(raw.Split('\n')[0]))
+        {
+            ReportStructure(RuleIds.ValueInvalid, file, entry.Line, "The 'expect' of an example must not be empty and must not start with a blank line.");
+            return fragments;
+        }
+
+        var text = _tokens.Substitute(raw, file, entry.Scalar!.Line, _problems);
+        fragments.AddRange(text.Split('\n').Where(line => !string.IsNullOrWhiteSpace(line)));
+        return fragments;
     }
 
     /// <summary>

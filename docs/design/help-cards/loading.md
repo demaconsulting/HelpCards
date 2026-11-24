@@ -60,7 +60,8 @@ A read runs in the order below; every step adds problems to one list and never t
 3. **Build the token scope.** The caller supplies a factory that turns the resolved name into a
    `TokenResolver`; Composition builds it from the tokens of the source, of its imports, and the built-ins.
 4. **Read each card and overlay file** in ordinal id order: decode the front matter, check the key matrix,
-   validate every value, replace tokens, read examples (inline content or the file next to the card), and
+   validate every value, replace tokens, read examples (inline content or the file next to the card, and the expected
+   exit code and output of a command), and
    split the body with `BodyParser`.
 5. **Read translations.** Every translation file of a stem is validated, whether or not its culture is
    requested; `CultureSelector` then picks the most specific one of the culture chain for that file and the

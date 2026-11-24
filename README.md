@@ -29,6 +29,8 @@ Presentation, Integration, and Testing build on that catalog.
 ## Features
 
 - **Markdown Cards**: One file per topic, with a title, summary, aliases, tags, see-also links, and examples
+- **Examples with Expected Results**: A command example can state the exit code and the output it gives (`exit:` and
+  `expect:`), so a test can run every example and compare; HelpCards itself never starts a process
 - **Resource Embedding**: A packaged MSBuild targets file embeds the `Help` folder of a project in its assembly
 - **Links and Tokens**: `[[card]]` links checked at build time and `{{token}}` values per library
 - **Multi-Library Composition**: Several libraries expose a `HelpSource`; an application mounts them, imports,
@@ -215,6 +217,7 @@ below is the part after `FrontMatterDecoder_TryDecode_`.
 | Extension key | `x-audience: agent` | `ExtensionKey_Accepted` |
 | Literal block `\|` for example `content` | `content: \|` then indented lines | `ExampleBlockScalarPipe_Accepted` |
 | Literal block `\|-` for example `content` | `content: \|-` | `ExampleBlockScalarPipeMinus_Accepted` |
+| Literal block `\|` for example `expect` | `expect: \|` then lines | `ExampleExpectBlockScalar_Accepted` |
 | Blank, `#`, and nested lines in a block | lines kept as content | `BlockScalarKeepsBlankHashAndNestedLines_Accepted` |
 | Trailing blank lines in a block | removed | `BlockScalarTrailingBlankLines_Accepted` |
 | LF or CRLF line endings | | `CrLfLineEndings_Accepted` |
@@ -261,6 +264,8 @@ same prefix as above, and each ends in `_Rejected`.
 | Block scalar for an ordinary key (`block-scalar-not-allowed`) | `summary: \|` | `BlockScalarForOrdinaryKey` |
 | Block scalar as a list item (`block-scalar-not-allowed`) | `- \|` | `BlockScalarAsListItem` |
 | `content` block outside examples (`block-scalar-not-allowed`) | `content: \|` | `BlockScalarContentOutsideExamples` |
+| `expect` block outside examples (`block-scalar-not-allowed`) | `expect: \|` | `BlockScalarExpectOutsideExamples` |
+| Other example key (`block-scalar-not-allowed`) | `description: \|` | `BlockScalarForOtherExampleKey` |
 | Keep indicator | `content: \|+` | `BlockScalarKeepIndicator` |
 | Indentation indicator | `content: \|2` | `BlockScalarIndentationIndicator` |
 | Folded block scalar | `content: >` | `FoldedBlockScalar` |
@@ -285,6 +290,7 @@ release must reference at least that version in its `PackageReference`.
 | `extends`, `optional` (overlays) | 0.1.0 |
 | `schema`, `name`, `language` (`_source.md`) | 0.1.0 |
 | `x-*` (extensions) | 0.1.0 |
+| `exit`, `expect` (command examples) | 0.1.0-beta.3 |
 
 Omitting `schema` means schema 1. A source that declares a schema newer than the library supports fails with the rule
 `schema-unsupported`.

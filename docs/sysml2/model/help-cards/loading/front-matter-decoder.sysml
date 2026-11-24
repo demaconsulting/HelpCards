@@ -3,7 +3,7 @@ package HelpCards_FrontMatterDecoder {
     private import HelpCards_HelpProblem::*;
 
     part def FrontMatterDecoder {
-        doc /* Decodes the restricted subset of YAML front matter that cards use (plain and quoted scalars, full-line comments, lists of scalars, lists of maps of scalars, and a literal block scalar only for example content) and splits off the Markdown body; every construct outside the subset is rejected with a problem that names the file and the line. Supporting types: FrontMatterDocument, FrontMatterEntry, FrontMatterItem, and FrontMatterScalar. */
+        doc /* Decodes the restricted subset of YAML front matter that cards use (plain and quoted scalars, full-line comments, lists of scalars, lists of maps of scalars, and a literal block scalar only for the content and the expected output of an example) and splits off the Markdown body; every construct outside the subset is rejected with a problem that names the file and the line. Supporting types: FrontMatterDocument, FrontMatterEntry, FrontMatterItem, and FrontMatterScalar. */
 
         metadata info : SoftwareInfo {
             sourceFiles = (

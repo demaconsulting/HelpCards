@@ -23,8 +23,8 @@ and each rejected construct yields exactly one problem with the expected rule an
   scalars; full-line comments at any indentation; an indented list; a list in the first column; a list of
   maps; a colon without a space inside a value; an empty value; an extension key; CRLF; a byte order mark; the
   complete example of the card format.
-- **Literal blocks**: `|` and `|-`; kept blank lines, hash lines, deeper lines, and tabs after the indent;
-  dropped trailing blank lines.
+- **Literal blocks**: `|` and `|-` for the `content` and the `expect` of an example; kept blank lines, hash lines,
+  deeper lines, and tabs after the indent; dropped trailing blank lines.
 - **Body**: blank separator line, no body, trimmed trailing line feeds, a thematic break inside the body.
 - **Rejected constructs**: flow sequences and maps (also as list items), anchors, aliases, tags, trailing
   comments (also after a quoted value), values that start with `#`, `%`, `@`, or a backtick, plain values with
@@ -33,6 +33,7 @@ and each rejected construct yields exactly one problem with the expected rule an
   without a key, unexpected indentation, a key with a space before the colon, an empty list item, misaligned
   keys in a list item.
 - **Block scalars where they are not allowed**: an ordinary key, a list item, a `content` key outside an
-  example list (rule `block-scalar-not-allowed`); `|+`, `|2`, and `>` (rule `syntax`).
+  example list, an `expect` key outside an example list, and another key of an example (rule
+  `block-scalar-not-allowed`); `|+`, `|2`, and `>` (rule `syntax`).
 - **Delimiters and arguments**: missing opening delimiter, missing closing delimiter, a null text, and the
   source name and file in the problem.

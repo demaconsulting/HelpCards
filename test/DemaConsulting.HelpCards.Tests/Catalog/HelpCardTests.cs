@@ -91,6 +91,30 @@ public class HelpCardTests
     }
 
     /// <summary>
+    ///     Proves that a command example exposes its expected exit code and output fragments, and that every other
+    ///     example has the defaults.
+    /// </summary>
+    [Fact]
+    public void HelpCard_Examples_ExitCodeAndExpect_AreExposed()
+    {
+        // Arrange / Act
+        var examples = CatalogBuilding.Runnable().Find("check")!.Examples;
+
+        // Assert: a command without exit has 0 and the fragments of its block; one with exit has it
+        var ok = examples.Single(example => example.Name == "ok");
+        Assert.Equal(0, ok.ExitCode);
+        Assert.Equal(["Checked 1 file", "No problems"], ok.Expect);
+        var missing = examples.Single(example => example.Name == "missing");
+        Assert.Equal(2, missing.ExitCode);
+        Assert.Equal(["Cannot open absent.yaml"], missing.Expect);
+        Assert.All(examples.Where(example => example.Kind == HelpExample.SourceKind), example =>
+        {
+            Assert.Equal(0, example.ExitCode);
+            Assert.Empty(example.Expect);
+        });
+    }
+
+    /// <summary>
     ///     Proves that the body writes every link in the plain style with global ids.
     /// </summary>
     [Fact]

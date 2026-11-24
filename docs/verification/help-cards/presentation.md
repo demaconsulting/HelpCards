@@ -34,6 +34,9 @@ only generated lines, and the output must not depend on the culture of the machi
   template.
 - **Examples**: the examples document with the own examples in full and the descendants only listed, the card with the
   content of its examples in fences, and one example alone as exactly its content.
+- **Expected results**: the examples document of the `runnable` fixture shows the exit code and the expected output
+  after the fence, one example alone is exactly its content, and the JSON examples document appends `exitCode` and
+  `expect`.
 - **Lists**: the index down to the roots, a card list, search results, and the sentence for no results.
 - **Wrapping**: a narrow width wraps the generated lines and leaves the authored body unchanged.
 - **Options**: the defaults, and the argument errors for a width, a format, and a command template.

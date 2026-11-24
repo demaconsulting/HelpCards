@@ -329,6 +329,24 @@ sections:
         tests:
           - HelpCards_Rendering_Examples_ArePrintedInFullOrAlone
 
+      - id: HelpCards-Examples-ExpectedResults
+        title: >-
+          A command example shall be able to state the exit code and the output text it is expected to give, the
+          catalog shall expose them, and an examples document and a JSON document shall show them, while the library
+          shall never run the command.
+        tags: [system]
+        justification: |
+          An example that states its result can be proven by running it, so the examples of a product stay correct;
+          the expected result is data like the command, and starting a process is left to the product's own test.
+        children:
+          - HelpCards-Loading-Cards
+          - HelpCards-Loading-FrontMatter
+          - HelpCards-Catalog-Model
+          - HelpCards-Presentation-Examples
+          - HelpCards-Presentation-Json
+        tests:
+          - HelpCards_Examples_ExpectedResults_AreReadExposedAndShown
+
       - id: HelpCards-JsonContract-Documents
         title: >-
           A catalog shall render its cards, indexes, examples, search results, and card lists as JSON documents of

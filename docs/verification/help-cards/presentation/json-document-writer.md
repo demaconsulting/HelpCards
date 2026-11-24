@@ -27,7 +27,8 @@ All tests in the two files pass; the contract documents are equal to the specifi
 - **ASCII**: accents, a symbol, and a surrogate pair become escapes that round-trip; quotes, backticks, apostrophes, and
   angle brackets stay readable while quotes, backslashes, and control characters are escaped.
 - **Key order and optional keys**: the keys of the card; no command without the command style; no tool, version, or
-  usage unless supplied; the index depth.
+  usage unless supplied; the index depth; `exitCode` and `expect` appended after `content` only when a command states
+  them, and omitted (without any null) otherwise.
 - **Links and culture**: the link targets of the guide body in order with their optional parts; the culture of the body
   file from the `i18n` fixture.
 - **Envelope**: a callback replaces the top-level object and receives the kind; non-ASCII text it writes is escaped.

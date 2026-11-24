@@ -145,9 +145,10 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         start with <c>#</c> are allowed between entries. Not accepted (all are the error <c>syntax</c>): flow
 ///         collections such as <c>[a, b]</c>, anchors, aliases, tags, trailing comments, tabs in the indentation,
 ///         duplicate keys, and nesting deeper than a list of maps. <c>title</c> and <c>summary</c> are always one
-///         line. The only multi-line value is the <c>content</c> of an example, written as a literal block with
+///         line. The only multi-line values are the <c>content</c> and the <c>expect</c> of an example, written as a
+///         literal block with
 ///         <c>|</c> or <c>|-</c> on the key line and the text indented on the following lines (the indentation of the
-///         first non-blank line, deeper than <c>content</c>); the block ends at the first non-blank line with less
+///         first non-blank line, deeper than the key); the block ends at the first non-blank line with less
 ///         indentation, blank lines and <c>#</c> lines inside are content, trailing line feeds are dropped, so
 ///         <c>|</c> and <c>|-</c> are the same. <c>|+</c>, <c>|2</c> and the folded <c>&gt;</c> are errors, and a block
 ///         anywhere else is <c>block-scalar-not-allowed</c>.
@@ -162,15 +163,28 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <b>Examples.</b> Each item of <c>examples</c> is a named, ready-to-use piece of text. Its keys are
 ///         <c>name</c> (a segment, unique in the scope: the source and the first segment of the card id),
 ///         <c>kind</c> (<c>command</c>, <c>source</c> or <c>snippet</c>), <c>language</c> (one lower-case word such as
-///         <c>shell</c>, <c>yaml</c> or <c>csharp</c>), <c>description</c> (one line), <c>file</c> and <c>content</c>;
+///         <c>shell</c>, <c>yaml</c> or <c>csharp</c>), <c>description</c> (one line), <c>file</c> and <c>content</c>,
+///         and, for a <c>command</c> only, the expected result <c>exit</c> and <c>expect</c>;
 ///         <c>name</c>, <c>kind</c>, <c>language</c> and <c>description</c> are always required.
 ///     </para>
 ///     <list type="table">
 ///         <listheader><term>Kind</term><description><c>file</c> and <c>content</c></description></listheader>
-///         <item><term><c>command</c></term><description><c>file</c> not allowed; <c>content</c> required, one line that starts with the tool name, written <c>{{tool}} ...</c>. The test helper <c>ExampleCommandLine</c> checks that it parses.</description></item>
+///         <item><term><c>command</c></term><description><c>file</c> not allowed; <c>content</c> required, one line that starts with the tool name, written <c>{{tool}} ...</c>. The test helper <c>ExampleCommandLine</c> checks that it parses. Optional <c>exit</c> and <c>expect</c> state the result (see below).</description></item>
 ///         <item><term><c>source</c></term><description><c>file</c> required: the name to save the text as, and the data file to read when there is no <c>content</c>. <c>content</c> optional, a complete file.</description></item>
 ///         <item><term><c>snippet</c></term><description>As <c>source</c>, but a fragment that is never claimed to work alone.</description></item>
 ///     </list>
+///     <para>
+///         <b>Expected results.</b> A <c>command</c> may state what a correct run gives, so a test can run every
+///         example of a card and compare. <c>exit</c> is the expected exit code, an integer from 0 to 255 (default 0).
+///         <c>expect</c> is text the output must contain: one line of text, or a literal block (<c>expect: |</c>) in
+///         which every non-blank line is one fragment; every fragment must appear in the output, in any order, with
+///         the case as written. Tokens such as <c>{{tool}}</c> are replaced in <c>expect</c> as in the content. Both
+///         keys are additive and need no schema change; <c>exit</c> or <c>expect</c> on a <c>source</c> or
+///         <c>snippet</c>, an <c>exit</c> that is not an integer from 0 to 255, and an empty <c>expect</c> are
+///         <c>value-invalid</c>. The card shows the expected result after the example in the examples document and
+///         in the JSON <c>examples</c> (<c>exitCode</c> and <c>expect</c>, written only when stated); the library never
+///         runs a command.
+///     </para>
 ///     <para>
 ///         The data file of a <c>source</c> or <c>snippet</c> without <c>content</c> is read from the folder of the card
 ///         file, so a card <c>getting-started</c> (<c>Help/getting-started.md</c>) names <c>getting-started/settings.yaml</c>
@@ -283,6 +297,8 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     kind: command
 ///     language: shell
 ///     content: '{{tool}} load data.csv'
+///     exit: 0
+///     expect: 'Loaded 1 file'
 ///     description: Load a data file.
 ///   - name: settings
 ///     kind: source

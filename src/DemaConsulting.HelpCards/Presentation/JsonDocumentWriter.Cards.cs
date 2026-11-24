@@ -163,6 +163,24 @@ internal static partial class JsonDocumentWriter
 
         writer.WriteString("description", example.Description);
         writer.WriteString("content", example.Content);
+
+        // The expected result of a command is written only when the example states one
+        if (example.ExitCode != 0)
+        {
+            writer.WriteNumber("exitCode", example.ExitCode);
+        }
+
+        if (example.Expect.Count > 0)
+        {
+            writer.WriteStartArray("expect");
+            foreach (var fragment in example.Expect)
+            {
+                writer.WriteStringValue(fragment);
+            }
+
+            writer.WriteEndArray();
+        }
+
         writer.WriteEndObject();
     }
 

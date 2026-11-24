@@ -96,6 +96,26 @@ internal static class HelpStrings
     }
 
     /// <summary>
+    ///     Gets the line that tells the exit code a command example is expected to end with.
+    /// </summary>
+    /// <param name="exitCode">The expected exit code.</param>
+    /// <returns>The line without a line break.</returns>
+    public static string ExpectedExitCode(int exitCode)
+    {
+        return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Expected exit code: {exitCode}");
+    }
+
+    /// <summary>
+    ///     Gets the line that tells one fragment the output of a command example is expected to contain.
+    /// </summary>
+    /// <param name="fragment">The expected fragment of output.</param>
+    /// <returns>The line without a line break.</returns>
+    public static string ExpectedOutputContains(string fragment)
+    {
+        return $"Expected output contains: {fragment}";
+    }
+
+    /// <summary>
     ///     Gets the text written for a search that found nothing.
     /// </summary>
     /// <param name="query">The query that was searched for.</param>

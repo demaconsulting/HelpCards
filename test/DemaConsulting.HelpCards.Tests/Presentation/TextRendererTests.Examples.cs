@@ -150,6 +150,68 @@ public partial class TextRendererTests
     }
 
     /// <summary>
+    ///     Proves that the examples document writes the expected result after the fence of a command: the exit code
+    ///     only when it is not 0 and one line per fragment of output; examples that state nothing get no extra line.
+    /// </summary>
+    [Fact]
+    public void TextRenderer_RenderExamples_ExpectedResult_FollowsTheFence()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var context = RenderContext.Create(catalog, null);
+
+        // Act
+        var text = TextRenderer.RenderExamples(context, catalog.Find("check")!);
+
+        // Assert: fragments of one block come one per line; exit 2 is written; the source examples have nothing
+        Assert.Contains(
+            "## ok [command]\n\nCheck the configuration file.\n\n```shell\ndemo check check/config.yaml\n```\n"
+            + "Expected output contains: Checked 1 file\nExpected output contains: No problems\n",
+            text,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "```shell\ndemo check absent.yaml\n```\nExpected exit code: 2\nExpected output contains: Cannot open absent.yaml\n",
+            text,
+            StringComparison.Ordinal);
+        Assert.Contains("```text\nfirst line\nsecond line\n```\n\n## ok", text, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the expected result is shown in the card document when example content is included, wrapped at the
+    ///     width, and that a command that states nothing gets no line.
+    /// </summary>
+    [Fact]
+    public void TextRenderer_RenderCard_ExampleContent_ShowsExpectedResultWrapped()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var context = RenderContext.Create(catalog, new HelpRenderOptions { IncludeExampleContent = true, Width = 30 });
+
+        // Act
+        var text = TextRenderer.RenderCard(context, catalog.Find("check/details")!);
+
+        // Assert: the long fragment wraps with the hanging indent
+        Assert.EndsWith("```\nExpected output contains:\n  Verbose output for demo", text, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that printing one example alone gives exactly its content, whatever result it expects.
+    /// </summary>
+    [Fact]
+    public void TextRenderer_RenderExample_ExpectedResult_PrintsExactlyContent()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var context = RenderContext.Create(catalog, null);
+
+        // Act
+        var text = TextRenderer.RenderExample(context, catalog.Find("check")!, "missing");
+
+        // Assert
+        Assert.Equal("demo check absent.yaml", text);
+    }
+
+    /// <summary>
     ///     Proves that an example that does not exist is an argument error.
     /// </summary>
     [Fact]

@@ -223,6 +223,16 @@ Formats the guide body in the plain, command, and Markdown styles and with a cal
 Renders the examples document of the guide card in the command style and compares it with its golden file, and prints
 one example of a card below it alone, asserting that the result is exactly its content.
 
+### Examples: Expected Results
+
+**Test**: `HelpCards_Examples_ExpectedResults_AreReadExposedAndShown`
+
+Creates the catalog of the embedded `runnable` fixture, whose command examples state `exit` and `expect`, and asserts
+the exit code and the fragments of a command with a literal block and of one with a plain value. Renders the examples
+document and asserts the expected-result lines after the fence, renders one example as JSON and asserts the appended
+`exitCode` and `expect`, prints one example alone and asserts that it is exactly its content, and creates a catalog with
+an exit code of 300 and asserts the one `value-invalid` problem.
+
 ### Rendering: Card Lists and Wrapping
 
 **Test**: `HelpCards_Rendering_CardListsAndWrapping_WrapOnlyGeneratedLinesInText`

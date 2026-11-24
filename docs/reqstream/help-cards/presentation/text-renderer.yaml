@@ -67,6 +67,21 @@ sections:
                   - TextRenderer_RenderCard_SimpleGuide_ExampleContent_EqualsGolden
                   - TextRenderer_RenderCard_ExampleContentWithBackticks_UsesALongerFence
 
+              - id: HelpCards-Presentation-TextRenderer-ExpectedResults
+                title: >-
+                  The renderer shall write, after the fence of a command example in an examples document and in a
+                  card with example content, the line "Expected exit code: N" when the exit code is not 0 and one
+                  line "Expected output contains: fragment" for every expected fragment, wrapped like other generated
+                  lines, and shall write nothing extra for an example that states no result and for the print of
+                  one example alone.
+                justification: |
+                  A reader of the examples should see what a correct run gives, while the content of one example
+                  stays exactly what is saved or run.
+                tests:
+                  - TextRenderer_RenderExamples_ExpectedResult_FollowsTheFence
+                  - TextRenderer_RenderCard_ExampleContent_ShowsExpectedResultWrapped
+                  - TextRenderer_RenderExample_ExpectedResult_PrintsExactlyContent
+
               - id: HelpCards-Presentation-TextRenderer-Output
                 title: >-
                   The renderer shall write LF line endings only, no trailing line feed, and no escape characters, for

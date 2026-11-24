@@ -26,11 +26,14 @@ sections:
               - id: HelpCards-Catalog-HelpCard-Examples
                 title: >-
                   A card shall expose its examples with name, kind, language, file name, description, and final
-                  content, with tokens replaced and example files read.
+                  content, with tokens replaced and example files read, and, for a command, the expected exit code
+                  (0 when not stated) and the expected output fragments (none when not stated).
                 justification: |
-                  Examples are data that tools show and test; they must be final when the catalog is created.
+                  Examples are data that tools show and test; they must be final when the catalog is created, and
+                  a test that runs a command needs the result it is expected to give.
                 tests:
                   - HelpExample_Properties_Examples_ExposeResolvedValues
+                  - HelpCard_Examples_ExitCodeAndExpect_AreExposed
 
               - id: HelpCards-Catalog-HelpCard-Body
                 title: >-

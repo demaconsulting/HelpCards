@@ -20,7 +20,8 @@ expected plain-style text, and hidden targets are written as specified.
 - **Properties**: a root and a child card expose id, name, parent, source, title, summary, tags, aliases, culture,
   children, and see-also; extension keys are preserved.
 - **Examples**: a command with its token replaced, a source example read from its data file, and a snippet with inline
-  content.
+  content; the exit code and the expected output fragments of the commands of the `runnable` fixture, and the defaults
+  (0 and none) of its source examples.
 - **Body**: the whole body of the `guide` card of the fixture, with every link kind, tokens, and a code span; the same
   string on repeated access; an example of a descendant written with its owner.
 - **Body pieces**: the five visible links with ids, titles, display text, and source; adjacent text merged when links

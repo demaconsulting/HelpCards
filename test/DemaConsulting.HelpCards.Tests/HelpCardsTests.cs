@@ -822,6 +822,38 @@ public class HelpCardsTests
     }
 
     /// <summary>
+    ///     Proves that a command example can state the exit code and the output it expects, that the catalog exposes
+    ///     them, and that the examples document and the JSON document show them, while printing one example alone still
+    ///     gives exactly its content.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Examples_ExpectedResults_AreReadExposedAndShown()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var check = catalog.Find("check")!;
+
+        // Act
+        var ok = check.Examples.Single(example => example.Name == "ok");
+        var missing = check.Examples.Single(example => example.Name == "missing");
+        var text = catalog.RenderExamples(check);
+        var json = catalog.RenderExample(check, "missing", new HelpRenderOptions { Format = HelpFormat.Json });
+        var alone = catalog.RenderExample(check, "missing");
+        var invalid = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(
+            ("a.md", SourceReading.Card(extraFrontMatter: "examples:\n  - name: x\n    kind: command\n    language: shell\n    content: run\n    exit: 300\n    description: D.\n"))));
+
+        // Assert
+        Assert.Equal(0, ok.ExitCode);
+        Assert.Equal(["Checked 1 file", "No problems"], ok.Expect);
+        Assert.Equal(2, missing.ExitCode);
+        Assert.Equal(["Cannot open absent.yaml"], missing.Expect);
+        Assert.Contains("Expected exit code: 2\nExpected output contains: Cannot open absent.yaml", text, StringComparison.Ordinal);
+        Assert.Contains("\"exitCode\":2,\"expect\":[\"Cannot open absent.yaml\"]", json, StringComparison.Ordinal);
+        Assert.Equal("demo check absent.yaml", alone);
+        Assert.Equal("value-invalid", Assert.Single(invalid.Problems).RuleId);
+    }
+
+    /// <summary>
     ///     Proves that a list of cards renders in text and in Markdown without a trailing line feed, that only the
     ///     lines the library generates are wrapped at the width, that Markdown is never wrapped, and that authored
     ///     bodies are never reflowed.
@@ -951,7 +983,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Catalog.HelpCard: Aliases, Body, ChildIds, Culture, Examples, Extensions, Id, LocalId, Name, ParentId, SeeAlsoIds, SourceName, Summary, Tags, Title",
             "DemaConsulting.HelpCards.Catalog.HelpCatalog: Cards, Create, Culture, Diagnostics, Filter, FilterSource, Find, FindExample, FindExamples, FormatBody, GetChildren, GetSeeAlso, Render, RenderCardList, RenderExample, RenderExamples, RenderIndex, RenderSearch, Resolve, Roots, Search, Sources, Suggest, TagNames, Where, Without",
             "DemaConsulting.HelpCards.Catalog.HelpCatalogException: Problems",
-            "DemaConsulting.HelpCards.Catalog.HelpExample: CommandKind, Content, Description, FileName, Kind, Language, Name, SnippetKind, SourceKind, SourceName",
+            "DemaConsulting.HelpCards.Catalog.HelpExample: CommandKind, Content, Description, ExitCode, Expect, FileName, Kind, Language, Name, SnippetKind, SourceKind, SourceName",
             "DemaConsulting.HelpCards.Catalog.HelpExampleReference: .ctor, CardId, Example",
             "DemaConsulting.HelpCards.Catalog.HelpLink: CardId, ExampleCardId, ExampleName, SourceName, Text, Title",
             "DemaConsulting.HelpCards.Catalog.HelpPathResolution: Card, ParentId, Suggestion, UnknownSegment, ValidNames",

@@ -115,6 +115,7 @@ reviews:
       - "docs/verification/help-cards/loading.md"                   # subsystem verification
       - "src/DemaConsulting.HelpCards/Loading/NamespaceDoc.cs"  # namespace documentation and usage example
       - "test/DemaConsulting.HelpCards.Tests/Loading/LoadingTests.cs"  # subsystem tests
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/runnable/**"  # fixture cards whose commands state their results
 
   # HelpCards-Loading-HelpSource Review (one per unit)
   - id: HelpCards-Loading-HelpSource
@@ -563,6 +564,7 @@ reviews:
       - "test/DemaConsulting.HelpCards.Tests/Presentation/PresentationTests.cs"   # subsystem tests
       - "test/DemaConsulting.HelpCards.Tests/Fixtures/render/**"   # golden files the renderers are compared with
       - "test/DemaConsulting.HelpCards.Tests/Fixtures/simple/**"   # fixture cards the subsystem tests render
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/runnable/**"   # fixture cards whose commands state their results
 
   # HelpCards-Presentation-HelpRenderOptions Review (one per unit)
   - id: HelpCards-Presentation-HelpRenderOptions

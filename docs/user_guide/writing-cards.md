@@ -111,9 +111,9 @@ comments, and nesting deeper than a list of maps are errors. `title` and `summar
 
 ### The Literal Block
 
-The only value that can span several lines is the `content` of an example, written as a literal block with `|` or
-`|-`. The block starts on the next line. Its indentation is that of its first non-blank line and must be deeper than
-the `content` key. The block ends at the first non-blank line with less indentation. Blank lines inside the block are
+The only values that can span several lines are the `content` and the `expect` of an example, written as a literal block
+with `|` or `|-`. The block starts on the next line. Its indentation is that of its first non-blank line and must be
+deeper than the key. The block ends at the first non-blank line with less indentation. Blank lines inside the block are
 kept, a line that starts with a hash character inside the block is content, and the indentation is removed. Trailing
 line feeds are removed, so `|` and `|-` give the same text. The forms `|+`, `|2`, and the folded `>` are errors, and a
 block anywhere else is the error `block-scalar-not-allowed`.
@@ -215,6 +215,8 @@ An example is a named, ready-to-use piece of text attached to a card. Each item 
 | `description` | One line that says what the example shows |
 | `file` | The name of a data file next to the card; the name to save a source as |
 | `content` | The text itself, a single line or a literal block |
+| `exit` | A `command` only: the exit code the command is expected to end with, from 0 to 255 (default 0) |
+| `expect` | A `command` only: text that the output must contain, a single line or a literal block |
 
 The kinds differ in how they use `file` and `content`:
 
@@ -233,6 +235,33 @@ as UTF-8.
 An example name is unique within a *scope*: the source of the card and the first segment of its local id, counting
 examples that overlays add. Two examples of one scope with the same name are the error `duplicate-example`. A reader
 who asks for an example by name alone finds the first one in the subtree; `card#name` is unambiguous.
+
+### Expected Results
+
+A command example can state the result a correct run gives, so that a test can run every example of a card and compare.
+`exit` is the expected exit code. `expect` is the text the output must contain: a single line, or a literal block in
+which every non-blank line is one fragment. Every fragment must appear in the output, in any order, and the case is
+compared as written. Tokens such as `{{tool}}` are replaced in `expect` like in the content.
+
+```yaml
+examples:
+  - name: check-missing
+    kind: command
+    language: shell
+    content: '{{tool}} check absent.yaml'
+    exit: 2
+    expect: |
+      Cannot open absent.yaml
+      1 error
+    description: Check a file that does not exist.
+```
+
+The keys are additive and need no schema change. An `exit` or `expect` on a `source` or `snippet`, an `exit` that is not
+an integer from 0 to 255, and an `expect` that is empty or starts with a blank line are the error `value-invalid`. The
+examples document of the card prints the result after the example (the line `Expected exit code: 2` and one line
+`Expected output contains: ...` per fragment), the JSON documents add `exitCode` and `expect` when they are stated, and
+printing one example alone still prints exactly its content. HelpCards never starts a process: your own test runs the
+command and compares the result.
 
 ## Cultures
 

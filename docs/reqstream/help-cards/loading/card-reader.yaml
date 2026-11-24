@@ -106,6 +106,26 @@ sections:
                   - CardReader_Read_ExamplesNotListOfMaps_ReportsValueInvalid
                   - CardReader_Read_ExampleProblems_KeepCardOnlyWhenStructureIsValid
 
+              - id: HelpCards-Loading-CardReader-ExampleExpectations
+                title: >-
+                  The reader shall read the exit code (an integer from 0 to 255, 0 when absent) and the expected
+                  output (one line, or one fragment for every non-blank line of a literal block, with tokens
+                  replaced) of a command example, and shall report as value-invalid an exit code that is not an
+                  integer from 0 to 255, an empty expectation, an expectation that starts with a blank line, and
+                  an exit code or expectation on a source or snippet example.
+                justification: |
+                  A command that states its result can be proven by running it; a result that cannot be read or
+                  that is stated for an example that is not run must be an error when the card is read.
+                tests:
+                  - CardReader_Read_CommandExample_ReturnsExactExample
+                  - CardReader_Read_ExitAndExpect_AreReadForCommands
+                  - CardReader_Read_ExpectBlock_SplitsFragmentsOnLines
+                  - CardReader_Read_ExpectTokens_AreReplaced
+                  - CardReader_Read_ExitOutOfRange_IsValueInvalid
+                  - CardReader_Read_ExitBounds_AreAccepted
+                  - CardReader_Read_InvalidExpect_IsValueInvalid
+                  - CardReader_Read_ExitAndExpectOnSourceAndSnippet_AreValueInvalid
+
               - id: HelpCards-Loading-CardReader-Tokens
                 title: >-
                   The reader shall replace tokens in titles, summaries, example descriptions and content, and

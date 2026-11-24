@@ -24,8 +24,8 @@ All definitions are immutable records:
 - `TranslationDefinition`: culture suffix, the file it was read from, optional title and summary, extra aliases,
   example descriptions, `HasBody` (a translation without a body is ignored completely), the line its body starts on
   (`BodyLine`), and body parts.
-- `ExampleDefinition`: name, kind, language, file name, description, normalized content, and where it was
-  written.
+- `ExampleDefinition`: name, kind, language, file name, description, normalized content, the expected exit code
+  and expected output fragments of a command (0 and none when not stated), and where it was written.
 - `ReferenceDefinition`: optional source name and local id of a see-also or extends reference.
 - `LocatedValue`: a string value with the file and line it was written at.
 
@@ -43,7 +43,8 @@ grammars, values and the key matrix, examples, cards and translations, and the s
   total); a translation is `<segment>.<culture>.md`; `_source.md` and `_source.<culture>.md` only at the root;
   a data file matches `^[A-Za-z0-9][A-Za-z0-9._-]*$` and does not end in `.md`. Other names are `file-name`.
 - **Key matrix.** Cards allow title, summary (both required), aliases, tags, order, children, see-also,
-  examples; overlays (files with `extends`) allow extends, optional, title, summary, see-also, examples;
+  examples (whose items allow name, kind, language, description, file, content, exit, and expect); overlays (files with
+  `extends`) allow extends, optional, title, summary, see-also, examples;
   `_source.md` allows title, summary, aliases, children, schema, name, language; extension keys `x-*` are
   allowed except in translations; translations allow title, summary, aliases (not for overlays), examples
   with name and description only, and report other keys as `translation-key`.
@@ -51,6 +52,11 @@ grammars, values and the key matrix, examples, cards and translations, and the s
   references are `[source:]localId`; examples follow the kind matrix (command: one-line content, no file;
   source and snippet: a file and optional content). Example files are resolved relative to the folder of the
   card or overlay file and are read only when no inline content is given.
+- **Expected results.** A command may have `exit` (an integer from 0 to 255, default 0) and `expect` (one line, or a
+  literal block of which every non-blank line is one fragment). Line endings become LF and tokens are replaced in
+  `expect` as in the content. `exit` or `expect` on a source or snippet, an `exit` outside 0 to 255, and an empty
+  `expect` or one that starts with a blank line are `value-invalid` at the line of the key. Both keys are additive:
+  they need no schema change and are read in every schema.
 - **Cultures.** All translations are read and validated; `CultureSelector` picks one per file; title, summary,
   and example descriptions fall back individually; a translation without a body is ignored completely.
 - **Source name.** A name given with `WithName` wins over `name` in `_source.md`; a missing or malformed name

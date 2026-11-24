@@ -44,4 +44,6 @@ provider must show no calls before reading, one listing, and one read per file u
 - **Front-matter error names file and line**: a duplicate key in a nested file.
 - **Read failure is reported and other files are read**: a failing read becomes a `source-read` problem.
 - **Reading is deterministic**: two reads give identical cards and problems in the same order.
+- **Expected results are read**: the embedded `runnable` fixture is read without problems; the exit code and the
+  fragments of a block and of a plain value come out with tokens replaced.
 - **Body file is recorded**: the file that supplied the body is the neutral file, or the selected translation file.

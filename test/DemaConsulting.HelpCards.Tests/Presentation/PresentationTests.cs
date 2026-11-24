@@ -112,6 +112,29 @@ public class PresentationTests
     }
 
     /// <summary>
+    ///     Proves that the examples document of a card shows the expected results of its commands after each example, and
+    ///     the JSON document writes them when set, through the options and renderers working together.
+    /// </summary>
+    [Fact]
+    public void Presentation_ExpectedResults_RunnableFixture_ShowResultAfterExample()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Runnable();
+        var check = catalog.Find("check")!;
+
+        // Act
+        var text = catalog.RenderExamples(check);
+        var alone = catalog.RenderExample(check, "missing");
+        var json = catalog.RenderExamples(check, new HelpRenderOptions { Format = HelpFormat.Json });
+
+        // Assert: text shows the result, one example alone is exactly its content, JSON appends the keys
+        Assert.Contains("```\nExpected exit code: 2\nExpected output contains: Cannot open absent.yaml\n", text, StringComparison.Ordinal);
+        Assert.Equal("demo check absent.yaml", alone);
+        Assert.Contains("\"exitCode\":2,\"expect\":[\"Cannot open absent.yaml\"]", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("null", json, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that the examples document prints the own examples in full and lists the cards below by name only.
     /// </summary>
     [Fact]

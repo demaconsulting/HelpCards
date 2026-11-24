@@ -32,11 +32,155 @@ public partial class CardReaderTests
         // Act
         var example = Assert.Single(Assert.Single(source.Cards).Examples);
 
+        // Assert: the fragment list is compared separately because a record compares lists by reference
+        Assert.Empty(source.Problems);
+        Assert.Empty(example.Expect);
+        Assert.Equal(
+            new ExampleDefinition("render", "command", "shell", null, "Render it with demo.", "demo render a.mmd", 0, example.Expect, "a.md", 5),
+            example);
+    }
+
+    /// <summary>
+    ///     Proves that the exit code and the expected output of a command are read, with the output as one fragment.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExitAndExpect_AreReadForCommands()
+    {
+        // Arrange
+        var source = Read(("a.md", ExampleCard(
+            "  - name: run\n    kind: command\n    language: shell\n    content: '{{tool}} run'\n    exit: 3\n    expect: Ran {{tool}}\n    description: D.\n")));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
         // Assert
         Assert.Empty(source.Problems);
-        Assert.Equal(
-            new ExampleDefinition("render", "command", "shell", null, "Render it with demo.", "demo render a.mmd", "a.md", 5),
-            example);
+        Assert.Equal(3, example.ExitCode);
+        Assert.Equal(["Ran demo"], example.Expect);
+    }
+
+    /// <summary>
+    ///     Proves that a literal block of expected output gives one fragment per non-blank line.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExpectBlock_SplitsFragmentsOnLines()
+    {
+        // Arrange: a block with a blank line between two fragments and CRLF line endings
+        var source = Read(("a.md", ExampleCard(
+            "  - name: run\r\n    kind: command\r\n    language: shell\r\n    content: run\r\n    expect: |\r\n      first fragment\r\n\r\n      second  fragment\r\n    description: D.\r\n")));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert
+        Assert.Empty(source.Problems);
+        Assert.Equal(0, example.ExitCode);
+        Assert.Equal(["first fragment", "second  fragment"], example.Expect);
+    }
+
+    /// <summary>
+    ///     Proves that tokens in the expected output are replaced.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExpectTokens_AreReplaced()
+    {
+        // Arrange: the second line of the block has an unknown token
+        var source = Read(("a.md", ExampleCard(
+            "  - name: run\n    kind: command\n    language: shell\n    content: run\n    expect: |\n      {{tool}} {{version}}\n      {{nope}}\n    description: D.\n")));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert: reported at the line of the token, the card is kept
+        AssertProblem(Assert.Single(source.Problems), RuleIds.TokenUnknown, "a.md", 11);
+        Assert.Equal("demo 1.2", example.Expect[0]);
+    }
+
+    /// <summary>
+    ///     Proves that an exit code outside 0 to 255 or that is not an integer is reported at its line.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExitOutOfRange_IsValueInvalid()
+    {
+        // Arrange: too large, negative, signed, not a number, empty, and too long for an integer
+        string[] values = ["256", "-1", "+1", "two", "''", "99999999999"];
+
+        foreach (var value in values)
+        {
+            var source = Read(("a.md", ExampleCard(
+                $"  - name: run\n    kind: command\n    language: shell\n    content: run\n    exit: {value}\n    description: D.\n")));
+
+            // Act
+            var problem = Assert.Single(source.Problems);
+
+            // Assert
+            AssertProblem(problem, RuleIds.ValueInvalid, "a.md", 9);
+            Assert.Contains("'exit'", problem.Message, StringComparison.Ordinal);
+        }
+    }
+
+    /// <summary>
+    ///     Proves that the largest and the smallest exit codes are accepted.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExitBounds_AreAccepted()
+    {
+        // Arrange
+        var source = Read(("a.md", ExampleCard(
+            "  - name: low\n    kind: command\n    language: shell\n    content: run\n    exit: 0\n    description: D.\n"
+            + "  - name: high\n    kind: command\n    language: shell\n    content: run\n    exit: 255\n    description: D.\n")));
+
+        // Act
+        var examples = Assert.Single(source.Cards).Examples;
+
+        // Assert
+        Assert.Empty(source.Problems);
+        Assert.Equal([0, 255], examples.Select(example => example.ExitCode));
+    }
+
+    /// <summary>
+    ///     Proves that an empty expectation and one that starts with a blank line are reported at the key.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_InvalidExpect_IsValueInvalid()
+    {
+        // Arrange: empty and a block that starts with a blank line
+        string[] expects = ["''", "|\n\n      text"];
+
+        foreach (var expect in expects)
+        {
+            var source = Read(("a.md", ExampleCard(
+                $"  - name: run\n    kind: command\n    language: shell\n    content: run\n    expect: {expect}\n    description: D.\n")));
+
+            // Act
+            var problem = Assert.Single(source.Problems);
+
+            // Assert
+            AssertProblem(problem, RuleIds.ValueInvalid, "a.md", 9);
+            Assert.Contains("'expect'", problem.Message, StringComparison.Ordinal);
+        }
+    }
+
+    /// <summary>
+    ///     Proves that only a command has an exit code or expected output.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExitAndExpectOnSourceAndSnippet_AreValueInvalid()
+    {
+        // Arrange: a source with an exit code and a snippet with expected output
+        var source = Read(("a.md", ExampleCard(
+            "  - name: a\n    kind: source\n    language: yaml\n    file: a.yaml\n    content: 'k: v'\n    exit: 1\n    description: D.\n"
+            + "  - name: b\n    kind: snippet\n    language: yaml\n    file: b.yaml\n    content: 'k: v'\n    expect: x\n    description: D.\n")));
+
+        // Act
+        var problems = source.Problems;
+
+        // Assert
+        Assert.Equal(2, problems.Count);
+        AssertProblem(problems[0], RuleIds.ValueInvalid, "a.md", 10);
+        AssertProblem(problems[1], RuleIds.ValueInvalid, "a.md", 17);
+        Assert.Contains("Only a command example has 'exit'", problems[0].Message, StringComparison.Ordinal);
+        Assert.Contains("Only a command example has 'expect'", problems[1].Message, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -294,7 +438,7 @@ public partial class CardReaderTests
 
         // Assert
         AssertProblem(problem, RuleIds.KeyUnknown, "a.md", 10);
-        Assert.Contains("name, kind, language, description, file, content", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("name, kind, language, description, file, content, exit, expect", problem.Message, StringComparison.Ordinal);
     }
 
     /// <summary>

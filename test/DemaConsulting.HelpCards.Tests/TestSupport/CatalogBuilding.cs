@@ -93,6 +93,16 @@ internal static class CatalogBuilding
     }
 
     /// <summary>
+    ///     Creates the catalog of the <c>runnable</c> fixture, whose command examples state their expected results, with
+    ///     the tool name <c>demo</c>.
+    /// </summary>
+    /// <returns>The catalog.</returns>
+    public static HelpCatalog Runnable()
+    {
+        return Create(Fixture("runnable"), builder => builder.ToolName("demo"));
+    }
+
+    /// <summary>
     ///     Creates a catalog from a source.
     /// </summary>
     /// <param name="source">The source.</param>

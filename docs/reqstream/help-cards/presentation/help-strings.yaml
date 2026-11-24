@@ -13,13 +13,15 @@ sections:
               - id: HelpCards-Presentation-HelpStrings-Chrome
                 title: >-
                   The unit shall provide every heading text, label, and hint or empty-list sentence that a rendering
-                  writes around authored content in English, with the Markdown labels in bold; the literal heading
+                  writes around authored content in English, including the lines that state the expected exit code
+                  and expected output of a command example, with the Markdown labels in bold; the literal heading
                   markers (number signs) are layout and stay with the renderer.
                 justification: |
                   Chrome in one place is the seam for later localization and keeps the layout consistent.
                 tests:
                   - HelpStrings_Chrome_HeadingsAndLabels_AreEnglish
                   - HelpStrings_Hints_NameTheCommand
+                  - HelpStrings_ExpectedResult_Text
 
               - id: HelpCards-Presentation-HelpStrings-CultureIndependence
                 title: >-

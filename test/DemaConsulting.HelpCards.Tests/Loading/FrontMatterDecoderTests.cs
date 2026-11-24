@@ -229,6 +229,43 @@ public class FrontMatterDecoderTests
     }
 
     /// <summary>
+    ///     Proves that a literal block is accepted for the expected output of an example, with its line.
+    /// </summary>
+    [Fact]
+    public void FrontMatterDecoder_TryDecode_ExampleExpectBlockScalar_Accepted()
+    {
+        // Arrange / Act: a two-line block for expect that ends at the next key of the item
+        var document = Accept(
+            "---\nexamples:\n  - name: x\n    expect: |\n      first\n      second\n    kind: command\n---\n");
+
+        // Assert: the indent is removed and the line is the first block line
+        var map = Entry(document, "examples").Items!.Single().Map!;
+        Assert.Equal("first\nsecond", map.Single(e => e.Key == "expect").Scalar!.Text);
+        Assert.Equal(5, map.Single(e => e.Key == "expect").Scalar!.Line);
+        Assert.Equal("command", map.Single(e => e.Key == "kind").Scalar!.Text);
+    }
+
+    /// <summary>
+    ///     Proves that a block scalar for a key named <c>expect</c> outside an example list is not allowed.
+    /// </summary>
+    [Fact]
+    public void FrontMatterDecoder_TryDecode_BlockScalarExpectOutsideExamples_Rejected()
+    {
+        // Arrange / Act / Assert
+        Reject("---\nexpect: |\n  text\n---\n", RuleIds.BlockScalarNotAllowed, 2);
+    }
+
+    /// <summary>
+    ///     Proves that a block scalar is still rejected for the other keys of an example.
+    /// </summary>
+    [Fact]
+    public void FrontMatterDecoder_TryDecode_BlockScalarForOtherExampleKey_Rejected()
+    {
+        // Arrange / Act / Assert
+        Reject("---\nexamples:\n  - name: x\n    description: |\n      text\n---\n", RuleIds.BlockScalarNotAllowed, 4);
+    }
+
+    /// <summary>
     ///     Proves that the <c>|-</c> header is accepted and gives the same text as <c>|</c>.
     /// </summary>
     [Fact]

@@ -96,8 +96,10 @@ sections:
             children:
               - HelpCards-Presentation-TextRenderer-ExamplesDocument
               - HelpCards-Presentation-TextRenderer-Example
+              - HelpCards-Presentation-TextRenderer-ExpectedResults
             tests:
               - Presentation_Examples_GuideCard_PrintsOwnExamplesAndListsDescendants
+              - Presentation_ExpectedResults_RunnableFixture_ShowResultAfterExample
 
           - id: HelpCards-Presentation-Lists
             title: >-

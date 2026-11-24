@@ -33,6 +33,10 @@ and no scenario depends on the machine's culture.
   missing file, tokens in file content, missing file key, command with file or without content, multi-line
   command, empty content, blank first line, block scalar content, invalid kind, language, name, missing keys,
   unknown key, unsafe file names, examples that are not maps, structure errors that drop the card.
+- **Expected results**: `exit` and `expect` of a command (also as a literal block with CRLF line endings and blank lines
+  between fragments), tokens in `expect` with the line of an unknown token, an exit code outside 0 to 255 or not an
+  integer, the bounds 0 and 255, an empty `expect` and one that starts with a blank line, and both keys on a source and
+  a snippet.
 - **Tokens**: replaced in title, summary, and body; unknown token with exact line; unknown token in summary;
   redefined built-in at source level.
 - **Links**: parsed links and a typo with the right line; an empty body.
