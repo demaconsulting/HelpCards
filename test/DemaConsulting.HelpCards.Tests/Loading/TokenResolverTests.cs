@@ -308,4 +308,20 @@ public class TokenResolverTests
         // Act / Assert
         Assert.Equal("v=", resolver.Substitute("v={{version}}", "a.md", 1, new List<HelpProblem>()));
     }
+
+    /// <summary>
+    ///     Proves that the names of the well-formed tokens of a text are listed once each in order of first use and
+    ///     that text that only looks like a token is not listed.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_FindNames_Text_ListsDistinctWellFormedNames()
+    {
+        // Act
+        var names = TokenResolver.FindNames("{{b}} and {{a}} and {{b}}, but not {{ c }}, {{d-e}}, {f}, or {{}}.");
+        var none = TokenResolver.FindNames("no tokens here");
+
+        // Assert
+        Assert.Equal(["b", "a"], names);
+        Assert.Empty(none);
+    }
 }

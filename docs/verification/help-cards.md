@@ -209,12 +209,55 @@ contract version, the success flag, the kind, that the text contains no null and
 
 Reads the assemblies that the library assembly references and asserts that each is part of the framework.
 
+### Public API Surface
+
+**Test**: `HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface`
+
+Lists every exported type of the library assembly with the names of its public members, without the members that the
+compiler writes, and compares the list exactly with the part of the documented surface that this release implements.
+A type or member that becomes public by accident, or one that is missing, fails the test.
+
 ### Cultures: Catalog
 
 **Test**: `HelpCards_Cultures_Catalog_ExposesTranslatedCardsWithBodyCulture`
 
 Creates the `i18n` fixture for `de-DE` and asserts the translated title and the culture of the body of three cards: a
 region translation, a language translation, and a card without translation.
+
+### Validation: Problems and Assertion
+
+**Test**: `HelpCards_Validation_SourcesAndCatalogs_ReportProblemsAndAssert`
+
+Validates the embedded `simple` fixture and gets no problem, validates a source with a broken link and gets the error
+without an exception, validates a source with a long summary and gets one warning, and asserts that `AssertValid`
+throws one exception with the same error and accepts a catalog that only has a warning.
+
+### Validation: Examples and Command Lines
+
+**Test**: `HelpCards_Validation_Examples_AreEnumeratedAndCommandsParsed`
+
+Enumerates the examples of the `simple` fixture, takes the first command, and asserts that it parses into the
+arguments after the tool name and that a command with a pipe is rejected with the character in the error.
+
+### Validation: Markdown Helpers
+
+**Test**: `HelpCards_Validation_MarkdownHelpers_ReadHeadingsSectionsAndBullets`
+
+Reads the headings, the bullets of one section, and the text of another section of a body that has a fenced block
+with a line that looks like a heading, and asserts that the fenced line is ignored.
+
+### Validation: Embedded Resources and a Directory
+
+**Test**: `HelpCards_Validation_CompareToDirectory_ReportsFilesOnOneSideOnly`
+
+Copies the embedded `simple` source to a temporary directory, removes one file and adds one, and asserts that both
+are reported, in path order, with the rule `resources-mismatch`.
+
+### Platforms
+
+The platform requirements (operating systems and runtimes) are verified by the rendering scenario
+`HelpCards_Rendering_SimpleFixtureText_EqualsGolden`, which runs the whole pipeline from the embedded resources of the
+test assembly to the rendered text; CI evidence per platform and runtime is selected with a source filter.
 
 ## Acceptance Criteria
 

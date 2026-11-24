@@ -337,6 +337,25 @@ public class HelpCatalogBuilderTests
     }
 
     /// <summary>
+    ///     Proves that the builder lists the sources that were added, in order, for the validator.
+    /// </summary>
+    [Fact]
+    public void HelpCatalogBuilder_Sources_AfterAddSource_ListsTheSource()
+    {
+        // Arrange
+        var builder = new HelpCatalogBuilder();
+        var source = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card())), "test");
+
+        // Act
+        var before = builder.Sources.Count;
+        builder.AddSource(source);
+
+        // Assert
+        Assert.Equal(0, before);
+        Assert.Same(source, Assert.Single(builder.Sources));
+    }
+
+    /// <summary>
     ///     Writes the text parts of a node body, with links left out.
     /// </summary>
     /// <param name="data">The data.</param>

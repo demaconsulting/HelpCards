@@ -27,3 +27,5 @@ expected plain-style text, and hidden targets are written as specified.
   are hidden.
 - **Hidden links**: a hidden card becomes its title and a hidden example becomes the words `an example`.
 - **Model types**: equality of the source description and the example reference; fields of the search result.
+- **Site**: the file, the body file, and the body line of a neutral card, and of a card whose body comes from a
+  translation.

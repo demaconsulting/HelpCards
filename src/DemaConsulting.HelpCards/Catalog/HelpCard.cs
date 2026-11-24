@@ -135,4 +135,19 @@ public sealed partial class HelpCard
     ///     Gets the body as text and links to visible targets, for renderers.
     /// </summary>
     internal IReadOnlyList<BodyPiece> BodyPieces => _pieces.Value;
+
+    /// <summary>
+    ///     Gets the path of the neutral card file inside its source, for validators that name the file of a finding.
+    /// </summary>
+    internal string File => _node.File;
+
+    /// <summary>
+    ///     Gets the path of the file that supplied the body, which is a translation file when one was selected.
+    /// </summary>
+    internal string BodyFile => _node.BodyFile;
+
+    /// <summary>
+    ///     Gets the one-based line of the first body line in <see cref="BodyFile"/>.
+    /// </summary>
+    internal int BodyLine => _node.BodyLine;
 }

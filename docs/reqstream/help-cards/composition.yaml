@@ -23,6 +23,7 @@ sections:
               - HelpCards-Composition-HelpCatalogBuilder-Pipeline
               - HelpCards-Composition-HelpCatalogBuilder-TreePlacement
               - HelpCards-Composition-HelpCatalogBuilder-Configuration
+              - HelpCards-Composition-HelpCatalogBuilder-Sources
             tests:
               - Composition_Pipeline_SimpleFixture_ProducesFrozenTreeWithResolvedReferences
               - Composition_Reading_EachFileOnce_AndCultureSelectsTranslation

@@ -33,6 +33,7 @@ created only by `HelpCatalog.Create` and by the validator.
   argument error; the version may be empty.
 - **`TagVocabulary(allowed, requireOneOf)`** closes the tag set; every tag must be a segment and every required tag
   must be allowed. **`ExpectedRoots(ids)`** sets the expected roots, each a single segment.
+- **`Sources`** (internal) lists the registered sources in registration order, for the validator.
 - **`Compose()`** (internal) runs the pipeline: it reads the source through `CardReader` with a token scope created
   for the resolved name, places the cards (`PlaceCards`), checks the tags, creates the nodes, applies overlays (a
   reserved no-op), resolves references with `ReferenceValidator`, checks uniqueness and the expected roots, and freezes

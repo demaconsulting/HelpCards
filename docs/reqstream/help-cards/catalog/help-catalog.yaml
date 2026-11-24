@@ -233,3 +233,13 @@ sections:
                   Callers that print the body themselves still need links in their own style.
                 tests:
                   - HelpCatalog_FormatBody_LinkStyle_IsAppliedWhateverTheFormat
+
+              - id: HelpCards-Catalog-HelpCatalog-ComposedData
+                title: >-
+                  The catalog shall wrap data that was already composed into a catalog that shows every card, with
+                  the same cards as a catalog created from the same source.
+                justification: |
+                  The validator composes data itself so that it can report problems without an exception, and
+                  must inspect the cards through the model that adopters see.
+                tests:
+                  - HelpCatalog_FromData_ComposedData_ShowsTheCardsOfCreate

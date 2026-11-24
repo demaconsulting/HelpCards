@@ -38,6 +38,9 @@ software items, specifically:
 - **Presentation (Subsystem)** — Renders cards, indexes, examples, search results, and card lists as text, Markdown,
   and JSON with three link styles; its units are HelpRenderOptions, LinkFormatter, TextRenderer, JsonDocumentWriter,
   TextWrapper, and HelpStrings
+- **Testing (Subsystem)** — The helpers an adopter uses to test its own help: the validator with its options and rule
+  interface, the parser for the command line of an example, the enumeration of examples, and the readers for the
+  structure of a card body; its units are HelpCardValidator, HelpExamples, ExampleCommandLine, and HelpCardMarkdown
 
 The following OTS items are also covered:
 
@@ -80,10 +83,9 @@ namespace structure of the source code.
 
 The diagram below complements the structure view by showing the library in its run-time context:
 how the calling application uses the library's subsystems and units, and which inputs, outputs,
-and dependencies they involve. It is a placeholder: replace its TODO boxes with the real
-application, subsystems, units, dependencies, inputs, and outputs of your library.
+and dependencies they involve.
 
-![Placeholder architecture diagram: replace the TODO boxes for your application, library subsystems, support units, dependencies, inputs, and outputs with the real ones](architecture.svg)
+![Architecture of HelpCards: help cards flow through the Loading, Composition, and Catalog subsystems, and Presentation and Testing serve the application](architecture.svg)
 
 ## Folder Layout
 
@@ -100,8 +102,9 @@ src/DemaConsulting.HelpCards/
 └── Testing/                    — Testing subsystem units
 ```
 
-Each subsystem folder holds one file per unit class, named after the class. Test projects mirror the
-source folders; they are listed in the verification documentation, not here.
+Each subsystem folder holds one file per class, named after the class; a large class is split into partial
+files named `{Class}.{Part}.cs`, and the supporting types of a unit have files of their own. Test projects mirror
+the source folders; they are listed in the verification documentation, not here.
 
 ## Document Conventions
 

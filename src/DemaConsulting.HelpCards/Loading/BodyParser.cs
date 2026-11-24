@@ -258,7 +258,7 @@ internal static partial class BodyParser
     /// <param name="fenceChar">The fence character when the line opens a fence.</param>
     /// <param name="fenceLength">The length of the opening run when the line opens a fence.</param>
     /// <returns><see langword="true"/> when the line opens a fence.</returns>
-    private static bool TryGetFenceOpen(ReadOnlySpan<char> line, out char fenceChar, out int fenceLength)
+    internal static bool TryGetFenceOpen(ReadOnlySpan<char> line, out char fenceChar, out int fenceLength)
     {
         fenceChar = line.Length > 0 ? line[0] : '\0';
         fenceLength = 0;
@@ -283,7 +283,7 @@ internal static partial class BodyParser
     /// <param name="fenceChar">The fence character of the open fence.</param>
     /// <param name="fenceLength">The length of the opening run.</param>
     /// <returns><see langword="true"/> when the line is a run of at least the opening length and nothing else.</returns>
-    private static bool IsFenceClose(ReadOnlySpan<char> line, char fenceChar, int fenceLength)
+    internal static bool IsFenceClose(ReadOnlySpan<char> line, char fenceChar, int fenceLength)
     {
         var run = 0;
         while (run < line.Length && line[run] == fenceChar)

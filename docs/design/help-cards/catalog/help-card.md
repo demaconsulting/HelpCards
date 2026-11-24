@@ -42,6 +42,9 @@ and `Text` and `SourceName` are present only for external links.
 - **`BodyPieces`** (internal) applies the hiding rules of the view to the resolved body: a link to a hidden card
   becomes the card's title, a link to a hidden example becomes `an example`, and an external link to a hidden target
   becomes its display text. Adjacent text is merged.
+- **`File`, `BodyFile`, `BodyLine`** (internal) tell where the card was written: the neutral card file, the file that
+  supplied the body (a translation when one was selected), and the line of the first body line in that file. The
+  validator reports defects of a body at that file and line.
 
 #### Error Handling
 

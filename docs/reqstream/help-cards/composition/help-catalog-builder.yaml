@@ -107,3 +107,13 @@ sections:
                   Deliberate degradations must be visible to callers without failing anything.
                 tests:
                   - HelpCatalogBuilder_Compose_AbsentExternalSource_IsInfoAndDataKeepsIt
+
+              - id: HelpCards-Composition-HelpCatalogBuilder-Sources
+                title: >-
+                  The builder shall list the sources that were added, in the order they were added, for the
+                  validator, and list none for a new builder.
+                justification: |
+                  The validator inspects the sources that a product configured without adding a second way to
+                  configure them.
+                tests:
+                  - HelpCatalogBuilder_Sources_AfterAddSource_ListsTheSource

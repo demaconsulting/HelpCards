@@ -25,3 +25,6 @@ link, and every link typo is reported once at its line.
   do not start like a link.
 - **Link errors**: upper-case names, a space, an external link without text, display text with an edge space
   or longer than 120 characters, an id of nine segments (eight are allowed), several typos reported each.
+- **Fence lines**: the shared rule that opens a fence with backticks or tildes, does not open one for an inline span
+  or for fewer than three characters, and closes only with a run of the same character that is long enough and
+  nothing else.

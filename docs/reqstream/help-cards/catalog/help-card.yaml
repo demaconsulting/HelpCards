@@ -72,3 +72,12 @@ sections:
                   - HelpSourceInfo_Equality_SameValues_AreEqual
                   - HelpSearchResult_Constructor_Fields_AreExposed
                   - HelpExampleReference_Constructor_Fields_AreExposed
+
+              - id: HelpCards-Catalog-HelpCard-Site
+                title: >-
+                  A card shall tell its own units where it was written: the file of the card, the file that supplied
+                  its body (a translation when one was selected), and the line of the first body line in that file.
+                justification: |
+                  A validator reports a defect of a body at the file and line an author has to open.
+                tests:
+                  - HelpCard_Site_NeutralAndTranslatedCards_NameFileBodyFileAndLine

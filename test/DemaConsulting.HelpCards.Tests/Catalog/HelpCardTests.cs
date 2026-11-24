@@ -262,4 +262,23 @@ public class HelpCardTests
     {
         return (link.CardId, link.ExampleName, link.ExampleCardId, link.Title, link.Text, link.SourceName);
     }
+
+    /// <summary>
+    ///     Proves that a card names its file, the file that supplied its body, and the line of the body, and that a
+    ///     selected translation supplies its own file and line.
+    /// </summary>
+    [Fact]
+    public void HelpCard_Site_NeutralAndTranslatedCards_NameFileBodyFileAndLine()
+    {
+        // Arrange
+        var source = CatalogBuilding.Fixture("i18n");
+
+        // Act
+        var neutral = CatalogBuilding.Create(source).Find("welcome")!;
+        var german = CatalogBuilding.Create(source, builder => builder.Culture(CatalogBuilding.Culture("de"))).Find("welcome")!;
+
+        // Assert
+        Assert.Equal(("welcome.md", "welcome.md", 13), (neutral.File, neutral.BodyFile, neutral.BodyLine));
+        Assert.Equal(("welcome.md", "welcome.de.md", 10), (german.File, german.BodyFile, german.BodyLine));
+    }
 }

@@ -31,3 +31,4 @@ composes to data, and each defect gives exactly the documented problem at the do
 - **Collect all**: three different defects in three files are reported in file order and no data is returned.
 - **Overlay**: an overlay file is read and the card it extends is unchanged.
 - **Diagnostics**: a link to an absent source leaves one informational problem in the result and in the data.
+- **Sources**: a new builder lists no source and a builder lists the source that was added.

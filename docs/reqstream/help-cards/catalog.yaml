@@ -27,6 +27,8 @@ sections:
               - HelpCards-Catalog-HelpCard-Body
               - HelpCards-Catalog-HelpCard-BodyPieces
               - HelpCards-Catalog-HelpCard-ModelTypes
+              - HelpCards-Catalog-HelpCard-Site
+              - HelpCards-Catalog-HelpCatalog-ComposedData
               - HelpCards-Catalog-CatalogData-Content
               - HelpCards-Catalog-CatalogData-Tags
               - HelpCards-Catalog-CatalogData-Settings

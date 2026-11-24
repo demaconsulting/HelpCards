@@ -37,3 +37,5 @@ never returned, and parallel use gives consistent results with every predicate c
 - **Rendering members**: default options, the three formats, a card of another view, a hidden or null card, the index
   depth and usage lines, examples and one example in text and JSON, search results and card lists with their filter,
   the formatted body in each link style, and the callback called only for visible targets.
+- **Composed data**: a catalog made from data that was composed beforehand has the cards, bodies, and roots of a
+  created catalog.

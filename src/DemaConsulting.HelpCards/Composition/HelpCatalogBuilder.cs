@@ -66,6 +66,11 @@ public sealed partial class HelpCatalogBuilder
     }
 
     /// <summary>
+    ///     Gets the registered sources in registration order, for the validator.
+    /// </summary>
+    internal IReadOnlyList<HelpSource> Sources => _sources;
+
+    /// <summary>
     ///     Registers a source whose cards are added to the catalog without a mount.
     /// </summary>
     /// <remarks>

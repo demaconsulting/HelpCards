@@ -3,6 +3,7 @@ using System.Reflection;
 using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Loading;
 using DemaConsulting.HelpCards.Presentation;
+using DemaConsulting.HelpCards.Testing;
 using DemaConsulting.HelpCards.Tests.TestSupport;
 
 namespace DemaConsulting.HelpCards.Tests;
@@ -783,6 +784,69 @@ public class HelpCardsTests
     }
 
     /// <summary>
+    ///     Proves that the public types and members of the library are exactly the part of the frozen surface of the
+    ///     specification that this release implements, so that nothing else becomes public by accident.
+    /// </summary>
+    [Fact]
+    public void HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface()
+    {
+        // Arrange: the surface of the specification without search, suggestions, mounting, and the integration
+        // namespace, which later releases add
+        string[] expected =
+        [
+            "DemaConsulting.HelpCards.Catalog.HelpCard: Aliases, Body, ChildIds, Culture, Examples, Extensions, Id, LocalId, Name, ParentId, SeeAlsoIds, SourceName, Summary, Tags, Title",
+            "DemaConsulting.HelpCards.Catalog.HelpCatalog: Cards, Create, Culture, Diagnostics, Filter, FilterSource, Find, FindExample, FindExamples, FormatBody, GetChildren, GetSeeAlso, Render, RenderCardList, RenderExample, RenderExamples, RenderIndex, RenderSearch, Resolve, Roots, Sources, TagNames, Where, Without",
+            "DemaConsulting.HelpCards.Catalog.HelpCatalogException: Problems",
+            "DemaConsulting.HelpCards.Catalog.HelpExample: CommandKind, Content, Description, FileName, Kind, Language, Name, SnippetKind, SourceKind, SourceName",
+            "DemaConsulting.HelpCards.Catalog.HelpExampleReference: .ctor, CardId, Example",
+            "DemaConsulting.HelpCards.Catalog.HelpLink: CardId, ExampleCardId, ExampleName, SourceName, Text, Title",
+            "DemaConsulting.HelpCards.Catalog.HelpPathResolution: Card, ParentId, Suggestion, UnknownSegment, ValidNames",
+            "DemaConsulting.HelpCards.Catalog.HelpProblem: .ctor, File, Line, Message, RuleId, Severity, SourceName",
+            "DemaConsulting.HelpCards.Catalog.HelpSearchResult: .ctor, Id, MatchedOn, Score, SourceName, Summary, Title",
+            "DemaConsulting.HelpCards.Catalog.HelpSeverity: Error, Info, Warning",
+            "DemaConsulting.HelpCards.Catalog.HelpSourceInfo: .ctor, Language, Mount, Name, Schema, Summary, Title",
+            "DemaConsulting.HelpCards.Composition.HelpCatalogBuilder: AddSource, Culture, ExpectedRoots, TagVocabulary, ToolName, ToolVersion",
+            "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromDirectory, FromFiles, Imports, WithName, WithTokens",
+            "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
+            "DemaConsulting.HelpCards.Presentation.HelpLinkStyle: Command, Markdown, Plain",
+            "DemaConsulting.HelpCards.Presentation.HelpRenderOptions: .ctor, CommandTemplate, Format, IncludeExampleContent, IncludeTags, JsonEnvelope, LinkFormatter, LinkStyle, Width",
+            "DemaConsulting.HelpCards.Testing.ExampleCommandLine: TryParse",
+            "DemaConsulting.HelpCards.Testing.HelpCardMarkdown: Bullets, GetSection, Headings",
+            "DemaConsulting.HelpCards.Testing.HelpCardValidator: AssertValid, CompareToDirectory, Validate",
+            "DemaConsulting.HelpCards.Testing.HelpExamples: Enumerate",
+            "DemaConsulting.HelpCards.Testing.HelpValidationOptions: .ctor, MaxCardChars, MaxLineLength, MaxRootIndexChars, MaxRootSummaryChars, MaxSummaryChars, RequireExternalSources, Rules, WarningsAreErrors",
+            "DemaConsulting.HelpCards.Testing.IHelpCardRule: Check"
+        ];
+
+        // Act
+        var actual = DescribePublicSurface(typeof(HelpCatalog).Assembly).ToList();
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    /// <summary>
+    ///     Describes every exported type with the names of its public members, without the members that the compiler
+    ///     writes for records and for properties.
+    /// </summary>
+    /// <param name="assembly">The assembly.</param>
+    /// <returns>One line per exported type in ordinal order of the type name.</returns>
+    private static IEnumerable<string> DescribePublicSurface(Assembly assembly)
+    {
+        var generated = new HashSet<string>(StringComparer.Ordinal) { "Equals", "GetHashCode", "ToString", "Deconstruct", "<Clone>$", "value__" };
+        foreach (var type in assembly.GetExportedTypes().OrderBy(type => type.FullName, StringComparer.Ordinal))
+        {
+            var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+                .Where(member => member is not MethodBase { IsSpecialName: true } || member is ConstructorInfo)
+                .Select(member => member.Name)
+                .Where(name => !generated.Contains(name))
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal);
+            yield return $"{type.FullName}: {string.Join(", ", members)}";
+        }
+    }
+
+    /// <summary>
     ///     Proves that rendering twice gives equal output whatever the current culture of the machine is.
     /// </summary>
     [Fact]
@@ -818,5 +882,105 @@ public class HelpCardsTests
         {
             CultureInfo.CurrentCulture = original;
         }
+    }
+
+    /// <summary>
+    ///     Proves that the validator accepts the embedded simple source, reports a defective source as problems
+    ///     without throwing, and fails an assertion with one exception for the errors.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Validation_SourcesAndCatalogs_ReportProblemsAndAssert()
+    {
+        // Arrange: a valid embedded source and a source with a broken link and a summary that is too long
+        var valid = CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" });
+        var broken = HelpSource.FromFiles(
+            SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]].")), ("b.md", SourceReading.Card(summary: new string('x', 80)))),
+            "test");
+        var longSummary = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card(summary: new string('x', 80)))), "test");
+
+        // Act
+        var validProblems = HelpCardValidator.Validate(valid);
+        var errors = HelpCardValidator.Validate(broken);
+        var warnings = HelpCardValidator.Validate(longSummary);
+        var exception = Assert.Throws<HelpCatalogException>(() => HelpCardValidator.AssertValid(broken));
+
+        // Assert
+        Assert.Empty(validProblems);
+        Assert.Equal(RuleIds.LinkTarget, Assert.Single(errors).RuleId);
+        Assert.Equal(HelpSeverity.Warning, Assert.Single(warnings).Severity);
+        Assert.Equal(errors, exception.Problems);
+        HelpCardValidator.AssertValid(CatalogBuilding.Create(longSummary));
+    }
+
+    /// <summary>
+    ///     Proves that examples are enumerated with their cards and that command examples parse into the arguments
+    ///     an adopter would pass to its own entry point.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Validation_Examples_AreEnumeratedAndCommandsParsed()
+    {
+        // Arrange
+        var catalog = CatalogBuilding.Simple();
+
+        // Act
+        var all = HelpExamples.Enumerate(catalog).ToList();
+        var commands = HelpExamples.Enumerate(catalog, [HelpExample.CommandKind]).ToList();
+        var command = commands[0];
+        var parsed = ExampleCommandLine.TryParse(command.Example.Content, "simple", out var arguments, out var error);
+        var rejected = ExampleCommandLine.TryParse("simple run | more", "simple", out _, out var rejection);
+
+        // Assert
+        Assert.Equal(catalog.Cards.Sum(card => card.Examples.Count), all.Count);
+        Assert.Equal(2, commands.Count);
+        Assert.Equal("guide", command.Card.Id);
+        Assert.True(parsed, error);
+        Assert.Equal(["run", "input.txt"], arguments);
+        Assert.False(rejected);
+        Assert.Contains("shell operator '|'", rejection);
+    }
+
+    /// <summary>
+    ///     Proves that the Markdown helpers read headings, sections, and bullets, ignoring fenced blocks.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Validation_MarkdownHelpers_ReadHeadingsSectionsAndBullets()
+    {
+        // Arrange
+        var body = "## Items\n\n- First: one.\n- Second: two.\n\n```text\n## Hidden\n```\n\n## Other\n\nText.";
+
+        // Act
+        var headings = HelpCardMarkdown.Headings(body);
+        var bullets = HelpCardMarkdown.Bullets(body, "Items");
+        var section = HelpCardMarkdown.GetSection(body, "Other");
+
+        // Assert
+        Assert.Equal(["Items", "Other"], headings);
+        Assert.Equal(["First: one.", "Second: two."], bullets);
+        Assert.Equal("Text.", section);
+    }
+
+    /// <summary>
+    ///     Proves that embedded resources and a directory on disk are compared in both directions.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Validation_CompareToDirectory_ReportsFilesOnOneSideOnly()
+    {
+        // Arrange: a directory with every embedded file of the simple source, one of them removed and one added
+        var source = CatalogBuilding.Fixture("simple");
+        using var directory = new TemporaryDirectory();
+        foreach (var path in source.Provider.ListFiles())
+        {
+            directory.Write(path, source.Provider.ReadText(path));
+        }
+
+        File.Delete(Path.Combine(directory.FullPath, "guide.md"));
+        directory.Write("added.md", "text");
+
+        // Act
+        var problems = HelpCardValidator.CompareToDirectory(source, directory.FullPath);
+
+        // Assert
+        Assert.Equal(["added.md", "guide.md"], problems.Select(problem => problem.File));
+        Assert.All(problems, problem => Assert.Equal(RuleIds.ResourcesMismatch, problem.RuleId));
     }
 }

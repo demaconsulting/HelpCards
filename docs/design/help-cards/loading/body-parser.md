@@ -36,6 +36,10 @@ valid.
 
 Adjacent text is merged and empty text is omitted.
 
+**`TryGetFenceOpen(line, ...)`** and **`IsFenceClose(line, ...)`** (internal) are the fence rule of step 1 as separate
+methods, so that the validator and the Markdown helpers of the Testing subsystem classify lines of a body exactly as
+the loader does.
+
 #### Error Handling
 
 Defects are returned as `link-syntax` problems; the parser never throws for body text.

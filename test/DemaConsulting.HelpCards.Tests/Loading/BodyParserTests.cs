@@ -371,4 +371,32 @@ public class BodyParserTests
         // Assert
         Assert.Equal([1, 2], problems.Select(problem => problem.Line));
     }
+
+    /// <summary>
+    ///     Proves that the fence rule that other units share opens a fence with three or more backticks or tildes,
+    ///     does not treat an inline span as a fence, and closes a fence only with a long enough run of the same
+    ///     character.
+    /// </summary>
+    [Fact]
+    public void BodyParser_FenceLines_OpeningAndClosingLines_FollowTheFenceRule()
+    {
+        // Act
+        var backticks = BodyParser.TryGetFenceOpen("```text", out var backtickChar, out var backtickLength);
+        var tildes = BodyParser.TryGetFenceOpen("~~~~", out var tildeChar, out var tildeLength);
+
+        // Assert
+        Assert.True(backticks);
+        Assert.Equal(('`', 3), (backtickChar, backtickLength));
+        Assert.True(tildes);
+        Assert.Equal(('~', 4), (tildeChar, tildeLength));
+        Assert.False(BodyParser.TryGetFenceOpen("``", out _, out _));
+        Assert.False(BodyParser.TryGetFenceOpen("```a``` text", out _, out _));
+        Assert.False(BodyParser.TryGetFenceOpen("text", out _, out _));
+        Assert.False(BodyParser.TryGetFenceOpen(string.Empty, out _, out _));
+        Assert.True(BodyParser.IsFenceClose("````", '`', 3));
+        Assert.True(BodyParser.IsFenceClose("```  ", '`', 3));
+        Assert.False(BodyParser.IsFenceClose("``", '`', 3));
+        Assert.False(BodyParser.IsFenceClose("``` x", '`', 3));
+        Assert.False(BodyParser.IsFenceClose("~~~", '`', 3));
+    }
 }

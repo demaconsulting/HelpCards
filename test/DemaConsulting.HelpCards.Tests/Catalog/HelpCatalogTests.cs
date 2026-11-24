@@ -328,4 +328,24 @@ public partial class HelpCatalogTests
     {
         return $"examples:\n  - name: {name}\n    kind: command\n    language: shell\n    content: run {name}\n    description: Example {name}.\n";
     }
+
+    /// <summary>
+    ///     Proves that data that was composed beforehand gives a catalog with the cards of a created catalog.
+    /// </summary>
+    [Fact]
+    public void HelpCatalog_FromData_ComposedData_ShowsTheCardsOfCreate()
+    {
+        // Arrange
+        var tokens = new Dictionary<string, string> { ["limit"] = "42" };
+        var created = CatalogBuilding.Create(CatalogBuilding.Fixture("simple", tokens));
+        var data = CatalogBuilding.Compose(CatalogBuilding.Fixture("simple", tokens)).Data;
+
+        // Act
+        var catalog = HelpCatalog.FromData(data!);
+
+        // Assert
+        Assert.Equal(created.Cards.Select(card => card.Id), catalog.Cards.Select(card => card.Id));
+        Assert.Equal(created.Cards.Select(card => card.Body), catalog.Cards.Select(card => card.Body));
+        Assert.Equal(created.Roots.Select(card => card.Id), catalog.Roots.Select(card => card.Id));
+    }
 }

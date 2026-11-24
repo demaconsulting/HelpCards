@@ -24,3 +24,5 @@ their lines and left in the text, and redefinitions are reported at scope creati
   first definition wins.
 - **Unknown tokens**: a token on the third line of a text that starts on line 10 is reported at line 12 with
   file and source; several unknown tokens are all reported.
+- **Names**: the distinct names of a text in order of first use, and no names for text that only looks like a
+  token or has none.

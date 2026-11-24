@@ -26,6 +26,9 @@ namespace DemaConsulting.HelpCards.Catalog;
 /// <param name="SeeAlsoIds">The global ids of the see-also cards, resolved, without duplicates.</param>
 /// <param name="Examples">The examples.</param>
 /// <param name="Extensions">The <c>x-</c> keys and their values.</param>
+/// <param name="File">The path of the neutral card file, so that a validator can name the file of a finding.</param>
+/// <param name="BodyFile">The path of the file that supplied the body; a translation file when one was selected.</param>
+/// <param name="BodyLine">The one-based line of the first body line in <paramref name="BodyFile"/>.</param>
 /// <param name="Body">The body as text and resolved links.</param>
 internal sealed record CardNode(
     string Id,
@@ -42,6 +45,9 @@ internal sealed record CardNode(
     IReadOnlyList<string> SeeAlsoIds,
     IReadOnlyList<HelpExample> Examples,
     IReadOnlyDictionary<string, string> Extensions,
+    string File,
+    string BodyFile,
+    int BodyLine,
     IReadOnlyList<ResolvedPart> Body)
 {
     /// <summary>

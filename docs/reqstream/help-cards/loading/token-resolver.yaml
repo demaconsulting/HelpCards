@@ -63,3 +63,13 @@ sections:
                 tests:
                   - TokenResolver_Substitute_UnknownTokenOnThirdLine_ReportsFileAndLine
                   - TokenResolver_Substitute_SeveralUnknownTokens_ReportsEach
+
+              - id: HelpCards-Loading-TokenResolver-Names
+                title: >-
+                  The resolver shall list the distinct names of the well-formed tokens that a text uses, in the
+                  order of first use, and list nothing for a text without tokens or with text that only looks like
+                  a token.
+                justification: |
+                  Validators need to know which tokens a source really uses without replacing them.
+                tests:
+                  - TokenResolver_FindNames_Text_ListsDistinctWellFormedNames

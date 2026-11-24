@@ -130,6 +130,9 @@ public sealed partial class HelpCatalogBuilder
                     example.Content,
                     card.SourceName))),
                 CardNode.Freeze(card.Extensions),
+                card.File,
+                card.BodyFile,
+                card.BodyLine,
                 []);
         }
 

@@ -1,0 +1,83 @@
+---
+# ExampleCommandLine Unit Requirements
+#
+# Requirements for the ExampleCommandLine unit of the Testing subsystem: the grammar that reads the command line of a
+# command example into arguments without a shell.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Testing Requirements
+        sections:
+          - title: ExampleCommandLine Requirements
+            requirements:
+              - id: HelpCards-Testing-ExampleCommandLine-Words
+                title: >-
+                  The parser shall split a command line into words at spaces, return the words after the tool name
+                  as the arguments, and return no arguments for a command that is only the tool name.
+                justification: |
+                  The arguments are what an adopter passes to its own entry point when it runs an example.
+                tests:
+                  - ExampleCommandLine_TryParse_SimpleWords_ReturnsArgumentsAfterToolName
+                  - ExampleCommandLine_TryParse_ToolNameOnly_ReturnsNoArguments
+
+              - id: HelpCards-Testing-ExampleCommandLine-Quoting
+                title: >-
+                  The parser shall read single-quoted text literally, read double-quoted text with only the
+                  escapes for a backslash and a double quote, join adjacent quoted and unquoted parts into one word,
+                  and return an empty argument for empty quotes.
+                justification: |
+                  Quotes let an example carry a space or a character that is otherwise forbidden, with one rule per
+                  kind of quote.
+                tests:
+                  - ExampleCommandLine_TryParse_QuotedParts_FormWords
+
+              - id: HelpCards-Testing-ExampleCommandLine-ToolName
+                title: >-
+                  The parser shall reject a command line that is empty, and one whose first word is not the tool
+                  name compared exactly, with an error that names both words.
+                justification: |
+                  A command that starts with another program is not an example of this tool.
+                tests:
+                  - ExampleCommandLine_TryParse_OtherToolName_IsRejectedWithBothNames
+                  - ExampleCommandLine_TryParse_EmptyContent_IsRejected
+
+              - id: HelpCards-Testing-ExampleCommandLine-OneLine
+                title: >-
+                  The parser shall reject content with a line break, naming the column of the first line break.
+                justification: |
+                  An example command is one line; a second line would be a second command.
+                tests:
+                  - ExampleCommandLine_TryParse_LineBreak_IsRejectedWithColumn
+
+              - id: HelpCards-Testing-ExampleCommandLine-ShellSyntax
+                title: >-
+                  The parser shall reject every shell operator and every expansion character outside quotes,
+                  including a comment, a redirection, a pipe, and a line continuation, with an error that names
+                  the character and its column.
+                justification: |
+                  The library never starts a shell, so a command that needs one cannot be run by an adopter either.
+                tests:
+                  - ExampleCommandLine_TryParse_ShellOperators_AreRejectedWithCharacterAndColumn
+                  - ExampleCommandLine_TryParse_ExpansionCharacters_AreRejectedWithCharacterAndColumn
+                  - ExampleCommandLine_TryParse_CommentRedirectionAndContinuation_AreRejected
+
+              - id: HelpCards-Testing-ExampleCommandLine-DoubleQuotes
+                title: >-
+                  The parser shall reject a dollar sign or a backtick inside double quotes, an escape other than
+                  those for a backslash and a double quote, and a quote that is not closed, with an error that
+                  names the column.
+                justification: |
+                  Variables and unknown escapes would need a shell to be understood; an unclosed quote is a typo.
+                tests:
+                  - ExampleCommandLine_TryParse_InsideDoubleQuotes_RejectsExpansionAndUnknownEscape
+                  - ExampleCommandLine_TryParse_UnclosedQuote_IsRejectedWithColumn
+
+              - id: HelpCards-Testing-ExampleCommandLine-Arguments
+                title: >-
+                  The parser shall reject null content or a null tool name with an argument null exception and an
+                  empty tool name with an argument exception, and shall return no arguments when it fails.
+                justification: |
+                  A failed parse must never leave half-read arguments that a test could run by mistake.
+                tests:
+                  - ExampleCommandLine_TryParse_InvalidArguments_Throw

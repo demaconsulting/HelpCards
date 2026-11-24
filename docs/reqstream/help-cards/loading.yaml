@@ -84,6 +84,7 @@ sections:
               - HelpCards-Loading-TokenResolver-Scope
               - HelpCards-Loading-TokenResolver-Redefinition
               - HelpCards-Loading-TokenResolver-UnknownTokens
+              - HelpCards-Loading-TokenResolver-Names
               - HelpCards-Loading-CardReader-Tokens
             tests:
               - Loading_Tokens_ImportedTokensAreInScope
@@ -117,6 +118,7 @@ sections:
               - HelpCards-Loading-BodyParser-LinkForms
               - HelpCards-Loading-BodyParser-CodeAwareness
               - HelpCards-Loading-BodyParser-LinkErrors
+              - HelpCards-Loading-BodyParser-FenceLines
               - HelpCards-Loading-CardReader-Links
             tests:
               - Loading_BodyLinks_AreRecognizedOutsideCodeOnly

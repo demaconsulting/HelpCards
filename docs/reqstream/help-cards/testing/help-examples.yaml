@@ -1,0 +1,47 @@
+---
+# HelpExamples Unit Requirements
+#
+# Requirements for the HelpExamples unit of the Testing subsystem: enumerating the examples of a catalog with their
+# cards for theory-style tests.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Testing Requirements
+        sections:
+          - title: HelpExamples Requirements
+            requirements:
+              - id: HelpCards-Testing-HelpExamples-Order
+                title: >-
+                  The enumeration shall list every example of the visible cards with its card, in the order of the
+                  cards of the catalog and the order of the examples of each card.
+                justification: |
+                  A test over the examples must run them in the same order on every machine.
+                tests:
+                  - HelpExamples_Enumerate_NoKinds_ListsEveryExampleInCatalogOrder
+
+              - id: HelpCards-Testing-HelpExamples-Kinds
+                title: >-
+                  The enumeration shall list only the examples of the requested kinds, compared exactly, none for an
+                  empty list of kinds, and every kind when no kinds are given.
+                justification: |
+                  Commands, source files, and snippets are tested differently.
+                tests:
+                  - HelpExamples_Enumerate_Kinds_FiltersByKind
+
+              - id: HelpCards-Testing-HelpExamples-Views
+                title: >-
+                  The enumeration shall list the examples of the visible cards of a view only.
+                justification: |
+                  A product tests the help it shows.
+                tests:
+                  - HelpExamples_Enumerate_View_ListsVisibleCardsOnly
+
+              - id: HelpCards-Testing-HelpExamples-Arguments
+                title: >-
+                  The enumeration shall reject a null catalog or a null kind with an argument null exception when it
+                  is called, not when the sequence is read.
+                justification: |
+                  A mistake should fail at the line that made it.
+                tests:
+                  - HelpExamples_Enumerate_InvalidArguments_ThrowAtTheCall

@@ -27,6 +27,8 @@ subsystem. All lists are read-only collections.
 
 - **`Create(configure)`** creates a builder, calls the callback, composes, and throws `HelpCatalogException` with the
   errors, or returns a catalog over the scope that shows everything.
+- **`FromData(data)`** (internal) returns a catalog that shows everything of data that was composed beforehand; the
+  validator composes first so that it can report errors without an exception.
 - **`Find(path)`**, **`Resolve(path)`** use `PathResolver`; `Resolve` returns a `HelpPathResolution` with the failing
   parent, segment, and valid names and no suggestion.
 - **`GetChildren(card)`**, **`GetSeeAlso(card)`** match the card by id and map its visible child and see-also ids to

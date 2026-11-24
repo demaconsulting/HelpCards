@@ -582,6 +582,87 @@ reviews:
       - "src/DemaConsulting.HelpCards/Presentation/HelpStrings.cs"   # unit source
       - "test/DemaConsulting.HelpCards.Tests/Presentation/HelpStringsTests.cs"   # unit tests
 
+  # HelpCards-Testing Review (one per subsystem)
+  - id: HelpCards-Testing
+    title: Review that HelpCards Testing Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing.yaml"   # subsystem requirements
+      - "docs/design/help-cards/testing.md"   # subsystem design
+      - "docs/verification/help-cards/testing.md"   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Testing/TestingTests.cs"   # subsystem tests
+
+  # HelpCards-Testing-HelpCardValidator Review (one per unit)
+  - id: HelpCards-Testing-HelpCardValidator
+    title: Review that HelpCards Testing HelpCardValidator Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/help-card-validator.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/help-card-validator.md"   # unit design
+      - "docs/verification/help-cards/testing/help-card-validator.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/HelpCardValidator*.cs"   # unit source (partial files)
+      - "src/DemaConsulting.HelpCards/Testing/HelpValidationOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/IHelpCardRule.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/HelpCardValidatorTests*.cs"   # unit tests (partial files)
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/TemporaryDirectory.cs"   # test support
+
+  # HelpCards-Testing-HelpExamples Review (one per unit)
+  - id: HelpCards-Testing-HelpExamples
+    title: Review that HelpCards Testing HelpExamples Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/help-examples.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/help-examples.md"   # unit design
+      - "docs/verification/help-cards/testing/help-examples.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/HelpExamples.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/HelpExamplesTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Testing-ExampleCommandLine Review (one per unit)
+  - id: HelpCards-Testing-ExampleCommandLine
+    title: Review that HelpCards Testing ExampleCommandLine Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/example-command-line.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/example-command-line.md"   # unit design
+      - "docs/verification/help-cards/testing/example-command-line.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/ExampleCommandLine.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/ExampleCommandLineTests.cs"   # unit tests
+
+  # HelpCards-Testing-HelpCardMarkdown Review (one per unit)
+  - id: HelpCards-Testing-HelpCardMarkdown
+    title: Review that HelpCards Testing HelpCardMarkdown Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/help-card-markdown.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/help-card-markdown.md"   # unit design
+      - "docs/verification/help-cards/testing/help-card-markdown.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/HelpCardMarkdown.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/MarkdownLine.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/MarkdownLineKind.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/HelpCardMarkdownTests.cs"   # unit tests
+
   # OTS-BuildMark Review (one per OTS item)
   - id: OTS-BuildMark
     title: Review that BuildMark Provides Required Functionality

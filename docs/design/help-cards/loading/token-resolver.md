@@ -30,6 +30,8 @@ letters and digits. The built-in names are `tool` and `version`.
   token is `firstLine` plus the line feeds before it; the token stays in the text and a `token-unknown`
   problem is added. Text such as `{{ x }}` or `{{a-b}}` is not a token and is left alone. There is no escape.
 - **`IsValidTokenName(name)`** tells whether a name is one or more ASCII letters and digits.
+- **`FindNames(text)`** lists the distinct names of the well-formed tokens of a text in order of first use, with the
+  same pattern as `Substitute`; the validator uses it to find tokens that no file uses.
 
 #### Error Handling
 

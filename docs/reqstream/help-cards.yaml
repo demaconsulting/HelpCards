@@ -312,6 +312,70 @@ sections:
           - HelpCards_Rendering_SimpleFixtureJson_EqualsGolden
           - HelpCards_JsonContract_Documents_AreOneAsciiLineWithoutNull
 
+      - id: HelpCards-Validation-Problems
+        title: >-
+          A product shall be able to validate its help sources and catalogs in its own tests and get every defect
+          as a problem list, with quality warnings for long summaries, large cards, reserved headings, fenced blocks
+          without a language or never closed, unused tokens, long lines, and commands that cannot be run, and to
+          fail a test with one exception for the errors.
+        tags: [system]
+        justification: |
+          Help is content that ships with the product; a test that checks it keeps broken or unreadable cards from
+          reaching a user, and a problem list is what tools and agents can act on.
+        children:
+          - HelpCards-Testing-Validation
+          - HelpCards-Testing-QualityRules
+        tests:
+          - HelpCards_Validation_SourcesAndCatalogs_ReportProblemsAndAssert
+
+      - id: HelpCards-Validation-Examples
+        title: >-
+          A product shall be able to enumerate the examples of its catalog with their cards and to read the
+          command line of a command example into the arguments for its own entry point, with a grammar that never
+          needs a shell.
+        tags: [system]
+        justification: |
+          Examples are data; a product proves them by running them itself, and the library never starts a process.
+        children:
+          - HelpCards-Testing-Examples
+        tests:
+          - HelpCards_Validation_Examples_AreEnumeratedAndCommandsParsed
+
+      - id: HelpCards-Validation-Markdown
+        title: >-
+          A product shall be able to read the headings, sections, and bullets of a card body to compare its help
+          with its other documents.
+        tags: [system]
+        justification: |
+          A user guide and the help cards describe the same behavior; a parity test keeps them from drifting apart.
+        children:
+          - HelpCards-Testing-Markdown
+        tests:
+          - HelpCards_Validation_MarkdownHelpers_ReadHeadingsSectionsAndBullets
+
+      - id: HelpCards-Validation-Resources
+        title: >-
+          A product shall be able to compare the cards embedded in its assembly with the cards in a directory and
+          get every file that exists on one side only.
+        tags: [system]
+        justification: |
+          Authors work in a directory while the product ships embedded resources; they must not differ.
+        children:
+          - HelpCards-Testing-Resources
+        tests:
+          - HelpCards_Validation_CompareToDirectory_ReportsFilesOnOneSideOnly
+
+      - id: HelpCards-PublicApi-FrozenSurface
+        title: >-
+          The library shall make public exactly the types and members of its documented public surface and keep every
+          other type and member internal.
+        tags: [system]
+        justification: |
+          Adopters compile against the public surface and expect it not to change; anything else that is public
+          becomes a commitment nobody planned.
+        tests:
+          - HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface
+
       - id: HelpCards-NoDependencies-FrameworkOnly
         title: >-
           The library shall reference no assembly that is not part of the .NET base class library.

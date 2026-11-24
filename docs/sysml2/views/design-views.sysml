@@ -29,4 +29,8 @@ package HelpCardsDesignViews {
     view PresentationView {
         expose PresentationSubsystem;
     }
+
+    view TestingView {
+        expose TestingSubsystem;
+    }
 }

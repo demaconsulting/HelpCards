@@ -1,0 +1,66 @@
+---
+# HelpCardMarkdown Unit Requirements
+#
+# Requirements for the HelpCardMarkdown unit of the Testing subsystem: reading the headings, sections, and bullets of
+# a card body for parity tests, with the line classification that the validator shares.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Testing Requirements
+        sections:
+          - title: HelpCardMarkdown Requirements
+            requirements:
+              - id: HelpCards-Testing-HelpCardMarkdown-Headings
+                title: >-
+                  The helper shall list the texts of the headings of levels one to six outside fenced blocks, in
+                  order, without the marks and without a closing run of marks, and shall not list text that has no
+                  space after the marks or is indented by four spaces.
+                justification: |
+                  Parity tests compare the headings of a card with those of a guide.
+                tests:
+                  - HelpCardMarkdown_Headings_Body_ListsHeadingTextsOutsideFences
+                  - HelpCardMarkdown_Headings_LevelsOneToSeven_RecognizesSixLevels
+
+              - id: HelpCards-Testing-HelpCardMarkdown-Sections
+                title: >-
+                  The helper shall return the text of a section from its heading to the next heading of the same or a
+                  higher level, including deeper headings and fenced blocks, without blank lines at its ends, use the
+                  first of equal headings, ignore carriage returns, and return nothing for a heading that is missing.
+                justification: |
+                  A section is the unit that a guide and a card are compared by.
+                tests:
+                  - HelpCardMarkdown_GetSection_Heading_ReturnsTextToNextHeadingOfSameLevel
+                  - HelpCardMarkdown_GetSection_MissingHeading_ReturnsNullAndNoBullets
+                  - HelpCardMarkdown_GetSection_CarriageReturnsAndRepeatedHeadings_UsesFirstHeading
+
+              - id: HelpCards-Testing-HelpCardMarkdown-Bullets
+                title: >-
+                  The helper shall return the bullets of a section, each with its indented continuation lines
+                  joined by single spaces, with every bullet marker accepted, ignoring fenced blocks, and ending a
+                  bullet at any other text.
+                justification: |
+                  Option lists are written as bullets and compared item by item.
+                tests:
+                  - HelpCardMarkdown_Bullets_Section_JoinsContinuationLines
+                  - HelpCardMarkdown_Bullets_FencedBlock_IsNotABullet
+
+              - id: HelpCards-Testing-HelpCardMarkdown-Fences
+                title: >-
+                  The helper shall classify every line of a body as text, the opening of a fence with its language, a
+                  line inside a fence, or the closing of a fence, with the rule of the loader, and report the line
+                  that opened a fence that is never closed.
+                justification: |
+                  The validator and the helpers must agree with the loader on what is code.
+                tests:
+                  - HelpCardMarkdown_Scan_Fences_MarksLinesAndFindsUnclosedFence
+                  - HelpCardMarkdown_Scan_InlineSpanAndShortRun_AreNotFenceLines
+
+              - id: HelpCards-Testing-HelpCardMarkdown-Arguments
+                title: >-
+                  The helper shall reject a null body or heading with an argument null exception and a white-space
+                  heading with an argument exception.
+                justification: |
+                  A mistake of the caller must not look like a card without sections.
+                tests:
+                  - HelpCardMarkdown_Members_InvalidArguments_Throw

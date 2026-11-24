@@ -37,6 +37,11 @@ input-files:
   - docs/design/help-cards/presentation/json-document-writer.md
   - docs/design/help-cards/presentation/text-wrapper.md
   - docs/design/help-cards/presentation/help-strings.md
+  - docs/design/help-cards/testing.md
+  - docs/design/help-cards/testing/help-card-validator.md
+  - docs/design/help-cards/testing/help-examples.md
+  - docs/design/help-cards/testing/example-command-line.md
+  - docs/design/help-cards/testing/help-card-markdown.md
   - docs/design/ots.md
   - docs/design/ots/buildmark.md
   - docs/design/ots/fileassert.md

@@ -163,6 +163,22 @@ internal sealed partial class TokenResolver
     }
 
     /// <summary>
+    ///     Lists the names of the well-formed tokens that a text uses.
+    /// </summary>
+    /// <remarks>
+    ///     The validator uses this to find tokens that a source defines but no file uses. Built-in and unknown
+    ///     names are listed like any other.
+    /// </remarks>
+    /// <param name="text">The text to scan.</param>
+    /// <returns>The distinct token names in the text.</returns>
+    public static IEnumerable<string> FindNames(string text)
+    {
+        return text.Contains("{{", StringComparison.Ordinal)
+            ? TokenPattern().Matches(text).Select(match => match.Groups["name"].Value).Distinct(StringComparer.Ordinal)
+            : [];
+    }
+
+    /// <summary>
     ///     Matches a well-formed token.
     /// </summary>
     /// <returns>The pattern.</returns>

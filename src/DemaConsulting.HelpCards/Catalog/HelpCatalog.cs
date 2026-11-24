@@ -110,6 +110,20 @@ public sealed partial class HelpCatalog
     }
 
     /// <summary>
+    ///     Creates a catalog that shows every card of already composed data.
+    /// </summary>
+    /// <remarks>
+    ///     The validator composes data itself so that it can report problems without an exception, and uses this
+    ///     method to inspect the cards of the result with the same model that adopters see.
+    /// </remarks>
+    /// <param name="data">The frozen data.</param>
+    /// <returns>The catalog.</returns>
+    internal static HelpCatalog FromData(CatalogData data)
+    {
+        return new HelpCatalog(CatalogScope.All(data));
+    }
+
+    /// <summary>
     ///     Finds a visible card by path.
     /// </summary>
     /// <remarks>
