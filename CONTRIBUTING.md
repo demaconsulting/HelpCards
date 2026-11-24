@@ -49,7 +49,6 @@ We follow a standard GitHub workflow for contributions:
 
 - [.NET SDK][dotnet-download] 11.0 (required to build every target framework)
 - .NET 8.0, 9.0, and 10.0 runtimes (or SDKs) to run the tests on every .NET target
-- .NET Framework 4.8.1 Developer Pack on Windows to build and run the `net481` tests
 - Git
 - A code editor (Visual Studio, VS Code, or Rider recommended)
 
@@ -69,16 +68,16 @@ We follow a standard GitHub workflow for contributions:
    dotnet restore
    ```
 
-3. Build the project:
+3. Build the project and run the unit tests:
 
    ```bash
-   dotnet build --configuration Release
+   pwsh ./build.ps1 -All
    ```
 
-4. Run unit tests:
+4. While iterating, run only the tests a change affects:
 
    ```bash
-   dotnet test --configuration Release
+   pwsh ./build.ps1 -Changed
    ```
 
 ## Coding Standards
@@ -197,11 +196,11 @@ Before submitting a pull request, ensure all quality checks pass:
 ### 1. Build and Test
 
 ```bash
-# Build the project
-dotnet build --configuration Release
+# Full local build and all unit tests
+pwsh ./build.ps1 -All
 
-# Run unit tests
-dotnet test --configuration Release
+# While iterating: only the test projects a change affects
+pwsh ./build.ps1 -Changed
 ```
 
 All tests must pass with zero warnings.
@@ -210,10 +209,10 @@ All tests must pass with zero warnings.
 
 ```pwsh
 # After making changes: applies dotnet format, markdown, and YAML fixes silently
-pwsh ./fix.ps1
+pwsh ./fix.ps1 -Changed
 
 # Before submitting a pull request: all linters must pass
-pwsh ./lint.ps1
+pwsh ./lint.ps1 -All
 ```
 
 ### 3. Code Coverage

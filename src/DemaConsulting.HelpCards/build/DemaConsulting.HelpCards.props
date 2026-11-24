@@ -1,0 +1,7 @@
+<Project>
+  <!-- Defaults only: this file imports before the consuming project body, so it must not
+       reference properties (such as AssemblyName) that the project may still define. -->
+  <PropertyGroup>
+    <HelpCardsEnabled Condition="'$(HelpCardsEnabled)' == ''">true</HelpCardsEnabled>
+  </PropertyGroup>
+</Project>

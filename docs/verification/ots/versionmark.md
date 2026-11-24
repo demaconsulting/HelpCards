@@ -12,8 +12,8 @@ VersionMark executed without error.
 ### Verification Approach
 
 VersionMark is verified by two complementary layers of evidence. First, the CI pipeline runs
-`versionmark --validate --results *.trx` in each build job, exercising VersionMark's built-in
-self-validation suite and recording results for ReqStream.
+`versionmark --validate --results artifacts/versionmark-self-validation-*.trx` in each build job, exercising
+VersionMark's built-in self-validation suite and recording results for ReqStream.
 
 Second, each CI job runs `versionmark --capture` to collect tool-version JSON files, and the
 build-docs job runs `versionmark --publish` to produce

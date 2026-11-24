@@ -13,4 +13,33 @@ package HelpCardsDesignViews {
     view HelpCardsView {
         expose HelpCardsSystem;
     }
+
+    view LoadingView {
+        expose LoadingSubsystem;
+    }
+
+    view CompositionView {
+        expose CompositionSubsystem;
+    }
+
+    view CatalogView {
+        expose CatalogSubsystem;
+    }
+
+    view PresentationView {
+        expose PresentationSubsystem;
+    }
+
+    view IntegrationView {
+        expose IntegrationSubsystem;
+    }
+
+    view TestingView {
+        expose TestingSubsystem;
+    }
+
+    view OtsView : GeneralView {
+        expose OtsDependencies::*;
+        filter not (@SysML::Documentation);
+    }
 }

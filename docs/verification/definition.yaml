@@ -6,7 +6,50 @@ input-files:
   - docs/verification/title.txt
   - docs/verification/introduction.md
   - docs/verification/help-cards.md
-  - docs/verification/help-cards/demo.md
+  - docs/verification/help-cards/loading.md
+  - docs/verification/help-cards/loading/help-source.md
+  - docs/verification/help-cards/loading/help-file-provider.md
+  - docs/verification/help-cards/loading/front-matter-decoder.md
+  - docs/verification/help-cards/loading/card-reader.md
+  - docs/verification/help-cards/loading/token-resolver.md
+  - docs/verification/help-cards/loading/culture-selector.md
+  - docs/verification/help-cards/loading/body-parser.md
+  - docs/verification/help-cards/composition.md
+  - docs/verification/help-cards/composition/help-catalog-builder.md
+  - docs/verification/help-cards/composition/source-registry.md
+  - docs/verification/help-cards/composition/mounter.md
+  - docs/verification/help-cards/composition/overlay-merger.md
+  - docs/verification/help-cards/composition/reference-validator.md
+  - docs/verification/help-cards/composition/sibling-order.md
+  - docs/verification/help-cards/composition/problem-collector.md
+  - docs/verification/help-cards/catalog.md
+  - docs/verification/help-cards/catalog/help-catalog.md
+  - docs/verification/help-cards/catalog/help-card.md
+  - docs/verification/help-cards/catalog/help-problem.md
+  - docs/verification/help-cards/catalog/catalog-data.md
+  - docs/verification/help-cards/catalog/catalog-scope.md
+  - docs/verification/help-cards/catalog/path-resolver.md
+  - docs/verification/help-cards/catalog/example-resolver.md
+  - docs/verification/help-cards/catalog/search-index.md
+  - docs/verification/help-cards/presentation.md
+  - docs/verification/help-cards/presentation/help-render-options.md
+  - docs/verification/help-cards/presentation/link-formatter.md
+  - docs/verification/help-cards/presentation/text-renderer.md
+  - docs/verification/help-cards/presentation/json-document-writer.md
+  - docs/verification/help-cards/presentation/text-wrapper.md
+  - docs/verification/help-cards/presentation/help-strings.md
+  - docs/verification/help-cards/integration.md
+  - docs/verification/help-cards/integration/help-cli.md
+  - docs/verification/help-cards/integration/cli-argument-parser.md
+  - docs/verification/help-cards/integration/cli-dispatcher.md
+  - docs/verification/help-cards/integration/help-agent-tool.md
+  - docs/verification/help-cards/integration/agent-argument-reader.md
+  - docs/verification/help-cards/integration/agent-dispatcher.md
+  - docs/verification/help-cards/testing.md
+  - docs/verification/help-cards/testing/help-card-validator.md
+  - docs/verification/help-cards/testing/help-examples.md
+  - docs/verification/help-cards/testing/example-command-line.md
+  - docs/verification/help-cards/testing/help-card-markdown.md
   - docs/verification/ots.md
   - docs/verification/ots/buildmark.md
   - docs/verification/ots/fileassert.md

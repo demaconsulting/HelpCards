@@ -1,0 +1,163 @@
+---
+# Integration Subsystem Requirements
+#
+# Requirements for the Integration subsystem: the command-line help helper with its argument parser and dispatcher, and
+# the provider-neutral knowledge tool for AI agents with its argument reader and dispatcher. Each requirement
+# decomposes a system requirement and is decomposed further by the requirements of the units of the subsystem.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Integration Requirements
+        requirements:
+          - id: HelpCards-Integration-CliGate
+            title: >-
+              The subsystem shall answer a command line only when its first argument is the help verb, compared
+              ignoring case, and shall return at once, without creating the catalog or touching any resource, for
+              every other command, for no arguments, and when the footer is read.
+            justification: |
+              Help is added to a tool before its own argument parser, so every ordinary command passes through the
+              helper and must not pay for it.
+            children:
+              - HelpCards-Integration-HelpCli-Creation
+              - HelpCards-Integration-HelpCli-Gate
+              - HelpCards-Integration-HelpCli-Verb
+              - HelpCards-Integration-HelpCli-Run
+            tests:
+              - Integration_Cli_NonHelpArguments_NeverCreateTheCatalog
+
+          - id: HelpCards-Integration-CliOptions
+            title: >-
+              The subsystem shall read the options of a help command without a command-line library: words as one
+              card path, options anywhere, value options taking the next argument only, repeatable tag and source
+              options, one use of every other option, and a usage error for every unknown, repeated, valueless,
+              invalid, or conflicting option.
+            justification: |
+              Tools use many command-line libraries, so the helper reads its own grammar exactly as documented.
+            children:
+              - HelpCards-Integration-CliArgumentParser-Words
+              - HelpCards-Integration-CliArgumentParser-Format
+              - HelpCards-Integration-CliArgumentParser-Values
+              - HelpCards-Integration-CliArgumentParser-Repeats
+              - HelpCards-Integration-CliArgumentParser-Modes
+              - HelpCards-Integration-CliArgumentParser-Conflicts
+              - HelpCards-Integration-CliArgumentParser-Language
+              - HelpCards-Integration-CliArgumentParser-JsonRequested
+              - HelpCards-Integration-CliArgumentParser-Arguments
+            tests:
+              - Integration_Cli_OptionTable_SelectsModesAndFormats
+
+          - id: HelpCards-Integration-CliModes
+            title: >-
+              The subsystem shall answer a help command with the index, a card, the examples of a card, one example
+              as exactly its content, search results, or the cards that have a tag, in text, Markdown, or JSON, with
+              the links written as commands, restricted by source, and with a closest name and the valid names for a
+              card, example, source, or tag that does not exist.
+            justification: |
+              People and scripts navigate help by these six questions.
+            children:
+              - HelpCards-Integration-CliDispatcher-Index
+              - HelpCards-Integration-CliDispatcher-Card
+              - HelpCards-Integration-CliDispatcher-Examples
+              - HelpCards-Integration-CliDispatcher-NotFound
+              - HelpCards-Integration-CliDispatcher-Search
+              - HelpCards-Integration-CliDispatcher-Tags
+              - HelpCards-Integration-CliDispatcher-Sources
+            tests:
+              - Integration_Cli_OptionTable_SelectsModesAndFormats
+              - Integration_Cli_RestrictionsAndMisses_AreAnsweredWithValidNames
+
+          - id: HelpCards-Integration-CliFailures
+            title: >-
+              The subsystem shall exit with 0 on success, 2 for wrong arguments and names that match nothing, and 70
+              for a defective catalog, write text and Markdown errors to the error writer and JSON errors (not found
+              and ambiguous) to the output, write everything with line feeds only, and never create the catalog for a
+              usage error.
+            justification: |
+              Scripts depend on exit codes and on where a message is written.
+            children:
+              - HelpCards-Integration-CliDispatcher-Failures
+              - HelpCards-Integration-CliDispatcher-Output
+            tests:
+              - Integration_Cli_Failures_UseExitCodesAndChannels
+              - Integration_Cli_JsonFailures_AmbiguousAndNotFound_UseTheOutputChannel
+
+          - id: HelpCards-Integration-CliExtensions
+            title: >-
+              The subsystem shall let a tool add usage lines, a preamble, and sections to the index, answer subjects
+              of its own before the catalog is created, choose the command template, the default width, and the
+              width of the console, and pass a culture to its catalog factory.
+            justification: |
+              A tool has help of its own that must appear beside the cards.
+            children:
+              - HelpCards-Integration-CliDispatcher-Fallback
+              - HelpCards-Integration-CliDispatcher-Language
+              - HelpCards-Integration-CliDispatcher-Width
+              - HelpCards-Integration-CliDispatcher-Template
+            tests:
+              - Integration_Cli_Extensions_SectionsFallbackWidthLanguageAndTemplate
+
+          - id: HelpCards-Integration-AgentTool
+            title: >-
+              The subsystem shall create one knowledge tool for a whole catalog with a name that matches the pattern
+              of tool names and defaults to help, a generated or given description, the exact one-line JSON schema
+              of its arguments, and options that are checked where the tool is created.
+            justification: |
+              A host registers the name, description, and schema with its agent framework; they must be exact.
+            children:
+              - HelpCards-Integration-HelpAgentTool-Schema
+              - HelpCards-Integration-HelpAgentTool-Name
+              - HelpCards-Integration-HelpAgentTool-Creation
+              - HelpCards-Integration-HelpAgentTool-Description
+            tests:
+              - Integration_Agent_Creation_NameSchemaAndDescription
+              - Integration_Agent_Creation_InvalidOptions_AreCheckedWhereTheToolIsCreated
+
+          - id: HelpCards-Integration-AgentCalls
+            title: >-
+              The subsystem shall answer a call of the tool with the index, a card in Markdown with the content of
+              its examples, one example in a fence, or ranked search results, restricted by source and tag, with the
+              choices when a name is ambiguous, suggestions when it matches nothing, and a note when the query is
+              ignored.
+            justification: |
+              An agent gets the knowledge it asks for in as few calls as possible and can recover from every miss.
+            children:
+              - HelpCards-Integration-AgentDispatcher-Index
+              - HelpCards-Integration-AgentDispatcher-Topic
+              - HelpCards-Integration-AgentDispatcher-Example
+              - HelpCards-Integration-AgentDispatcher-Query
+              - HelpCards-Integration-AgentDispatcher-Conflicts
+            tests:
+              - Integration_Agent_Calls_AnswerIndexCardExampleAndSearch
+
+          - id: HelpCards-Integration-AgentArguments
+            title: >-
+              The subsystem shall read the arguments of a call as a JSON object with the specified properties and
+              answer every wrong argument, whether not JSON, not an object, unknown, or of the wrong type, with a
+              plain-text message that says what to send instead.
+            justification: |
+              An agent corrects its call from the message, so the message must be exact and the tool must not throw.
+            children:
+              - HelpCards-Integration-AgentArgumentReader-Empty
+              - HelpCards-Integration-AgentArgumentReader-Properties
+              - HelpCards-Integration-AgentArgumentReader-InvalidJson
+              - HelpCards-Integration-AgentArgumentReader-NotObject
+              - HelpCards-Integration-AgentArgumentReader-Unknown
+              - HelpCards-Integration-AgentArgumentReader-Types
+              - HelpCards-Integration-AgentDispatcher-Errors
+            tests:
+              - Integration_Agent_Arguments_AreAnsweredAsTextAndNeverThrow
+
+          - id: HelpCards-Integration-AgentBudget
+            title: >-
+              The subsystem shall cut an answer that is longer than the output limit at a line end and say how much
+              was left out, answer any text an agent sends without throwing, and read no file when the tool is used.
+            justification: |
+              Agents have a limited context, and a tool that throws ends the conversation.
+            children:
+              - HelpCards-Integration-HelpAgentTool-Budget
+              - HelpCards-Integration-HelpAgentTool-Boundary
+              - HelpCards-Integration-HelpAgentTool-NoIo
+            tests:
+              - Integration_Agent_Budget_CutsLongAnswersAtALineEnd
+              - Integration_Agent_Use_ReadsNoFileAndNeverThrowsForHostileText

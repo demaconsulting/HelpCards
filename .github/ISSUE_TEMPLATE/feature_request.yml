@@ -43,8 +43,8 @@ body:
       placeholder: |
         ```csharp
         // Example usage
-        var demo = new Demo("Greetings");
-        var result = demo.DemoMethod("User");
+        var catalog = HelpCatalog.Create(builder => builder.AddSource(source));
+        var text = catalog.RenderIndex();
         ```
       render: csharp
 

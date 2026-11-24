@@ -1,0 +1,139 @@
+---
+# Loading Subsystem Requirements
+#
+# Requirements for the Loading subsystem: finding the files of a source, decoding them, and reading cards,
+# overlays, translations, and the source description into definitions. Each requirement decomposes a
+# system requirement and is decomposed further by the requirements of the units of the subsystem.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        requirements:
+          - id: HelpCards-Loading-Sources
+            title: >-
+              The subsystem shall read the files of a source from the embedded resources of an assembly or
+              from memory, in a stable order, as UTF-8 text, and shall do no I/O until the
+              source is read.
+            justification: |
+              Libraries embed cards and tools generate them in memory; one
+              uniform, cheap-to-create source keeps adopters independent of where cards come from.
+            children:
+              - HelpCards-Loading-HelpSource-Factories
+              - HelpCards-Loading-HelpSource-PathNormalization
+              - HelpCards-Loading-HelpSource-Immutability
+              - HelpCards-Loading-HelpSource-Validation
+              - HelpCards-Loading-HelpSource-NoIo
+              - HelpCards-Loading-HelpFileProvider-OrdinalListing
+              - HelpCards-Loading-HelpFileProvider-AssemblyResources
+              - HelpCards-Loading-HelpFileProvider-Utf8Text
+              - HelpCards-Loading-HelpFileProvider-Isolation
+            tests:
+              - Loading_AssemblySource_ReadsEmbeddedFixtureCards
+              - Loading_DirectorySource_ReadsSameCardsAsMemorySource
+              - Loading_MemorySource_ReadsCardsLinksTokensAndExamples
+              - Loading_SourceConstruction_PerformsNoIoUntilRead
+
+          - id: HelpCards-Loading-FrontMatter
+            title: >-
+              The subsystem shall decode the restricted subset of YAML front matter without a YAML dependency
+              and shall name the file and line of every construct it rejects.
+            justification: |
+              A dependency-free decoder keeps every adopter dependency-free and makes errors deterministic and
+              line-accurate.
+            children:
+              - HelpCards-Loading-FrontMatterDecoder-AcceptedSubset
+              - HelpCards-Loading-FrontMatterDecoder-RejectedConstructs
+              - HelpCards-Loading-FrontMatterDecoder-ErrorLocation
+              - HelpCards-Loading-FrontMatterDecoder-LiteralBlocks
+              - HelpCards-Loading-FrontMatterDecoder-Body
+            tests:
+              - Loading_FrontMatter_ErrorNamesFileAndLine
+              - Loading_MemorySource_ReadsCardsLinksTokensAndExamples
+
+          - id: HelpCards-Loading-Cards
+            title: >-
+              The subsystem shall read cards, overlays, examples, and the source description from the files of
+              a source, check every key and value against the card format, and return the same definitions
+              for the same files whatever the kind of source.
+            justification: |
+              Cards are the product of the library; reading them strictly and identically from every kind of
+              source is what makes help trustworthy.
+            children:
+              - HelpCards-Loading-CardReader-FileClassification
+              - HelpCards-Loading-CardReader-CardKeys
+              - HelpCards-Loading-CardReader-Overlays
+              - HelpCards-Loading-CardReader-Examples
+              - HelpCards-Loading-CardReader-SourceFile
+            tests:
+              - Loading_MemorySource_ReadsCardsLinksTokensAndExamples
+              - Loading_DirectorySource_ReadsSameCardsAsMemorySource
+              - Loading_AssemblySource_ReadsEmbeddedFixtureCards
+              - Loading_Reading_IsDeterministic
+
+          - id: HelpCards-Loading-Tokens
+            title: >-
+              The subsystem shall replace tokens in the text of cards with the values of the source, the
+              sources it imports, and the built-in tool name and version, and report unknown and redefined
+              tokens.
+            justification: |
+              Tokens keep shared values in one place so that cards stay correct when a limit or a tool name
+              changes.
+            children:
+              - HelpCards-Loading-TokenResolver-Syntax
+              - HelpCards-Loading-TokenResolver-Scope
+              - HelpCards-Loading-TokenResolver-Redefinition
+              - HelpCards-Loading-TokenResolver-UnknownTokens
+              - HelpCards-Loading-TokenResolver-Names
+              - HelpCards-Loading-CardReader-Tokens
+            tests:
+              - Loading_Tokens_ImportedTokensAreInScope
+              - Loading_MemorySource_ReadsCardsLinksTokensAndExamples
+
+          - id: HelpCards-Loading-Cultures
+            title: >-
+              The subsystem shall select, for each file, the most specific translation of an explicitly
+              requested culture with fallback to less specific cultures and to the neutral file, and shall
+              validate every translation.
+            justification: |
+              Help is read in the language of the reader; per-file fallback keeps a partly translated source
+              complete.
+            children:
+              - HelpCards-Loading-CultureSelector-FallbackChain
+              - HelpCards-Loading-CultureSelector-Selection
+              - HelpCards-Loading-CultureSelector-CultureNames
+              - HelpCards-Loading-CardReader-CultureSelection
+              - HelpCards-Loading-CardReader-TranslationValidation
+            tests:
+              - Loading_Cultures_SelectTranslationPerFile
+              - Loading_Cultures_BodyFileIsNeutralOrSelectedTranslation
+
+          - id: HelpCards-Loading-Links
+            title: >-
+              The subsystem shall split card bodies into text and links outside code and report text that
+              starts like a link but is not one.
+            justification: |
+              Cards link to cards and examples; parsed links let every rendering write them in the right
+              style, and typos must be errors.
+            children:
+              - HelpCards-Loading-BodyParser-LinkForms
+              - HelpCards-Loading-BodyParser-CodeAwareness
+              - HelpCards-Loading-BodyParser-LinkErrors
+              - HelpCards-Loading-BodyParser-FenceLines
+              - HelpCards-Loading-CardReader-Links
+            tests:
+              - Loading_BodyLinks_AreRecognizedOutsideCodeOnly
+
+          - id: HelpCards-Loading-Diagnostics
+            title: >-
+              The subsystem shall collect every problem of a source, end only the file that cannot be read,
+              report files that cannot be listed or read as problems, and read each file once.
+            justification: |
+              Authors fix all defects in one pass, and a damaged disk or resource must be a clear problem, not
+              an exception.
+            children:
+              - HelpCards-Loading-CardReader-CollectAllProblems
+              - HelpCards-Loading-CardReader-ReadOnce
+            tests:
+              - Loading_Problems_AreCollectedAcrossFilesAndUnits
+              - Loading_ReadFailure_IsReportedAndOtherFilesAreRead

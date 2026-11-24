@@ -1,0 +1,102 @@
+---
+# ReferenceValidator Unit Requirements
+#
+# Requirements for the ReferenceValidator unit of the Composition subsystem, which resolves every link and see-also
+# entry over the final tree and checks that names and example names are unique.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        sections:
+          - title: ReferenceValidator Requirements
+            requirements:
+              - id: HelpCards-Composition-ReferenceValidator-CardLinks
+                title: >-
+                  The validator shall resolve card links to global ids, accept links that point forward or backward
+                  in the tree, resolve and check the links of the landing text of a mount root in the mounted
+                  source, and report a link to a card that does not exist at the file and line of the link.
+                justification: |
+                  Readers follow links; a dead link is a defect that must name where it is.
+                tests:
+                  - ReferenceValidator_ResolveBody_UnknownCard_ReportsLinkTargetAtLine
+                  - ReferenceValidator_ResolveBody_ForwardAndBackwardLinks_AreResolved
+                  - ReferenceValidator_ResolveLanding_MountRootBody_ResolvesLinksAndReportsBrokenOnes
+
+              - id: HelpCards-Composition-ReferenceValidator-ExampleLinks
+                title: >-
+                  The validator shall resolve an example link by searching the named card and the cards below it,
+                  or the card the link is written in, depth first, name the card that owns the example, and report
+                  an example that is not in that subtree.
+                justification: |
+                  Example names are unique within a scope, so a subtree search finds the one example the author
+                  means.
+                tests:
+                  - ReferenceValidator_ResolveBody_ExampleLinks_FindOwnerInSubtree
+                  - ReferenceValidator_ResolveBody_ExampleNotInSubtree_ReportsExampleTarget
+
+              - id: HelpCards-Composition-ReferenceValidator-ExternalLinks
+                title: >-
+                  The validator shall resolve an external link to the registered source like a local link, and
+                  write a link to a source that is not present as its display text with an informational problem.
+                justification: |
+                  Cards may link to other libraries; absent libraries must degrade, not fail.
+                tests:
+                  - ReferenceValidator_ResolveBody_ExternalLinkToOwnSource_ResolvesLikeLocal
+                  - ReferenceValidator_ResolveBody_ExternalLinkToAbsentSource_DegradesToText
+
+              - id: HelpCards-Composition-ReferenceValidator-SeeAlso
+                title: >-
+                  The validator shall resolve see-also entries in the order written without duplicates, drop an
+                  entry for a source that is not present with an informational problem, and report an entry that
+                  names no card at its file and line.
+                justification: |
+                  Related cards are navigation; they must be correct and free of repeats.
+                tests:
+                  - ReferenceValidator_ResolveSeeAlso_Entries_AreResolvedAndDeduplicated
+
+              - id: HelpCards-Composition-ReferenceValidator-Suppression
+                title: >-
+                  The validator shall not report a reference to a file that failed to load or to a card that has
+                  no place in the tree.
+                justification: |
+                  The failure of the file is the cause and is already reported.
+                tests:
+                  - ReferenceValidator_References_ToFailedFile_AreSuppressed
+
+              - id: HelpCards-Composition-ReferenceValidator-ExampleNames
+                title: >-
+                  The validator shall report an example name that is used twice in one scope, which is the source
+                  and the first segment of the owning card's id and includes the examples that overlays add, at the
+                  second use in the file where it is written, and allow the same name in different scopes.
+                justification: |
+                  A link to an example must find exactly one example.
+                tests:
+                  - ReferenceValidator_CheckExampleNames_SameScope_ReportsDuplicateAtSecondUse
+                  - ReferenceValidator_CheckExampleNames_DifferentScopes_AreAllowed
+                  - ReferenceValidator_CheckExampleNames_OverlayRepeatsName_IsReportedInOverlayFile
+
+              - id: HelpCards-Composition-ReferenceValidator-SiblingNames
+                title: >-
+                  The validator shall report a name or alias of a card that another sibling, or the same card,
+                  already uses, ignoring case, at the file and line of the alias, and allow the same name below
+                  different parents.
+                justification: |
+                  A path segment must lead to exactly one card.
+                tests:
+                  - ReferenceValidator_CheckSiblingNames_AliasEqualsSibling_ReportsNameDuplicate
+                  - ReferenceValidator_CheckSiblingNames_OwnAliasesAndNames_AreChecked
+                  - ReferenceValidator_CheckSiblingNames_DifferentParents_AreAllowed
+
+              - id: HelpCards-Composition-ReferenceValidator-ImportedSources
+                title: >-
+                  The validator shall resolve a bare link and a bare see-also entry in the source the text is
+                  written in and in the sources it imports, resolve a link that names a source in that source,
+                  and report a bare id that the source and an import both have as ambiguous-reference.
+                justification: |
+                  A tool links the cards of its companion library by local id, and a clash must be fixed by
+                  naming the source.
+                tests:
+                  - ReferenceValidator_ResolveBody_ImportedSource_ResolvesBareAndQualifiedLinks
+                  - ReferenceValidator_ResolveSeeAlso_BareIdInTwoSources_ReportsAmbiguousReference
+                  - ReferenceValidator_ResolveBody_BareLinkInTwoSources_ReportsAmbiguousReference

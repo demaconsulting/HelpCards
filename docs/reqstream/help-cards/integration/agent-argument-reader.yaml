@@ -1,0 +1,70 @@
+---
+# AgentArgumentReader Unit Requirements
+#
+# Requirements for the AgentArgumentReader unit of the Integration subsystem, which reads the JSON arguments of a call
+# of the knowledge tool and checks them against the schema.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Integration Requirements
+        sections:
+          - title: AgentArgumentReader Requirements
+            requirements:
+              - id: HelpCards-Integration-AgentArgumentReader-Empty
+                title: >-
+                  The reader shall read null, empty, and white-space text, JSON null, and an empty object as arguments
+                  that ask for nothing.
+                justification: |
+                  A call without arguments is the request for the index.
+                tests:
+                  - AgentArgumentReader_Read_NothingToAskFor_IsTheEmptyArguments
+
+              - id: HelpCards-Integration-AgentArgumentReader-Properties
+                title: >-
+                  The reader shall read the text properties trimmed, treat a null, empty, or white-space property as
+                  absent, accept a maximum of results from 1 to 20 inclusive, and let the last of a repeated property
+                  count.
+                justification: |
+                  Agents often send empty strings for what they do not need.
+                tests:
+                  - AgentArgumentReader_Read_ValidProperties_AreReadAndBlankTextIsAbsent
+                  - AgentArgumentReader_Read_RepeatedProperty_LastCounts
+                  - AgentArgumentReader_Read_MaxResultsLimits_AreInclusiveAndTopicIsCheckedFirst
+
+              - id: HelpCards-Integration-AgentArgumentReader-InvalidJson
+                title: >-
+                  The reader shall answer text that is not valid JSON, including a document that is too deeply
+                  nested, with the reason and an example of an object to send, without the position.
+                justification: |
+                  The agent corrects its call from the message.
+                tests:
+                  - AgentArgumentReader_Read_InvalidJson_ExplainsAndShowsAnExample
+                  - AgentArgumentReader_Read_TooDeepJson_IsReportedAsInvalid
+
+              - id: HelpCards-Integration-AgentArgumentReader-NotObject
+                title: >-
+                  The reader shall answer JSON that is not an object with a message that the arguments must be a JSON
+                  object.
+                justification: |
+                  An array or a string cannot carry named arguments.
+                tests:
+                  - AgentArgumentReader_Read_NotAnObject_IsRejected
+
+              - id: HelpCards-Integration-AgentArgumentReader-Unknown
+                title: >-
+                  The reader shall answer an unknown property by naming the first one in ordinal order and listing the
+                  valid arguments, before the types are checked.
+                justification: |
+                  A misspelled argument is the most common mistake of an agent.
+                tests:
+                  - AgentArgumentReader_Read_UnknownProperty_NamesTheFirstInOrdinalOrder
+
+              - id: HelpCards-Integration-AgentArgumentReader-Types
+                title: >-
+                  The reader shall answer a text property that is not a string, and a maximum that is not an integer
+                  from 1 to 20, with a message that names the argument.
+                justification: |
+                  The agent must know which argument to correct.
+                tests:
+                  - AgentArgumentReader_Read_WrongTypes_AreReportedByName

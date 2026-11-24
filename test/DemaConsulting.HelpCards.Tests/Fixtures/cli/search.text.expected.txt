@@ -1,0 +1,4 @@
+tool help build          Turn the source code into a program.
+tool help build clean    Remove files that a build made.
+tool help build compile  Compile the source files one by one.
+tool help build package  Bundle the program into one package.

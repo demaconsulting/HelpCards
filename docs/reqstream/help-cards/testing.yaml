@@ -1,0 +1,107 @@
+---
+# Testing Subsystem Requirements
+#
+# Requirements for the Testing subsystem: the validator that checks sources and catalogs for defects and quality, the
+# parser for the command lines of examples, the enumeration of examples, and the Markdown helpers for parity tests.
+# Each requirement decomposes a system requirement and is decomposed further by the requirements of the units of the
+# subsystem.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Testing Requirements
+        requirements:
+          - id: HelpCards-Testing-Validation
+            title: >-
+              The subsystem shall validate a help source, the configuration of a catalog, or a catalog and return
+              every problem as a list, with the errors that creating the catalog would raise first, then the other
+              problems ordered by source, file, line, and rule, without throwing for a defect of a card, and shall
+              turn the errors into one catalog exception on request.
+            justification: |
+              An adopter wants one test that fails with every defect of its help at once, and wants to assert on
+              the problems instead of catching exceptions.
+            children:
+              - HelpCards-Testing-HelpCardValidator-Overloads
+              - HelpCards-Testing-HelpCardValidator-Order
+              - HelpCards-Testing-HelpCardValidator-Assert
+              - HelpCards-Testing-HelpCardValidator-Options
+              - HelpCards-Testing-HelpCardValidator-Arguments
+              - HelpCards-Testing-HelpCardValidator-SeveralSources
+              - HelpCards-Testing-HelpCardValidator-Imports
+            tests:
+              - Testing_Validation_ValidAndDefectiveSources_ReportAndAssert
+
+          - id: HelpCards-Testing-QualityRules
+            title: >-
+              The subsystem shall report as warnings the summaries that are too long, the cards that render too
+              large, the reserved headings, the fenced blocks that name no language or are not closed, the tokens
+              that no file uses, the lines that are too long, and the command examples that cannot be parsed, each
+              at the file and line of the defect, apply the rules of the product to every card, and report an
+              absent external source as an error when the options require sources.
+            justification: |
+              Help that is valid can still be too long, ambiguous for the renderer, or impossible to run; a
+              product wants to catch that in its own tests.
+            children:
+              - HelpCards-Testing-HelpCardValidator-SummaryLength
+              - HelpCards-Testing-HelpCardValidator-CardSize
+              - HelpCards-Testing-HelpCardValidator-HeadingReserved
+              - HelpCards-Testing-HelpCardValidator-Fences
+              - HelpCards-Testing-HelpCardValidator-UnusedTokens
+              - HelpCards-Testing-HelpCardValidator-LineLength
+              - HelpCards-Testing-HelpCardValidator-CommandParse
+              - HelpCards-Testing-HelpCardValidator-Rules
+              - HelpCards-Testing-HelpCardValidator-ExternalSources
+            tests:
+              - Testing_QualityRules_DefectiveCard_ReportsEveryRule
+              - Testing_Options_RulesExternalSourcesAndWarnings_ChangeTheResult
+
+          - id: HelpCards-Testing-Examples
+            title: >-
+              The subsystem shall enumerate the examples of a catalog with their cards, optionally of some kinds,
+              and shall parse the command line of an example into the arguments after the tool name with a safe
+              grammar that rejects everything a shell would interpret.
+            justification: |
+              Examples are data that a product runs itself in its tests; the library must not start a process or a
+              shell, and a command that needs a shell is a defective example.
+            children:
+              - HelpCards-Testing-HelpExamples-Order
+              - HelpCards-Testing-HelpExamples-Kinds
+              - HelpCards-Testing-HelpExamples-Views
+              - HelpCards-Testing-HelpExamples-Arguments
+              - HelpCards-Testing-ExampleCommandLine-Words
+              - HelpCards-Testing-ExampleCommandLine-Quoting
+              - HelpCards-Testing-ExampleCommandLine-ToolName
+              - HelpCards-Testing-ExampleCommandLine-OneLine
+              - HelpCards-Testing-ExampleCommandLine-ShellSyntax
+              - HelpCards-Testing-ExampleCommandLine-DoubleQuotes
+              - HelpCards-Testing-ExampleCommandLine-Arguments
+            tests:
+              - Testing_Examples_SimpleFixtureCommands_AreEnumeratedAndParsed
+
+          - id: HelpCards-Testing-Markdown
+            title: >-
+              The subsystem shall read the headings, the sections, and the bullets of a card body, ignoring fenced
+              blocks, for tests that compare the help with other documents.
+            justification: |
+              A user guide and the help cards describe the same options; a parity test keeps them from drifting
+              apart.
+            children:
+              - HelpCards-Testing-HelpCardMarkdown-Headings
+              - HelpCards-Testing-HelpCardMarkdown-Sections
+              - HelpCards-Testing-HelpCardMarkdown-Bullets
+              - HelpCards-Testing-HelpCardMarkdown-Fences
+              - HelpCards-Testing-HelpCardMarkdown-Arguments
+            tests:
+              - Testing_Markdown_CardBody_ReadsHeadingsSectionsAndBullets
+
+          - id: HelpCards-Testing-Resources
+            title: >-
+              The subsystem shall compare the files embedded in an assembly with the files of a directory and
+              report every file that exists on one side only.
+            justification: |
+              Authors edit cards in a directory while the product ships embedded resources; a forgotten or
+              outdated embedding must fail a test, not reach a reader.
+            children:
+              - HelpCards-Testing-HelpCardValidator-Directory
+            tests:
+              - Testing_Resources_CompareToDirectory_FindsFilesOnOneSideOnly

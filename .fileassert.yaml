@@ -9,6 +9,29 @@
 
 tests:
 
+  # --- PACKAGE ---
+  # The packaged build files are what embeds help cards in consuming projects, so the package
+  # must carry them under build\ (not buildTransitive\).
+
+  - name: HelpCards_PackageBuildFiles
+    description: "The DemaConsulting.HelpCards package contains the packaged props and targets under build"
+    tags: [package]
+    files:
+      - pattern: "src/DemaConsulting.HelpCards/bin/Release/DemaConsulting.HelpCards.*.nupkg"
+        count: 1
+        zip:
+          files:
+            - pattern: "build/DemaConsulting.HelpCards.props"
+              min: 1
+              max: 1
+              text:
+                - contains: "HelpCardsEnabled"
+            - pattern: "build/DemaConsulting.HelpCards.targets"
+              min: 1
+              max: 1
+              text:
+                - contains: "LogicalName"
+
   # --- BUILD NOTES ---
 
   - name: Pandoc_BuildNotesHtml
@@ -158,6 +181,76 @@ tests:
     tags: [design]
     files:
       - pattern: "docs/design/generated/HelpCardsView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_LoadingViewSvg
+    description: "Loading View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/LoadingView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_CompositionViewSvg
+    description: "Composition View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/CompositionView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_CatalogViewSvg
+    description: "Catalog View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/CatalogView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_PresentationViewSvg
+    description: "Presentation View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/PresentationView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_IntegrationViewSvg
+    description: "Integration View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/IntegrationView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_TestingViewSvg
+    description: "Testing View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/TestingView.svg"
+        count: 1
+        xml:
+          - query: "//*[local-name()='svg']"
+            count: 1
+
+  - name: SysML2Tools_OtsViewSvg
+    description: "OTS View diagram was rendered by SysML2Tools"
+    tags: [design]
+    files:
+      - pattern: "docs/design/generated/OtsView.svg"
         count: 1
         xml:
           - query: "//*[local-name()='svg']"

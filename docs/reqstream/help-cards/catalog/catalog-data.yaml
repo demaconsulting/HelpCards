@@ -1,0 +1,51 @@
+---
+# CatalogData Unit Requirements
+#
+# Requirements for the CatalogData unit of the Catalog subsystem: the immutable data that a catalog and all of its
+# views share.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: CatalogData Requirements
+            requirements:
+              - id: HelpCards-Catalog-CatalogData-Content
+                title: >-
+                  The data shall hold every card in depth-first order with the ids of the roots, find a card by id
+                  ignoring case, and hold the resolved global ids of the links and see-also entries of each card.
+                justification: |
+                  Views and renderers are built on one fixed, resolved description of the tree.
+                tests:
+                  - CatalogData_Cards_SimpleFixture_AreDepthFirstWithRootIds
+                  - CatalogData_Find_Id_IgnoresCaseAndReturnsNullWhenUnknown
+                  - CatalogData_Node_ResolvedBody_HoldsGlobalIds
+
+              - id: HelpCards-Catalog-CatalogData-Tags
+                title: >-
+                  The data shall hold the distinct tags of all cards in ordinal order.
+                justification: |
+                  Tools list the available tags.
+                tests:
+                  - CatalogData_TagNames_AllCards_AreDistinctAndOrdered
+
+              - id: HelpCards-Catalog-CatalogData-Settings
+                title: >-
+                  The data shall hold the tool name, the tool version, and the closed tag vocabulary as configured,
+                  and nothing when they were not configured.
+                justification: |
+                  Renderers write the tool and version only when the caller supplied them, and views validate tags
+                  against the vocabulary.
+                tests:
+                  - CatalogData_Settings_AsConfigured_AreKept
+
+              - id: HelpCards-Catalog-CatalogData-Immutability
+                title: >-
+                  The data shall hold copies of its lists that cannot be changed through a cast, and later changes
+                  of the input shall not change them.
+                justification: |
+                  The data is shared by every view and thread.
+                tests:
+                  - CatalogData_Lists_AreReadOnly
+                  - CardNode_Freeze_Input_IsCopied

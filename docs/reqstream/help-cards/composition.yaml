@@ -1,0 +1,199 @@
+---
+# Composition Subsystem Requirements
+#
+# Requirements for the Composition subsystem: registering the sources of a catalog, mounting them, resolving their
+# imports and overlays, running the one composition pipeline over them, ordering siblings, validating every reference
+# and name, and collecting all problems. Each
+# requirement decomposes a system requirement and is decomposed further by the requirements of the units of the
+# subsystem.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        requirements:
+          - id: HelpCards-Composition-Tree
+            title: >-
+              The subsystem shall compose the sources of a catalog into one frozen tree: read the sources, place
+              every card below its parent, resolve every reference over the final tree, and freeze the result,
+              applying the configured culture and the built-in tokens.
+            justification: |
+              One pipeline with fixed steps gives every catalog the same, predictable result, and resolving
+              references only over the final tree makes forward references as valid as backward ones.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-Pipeline
+              - HelpCards-Composition-HelpCatalogBuilder-TreePlacement
+              - HelpCards-Composition-HelpCatalogBuilder-Configuration
+              - HelpCards-Composition-HelpCatalogBuilder-Sources
+            tests:
+              - Composition_Pipeline_SimpleFixture_ProducesFrozenTreeWithResolvedReferences
+              - Composition_Reading_EachFileOnce_AndCultureSelectsTranslation
+
+          - id: HelpCards-Composition-Sources
+            title: >-
+              The subsystem shall compose any number of sources into one catalog in registration order, each added
+              flat or mounted under a generated root card, with global ids that carry the mount, roots grouped by
+              source, and each file of each source read once.
+            justification: |
+              A product shows its own help and the help of its libraries as one tree; mounts keep the libraries
+              apart without editing their cards.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-MultipleSources
+              - HelpCards-Composition-HelpCatalogBuilder-MountedSources
+              - HelpCards-Composition-SourceRegistry-Reading
+              - HelpCards-Composition-Mounter-GlobalIds
+              - HelpCards-Composition-Mounter-MountRoot
+            tests:
+              - Composition_Mounting_TwoLibraries_GivesMountRootsAndGlobalIds
+              - Composition_Mounting_MountRoot_UsesSourceBodyAsLandingText
+              - Composition_Mounting_FlatSources_MergeRootsInRegistrationOrder
+              - Composition_Mounting_SourceWithoutName_IsReportedOnce
+              - Composition_Ordering_MixedSources_FollowsRegistrationOrderAndOrderValuesStayInOneSource
+              - Composition_Views_FilterSource_ShowsOneMountedSource
+              - Composition_Reading_TwoSources_ReadsEachFileOnceAndNothingAfterCreate
+              - Composition_Determinism_TwoBuilds_RenderEqualOutput
+
+          - id: HelpCards-Composition-Imports
+            title: >-
+              The subsystem shall let a source import sources that were added before it, so that it sees their
+              tokens and local card ids, and shall report an import that is missing, added later, or cyclic, and a
+              bare id that the importer and an import both have.
+            justification: |
+              A tool and its companion library are one product; the tool's cards must use the library's tokens and
+              link its cards by local id whatever the mount.
+            children:
+              - HelpCards-Composition-SourceRegistry-Imports
+              - HelpCards-Composition-SourceRegistry-ImportChecks
+              - HelpCards-Composition-SourceRegistry-Tokens
+              - HelpCards-Composition-SourceRegistry-Lookup
+              - HelpCards-Composition-ReferenceValidator-ImportedSources
+            tests:
+              - Composition_Imports_ImporterSeesTokensAndLocalIds
+              - Composition_Imports_WithoutImport_TokensAndBareIdsAreNotVisible
+              - Composition_Imports_ToolFixture_UsesLibraryTokensBareLinksAndOverlays
+              - Composition_Imports_OrderMissingAndCycle_AreReportedWithoutFollowUpErrors
+              - Composition_Imports_BareIdInImporterAndImport_IsAmbiguous
+
+          - id: HelpCards-Composition-Overlays
+            title: >-
+              The subsystem shall apply the overlays of every source to the cards they extend, in registration order
+              and then by file path, replacing title and summary and appending body, see-also entries, and examples,
+              skip an optional overlay of a source that is absent, and report an overlay that has no target.
+            justification: |
+              Overlays let an application adapt the help of a library without copying it, while a library that is
+              not always present must not make the application's help fail.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-Overlays
+              - HelpCards-Composition-OverlayMerger-Merge
+              - HelpCards-Composition-OverlayMerger-Order
+              - HelpCards-Composition-OverlayMerger-Targets
+              - HelpCards-Composition-OverlayMerger-Optional
+              - HelpCards-Composition-OverlayMerger-Scope
+            tests:
+              - Composition_Overlays_AppFixture_MergesIntoTheTargetCards
+              - Composition_Overlays_OptionalOverlayOfAbsentSource_IsSkippedWithInfo
+              - Composition_Overlays_Order_IsRegistrationOrderThenOrdinalFilePath
+              - Composition_Overlays_TargetFailedToLoad_ReportsOnlyTheFailure
+
+          - id: HelpCards-Composition-Collisions
+            title: >-
+              The subsystem shall report two sources that use one source name, one global id, one mount, one root
+              name or alias, and a card under a card of another source, naming both sources and files, and shall
+              leave the later card or source out without follow-up problems.
+            justification: |
+              Nothing may shadow another card silently, and one clash must be one problem.
+            children:
+              - HelpCards-Composition-SourceRegistry-DuplicateNames
+              - HelpCards-Composition-Mounter-Claims
+              - HelpCards-Composition-Mounter-RootNames
+            tests:
+              - Composition_Collisions_SameGlobalId_ReportsBothSourcesAndFiles
+              - Composition_Collisions_MountsAndFlatRoots_AreReported
+              - Composition_Collisions_DuplicateSourceName_IsReportedOnce
+              - Composition_Collisions_RootAliasUsedByTwoSources_IsReported
+              - Composition_Collisions_CardUnderForeignCard_IsTreeForeign
+
+          - id: HelpCards-Composition-Ordering
+            title: >-
+              The subsystem shall order the cards that share a parent, and the roots of a source, first by the
+              children list in the order listed, then by ascending order value, then by name in ordinal order, and
+              shall report repeated and unknown children entries.
+            justification: |
+              Help is read in the order its authors intend; one comparator makes that order identical in every
+              rendering and on every machine.
+            children:
+              - HelpCards-Composition-SiblingOrder-OrderValues
+              - HelpCards-Composition-SiblingOrder-ChildrenList
+              - HelpCards-Composition-SiblingOrder-ChildrenChecks
+              - HelpCards-Composition-SiblingOrder-Names
+            tests:
+              - Composition_Ordering_OrderFixture_FollowsChildrenListThenOrderThenName
+
+          - id: HelpCards-Composition-References
+            title: >-
+              The subsystem shall resolve card links, example links, external links, and see-also entries over the
+              final tree, report each unresolved one with its file and line, let a link to a source that is not
+              present degrade to its display text, and not report references to files that failed to load.
+            justification: |
+              Cards refer to each other; a broken reference is a defect the author must see, while a link to an
+              optional library must not make the help unusable.
+            children:
+              - HelpCards-Composition-ReferenceValidator-CardLinks
+              - HelpCards-Composition-ReferenceValidator-ExampleLinks
+              - HelpCards-Composition-ReferenceValidator-ExternalLinks
+              - HelpCards-Composition-ReferenceValidator-SeeAlso
+              - HelpCards-Composition-ReferenceValidator-Suppression
+              - HelpCards-Composition-HelpCatalogBuilder-Diagnostics
+            tests:
+              - Composition_References_ForwardExampleExternalAndSeeAlso_AreResolved
+              - Composition_ExternalLinks_PresentAndAbsentSources_ResolveOrDegrade
+              - Composition_ExternalLinks_PresentSourceWithMissingCard_IsAnError
+
+          - id: HelpCards-Composition-Uniqueness
+            title: >-
+              The subsystem shall report example names that are used twice in one scope and names and aliases that
+              are used twice among siblings or roots, ignoring case.
+            justification: |
+              A name must lead to exactly one card or example, otherwise a reader cannot reach the other one.
+            children:
+              - HelpCards-Composition-ReferenceValidator-ExampleNames
+              - HelpCards-Composition-ReferenceValidator-SiblingNames
+            tests:
+              - Composition_Uniqueness_NamesAliasesExamplesAndRoots_AreChecked
+              - Composition_ExampleScope_OverlayExampleRepeatingName_IsDuplicateInTargetScope
+              - Composition_ExampleScope_SameNameInOtherSourcesAndScopes_IsAllowed
+
+          - id: HelpCards-Composition-Vocabulary
+            title: >-
+              The subsystem shall enforce an optional closed tag vocabulary with a set of required tags, exempting
+              the generated root cards of mounted sources, and an optional set of expected roots, and shall report
+              each difference at its file and line.
+            justification: |
+              A product that fixes its tag set and its top-level cards needs a build failure when a card strays.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-TagVocabulary
+              - HelpCards-Composition-HelpCatalogBuilder-TagVocabularyMountRoots
+              - HelpCards-Composition-HelpCatalogBuilder-ExpectedRoots
+            tests:
+              - Composition_Uniqueness_NamesAliasesExamplesAndRoots_AreChecked
+              - Composition_ExpectedRoots_MixedSources_ComparesGlobalRoots
+              - Composition_TagVocabulary_AppliesToEverySourceButNotMountRoots
+              - Composition_Failures_SeveralDefects_AreCollectedOnceAndInOrder
+
+          - id: HelpCards-Composition-Failures
+            title: >-
+              The subsystem shall collect every problem of a composition, report each defect once, in the order
+              source, file, line, and rule, and return data only when no error exists.
+            justification: |
+              Authors fix all defects in one pass, and a stable order makes problem lists comparable in tests and
+              reviews.
+            children:
+              - HelpCards-Composition-HelpCatalogBuilder-CollectAll
+              - HelpCards-Composition-ProblemCollector-Ordering
+              - HelpCards-Composition-ProblemCollector-Duplicates
+              - HelpCards-Composition-ProblemCollector-Severity
+              - HelpCards-Composition-ProblemCollector-Arguments
+            tests:
+              - Composition_Failures_SeveralDefects_AreCollectedOnceAndInOrder
+              - Composition_Failures_SeveralSources_CollectAllInOrder
+              - Composition_Schema_OmittedAndExplicitOne_AreSupportedPerSource

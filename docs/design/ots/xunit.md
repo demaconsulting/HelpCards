@@ -9,9 +9,10 @@ by downstream tooling.
 
 ### Features Used
 
-- Test discovery and execution of `[Fact]`-annotated test methods in
+- Test discovery and execution of `[Fact]` and `[Theory]` test methods in
   `DemaConsulting.HelpCards.Tests`
-- TRX result-file generation, consumed by ReqStream for requirements-to-test traceability
+- TRX result-file generation (from the Microsoft Testing Platform `TrxReport` extension that the
+  test project references), consumed by ReqStream for requirements-to-test traceability
 
 ### Integration Pattern
 

@@ -1,0 +1,75 @@
+---
+# TokenResolver Unit Requirements
+#
+# Requirements for the TokenResolver unit of the Loading subsystem, which replaces {{name}} tokens with the
+# values that are in scope for a source.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        sections:
+          - title: TokenResolver Requirements
+            requirements:
+              - id: HelpCards-Loading-TokenResolver-Syntax
+                title: >-
+                  The resolver shall treat only "{{name}}" with a name of ASCII letters and digits as a token,
+                  match names case-sensitively, replace tokens inside code spans and blocks, offer no escape,
+                  and leave text that only looks like a token unchanged.
+                justification: |
+                  Cards document command lines and code that contain braces; a precise, escape-free token
+                  grammar makes the replacement predictable for authors and reviewers.
+                tests:
+                  - TokenResolver_IsValidTokenName_LettersAndDigits_ReturnsTrueOtherwiseFalse
+                  - TokenResolver_Substitute_DifferentCase_IsUnknown
+                  - TokenResolver_Substitute_MalformedTokenLookalikes_AreLeftAlone
+                  - TokenResolver_Substitute_BackslashBeforeToken_DoesNotEscape
+                  - TokenResolver_Substitute_InsideCode_AreReplaced
+                  - TokenResolver_Substitute_NoTokens_ReturnsTextUnchanged
+
+              - id: HelpCards-Loading-TokenResolver-Scope
+                title: >-
+                  The scope of a source shall be its own tokens, the tokens of every source it imports, and the
+                  built-in tokens "tool" and "version" (empty when the version is unknown), and a source shall
+                  not see the tokens of a source it does not import.
+                justification: |
+                  A tool and its companion library share values such as limits, while unrelated libraries must
+                  stay isolated; the built-ins let one card text work for every tool name and version.
+                tests:
+                  - TokenResolver_Substitute_BuiltInTokens_AreReplaced
+                  - TokenResolver_Substitute_OwnTokens_AreReplaced
+                  - TokenResolver_Create_ImportedTokens_AreInScope
+                  - TokenResolver_Create_NotImportedSource_TokensAreUnknown
+                  - TokenResolver_Substitute_EmptyVersion_ReplacesWithEmptyText
+
+              - id: HelpCards-Loading-TokenResolver-Redefinition
+                title: >-
+                  The resolver shall report a token that is defined twice in one scope, or that redefines a
+                  built-in token, as a "token-redefined" problem and keep the first definition.
+                justification: |
+                  Two definitions of one name make the text of a card depend on import order; reporting them
+                  makes the conflict visible while still letting reading continue.
+                tests:
+                  - TokenResolver_Create_OwnAndImportedSameName_ReportsRedefined
+                  - TokenResolver_Create_TwoImportsSameName_ReportsRedefined
+                  - TokenResolver_Create_BuiltInNamesRedefined_ReportsRedefinedAndKeepsBuiltIn
+
+              - id: HelpCards-Loading-TokenResolver-UnknownTokens
+                title: >-
+                  The resolver shall report every unknown token as a "token-unknown" problem that names the file
+                  and the line of the token, and leave the token in the text.
+                justification: |
+                  A misspelled token must never silently reach a reader as literal braces.
+                tests:
+                  - TokenResolver_Substitute_UnknownTokenOnThirdLine_ReportsFileAndLine
+                  - TokenResolver_Substitute_SeveralUnknownTokens_ReportsEach
+
+              - id: HelpCards-Loading-TokenResolver-Names
+                title: >-
+                  The resolver shall list the distinct names of the well-formed tokens that a text uses, in the
+                  order of first use, and list nothing for a text without tokens or with text that only looks like
+                  a token.
+                justification: |
+                  Validators need to know which tokens a source really uses without replacing them.
+                tests:
+                  - TokenResolver_FindNames_Text_ListsDistinctWellFormedNames

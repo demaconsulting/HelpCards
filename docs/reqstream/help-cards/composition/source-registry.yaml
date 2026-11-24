@@ -1,0 +1,87 @@
+---
+# SourceRegistry Unit Requirements
+#
+# Requirements for the SourceRegistry unit of the Composition subsystem, which registers the sources of a catalog,
+# reads them in registration order, resolves their imports, and looks up the cards that references name.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        sections:
+          - title: SourceRegistry Requirements
+            requirements:
+              - id: HelpCards-Composition-SourceRegistry-Reading
+                title: >-
+                  The registry shall read every registered source once, in registration order, through its
+                  provider, take its declared name from the name set on the source or from its source file, find a
+                  source by its declared name ignoring case, and reject null arguments.
+                justification: |
+                  Registration order decides the order of roots, overlays, and imports, and reading each file once
+                  keeps a catalog build cheap.
+                tests:
+                  - SourceRegistry_Read_TwoSources_ReadsEachFileOnceInOrder
+                  - SourceRegistry_FindByName_DeclaredName_IgnoresCase
+                  - SourceRegistry_Read_NullArguments_ThrowArgumentNullException
+
+              - id: HelpCards-Composition-SourceRegistry-DuplicateNames
+                title: >-
+                  The registry shall report a source whose declared name another source already uses as
+                  source-name-duplicate, naming the position of the first source, and exclude the second source
+                  from the catalog.
+                justification: |
+                  A source name is public contract and cannot be overridden; a clash must be fixed at the source.
+                tests:
+                  - SourceRegistry_Read_DuplicateName_ExcludesSecondSource
+
+              - id: HelpCards-Composition-SourceRegistry-Imports
+                title: >-
+                  The registry shall match each import of a source to a registered source by the files it reads or
+                  by its declared name, and list the imports of a source, and the imports of those imports, each
+                  once, in the order they are searched.
+                justification: |
+                  A tool and its companion library belong to one product; the importer must see the library
+                  whichever copy of the source object it was given.
+                tests:
+                  - SourceRegistry_Read_ImportMatchedByFilesOrByName_ResolvesToRegisteredSource
+                  - SourceRegistry_Read_TransitiveImports_ListsClosureAndSeesTokensOfEverySource
+
+              - id: HelpCards-Composition-SourceRegistry-ImportChecks
+                title: >-
+                  The registry shall report an import that is not registered as import-missing, one that is
+                  registered after its importer as import-order (including a later source that is matched only by
+                  a name it declares in its source file), and one that is the importing source as import-cycle,
+                  and shall not list such an import.
+                justification: |
+                  Imports are declared in code; a wrong one must fail at catalog creation with a clear cause.
+                tests:
+                  - SourceRegistry_Read_MissingLaterAndSelfImports_ReportEachRule
+                  - SourceRegistry_Read_ImportOfLaterSourceNamedInSourceFile_ReportsImportOrder
+
+              - id: HelpCards-Composition-SourceRegistry-Tokens
+                title: >-
+                  The registry shall give each source the scope of its own tokens, the tokens of every source it
+                  imports, and the built-in tokens, with the tool token defaulting to the name of the first source,
+                  and shall surface the token-redefined problem that the token scope reports for a name that two
+                  sources of one scope define.
+                justification: |
+                  A tool uses the tokens of its library without repeating them, and a source never sees the
+                  tokens of a source it does not import.
+                tests:
+                  - SourceRegistry_Read_TransitiveImports_ListsClosureAndSeesTokensOfEverySource
+                  - SourceRegistry_Read_TokenDefinedTwice_ReportsTokenRedefined
+                  - SourceRegistry_Read_ToolToken_DefaultsToFirstSourceName
+
+              - id: HelpCards-Composition-SourceRegistry-Lookup
+                title: >-
+                  The registry shall look up a bare card id in the referencing source and then in its imports,
+                  report an id that exists in both as ambiguous, look up a qualified id only in the named source,
+                  report a source that is not registered as absent, and report a card that failed to load, a
+                  source that was excluded, or an id after a broken import as suppressed.
+                justification: |
+                  Imports let cards link by local id, so a clash must be visible, and a defect that is already
+                  reported must not be reported again.
+                tests:
+                  - SourceRegistry_Lookup_BareAndQualifiedIds_FindOwnThenImportedCards
+                  - SourceRegistry_Lookup_UnknownAbsentAndUnimported_AreNotFound
+                  - SourceRegistry_Lookup_FailedExcludedAndBrokenImport_AreSuppressed

@@ -1,0 +1,47 @@
+### TokenResolver Design
+
+![Loading Structure](LoadingView.svg)
+
+#### Purpose
+
+`TokenResolver` replaces `{{name}}` tokens in the text of one source with the values that are in scope for it.
+It exists so that shared values such as limits and the tool name live in one place and cards stay correct when
+they change.
+
+#### Data Model
+
+| Member | Meaning |
+| --- | --- |
+| values | Token name to value for the scope: built-ins, own tokens, imported tokens |
+| source name | The name of the source the scope belongs to, used in problems |
+| `ScopeProblems` | The `token-redefined` problems found while the scope was built |
+
+A resolver is immutable after creation and safe for concurrent use. Names are case-sensitive and use ASCII
+letters and digits. The built-in names are `tool` and `version`.
+
+#### Key Methods
+
+- **`Create(sourceName, ownTokens, importedTokens, tool, version)`** builds the scope: the built-ins first,
+  then the own tokens, then the tokens of each imported source in the order given, visiting names in ordinal
+  order so messages are stable. A name that is a built-in, or that was already defined by the source or an
+  earlier import, is reported as `token-redefined` and the first definition is kept. Composition supplies the
+  imports transitively and the default `tool` (the name of the first source).
+- **`Substitute(text, file, firstLine, problems)`** replaces every well-formed token. The line of an unknown
+  token is `firstLine` plus the line feeds before it; the token stays in the text and a `token-unknown`
+  problem is added. Text such as `{{ x }}` or `{{a-b}}` is not a token and is left alone. There is no escape.
+- **`IsValidTokenName(name)`** tells whether a name is one or more ASCII letters and digits.
+- **`FindNames(text)`** lists the distinct names of the well-formed tokens of a text in order of first use, with the
+  same pattern as `Substitute`; the validator uses it to find tokens that no file uses.
+
+#### Error Handling
+
+Defects are returned as problems, never thrown. `Substitute` never throws for text content.
+
+#### Dependencies
+
+`HelpProblem` and `RuleIds` of the Catalog subsystem; Base Class Library only.
+
+#### Callers
+
+`CardReader` substitutes titles, summaries, example descriptions and content, and bodies; `HelpSource` uses
+`IsValidTokenName`; Composition creates resolvers from the import list.

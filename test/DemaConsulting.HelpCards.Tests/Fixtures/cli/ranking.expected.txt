@@ -1,0 +1,51 @@
+? build
+  build 190 [id title tag]
+  build/clean 90 [id tag summary]
+  build/compile 90 [id tag]
+  build/package 90 [id tag]
+? tests
+  test 90 [id title]
+  test/coverage 90 [id summary]
+  test/integration 90 [id title]
+  test/unit 90 [id title]
+? program package
+  build/package 100 [id title summary]
+  build 10 [summary]
+  deploy 10 [summary]
+  test 10 [summary]
+  deploy/production 10 [summary]
+  test/coverage 10 [summary]
+  test/unit 10 [summary]
+? ship
+  deploy 190 [alias]
+? build clean
+  build/clean 230 [id title tag summary]
+  build 40 [id title tag]
+  build/compile 40 [id tag]
+  build/package 40 [id tag]
+? build/clean
+  build/clean 230 [id title tag summary]
+  build 40 [id title tag]
+  build/compile 40 [id tag]
+  build/package 40 [id tag]
+? rel
+  deploy/production 55 [summary]
+  deploy/rollback 55 [summary]
+  deploy/staging 55 [summary]
+? unit test
+  test/unit 130 [id title]
+  test 40 [id title]
+  test/coverage 40 [id summary]
+  test/integration 40 [id title]
+? make the program
+  build 110 [alias summary]
+  deploy 20 [summary]
+  test 20 [summary]
+  build/package 20 [summary]
+  deploy/production 20 [summary]
+  test/coverage 20 [summary]
+  test/unit 20 [summary]
+  build/compile 10 [summary]
+  deploy/rollback 10 [summary]
+  deploy/staging 10 [summary]
+? zebra

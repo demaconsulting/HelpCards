@@ -1,0 +1,202 @@
+---
+# HelpCardValidator Unit Requirements
+#
+# Requirements for the HelpCardValidator unit of the Testing subsystem: validating a source, a builder callback, or a
+# catalog, the quality rules, the options, asserting, and comparing embedded resources with a directory. The
+# validator unit also owns the options object and the interface of the rules of a product.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Testing Requirements
+        sections:
+          - title: HelpCardValidator Requirements
+            requirements:
+              - id: HelpCards-Testing-HelpCardValidator-Overloads
+                title: >-
+                  The validator shall accept a source, a builder callback, or a catalog, return the same problems for
+                  the same cards whichever it is given, return only the errors in display order when the source has
+                  errors, apply the tag vocabulary and tool name of the callback, and never throw for a defect of a
+                  card.
+                justification: |
+                  A product validates the composition it creates, and a test must be able to assert on defects
+                  instead of catching an exception.
+                tests:
+                  - HelpCardValidator_Validate_SimpleFixtureSource_ReturnsNoProblems
+                  - HelpCardValidator_Validate_SourceCallbackAndCatalog_AgreeOnQualityProblems
+                  - HelpCardValidator_Validate_DefectiveSource_ReturnsErrorsWithoutThrowing
+                  - HelpCardValidator_Validate_SummaryWithLineBreak_IsAnErrorOfTheBuild
+                  - HelpCardValidator_Validate_Callback_AppliesBuilderSettings
+
+              - id: HelpCards-Testing-HelpCardValidator-Order
+                title: >-
+                  The validator shall order problems with errors before warnings and each severity by source, file,
+                  line, and rule.
+                justification: |
+                  A stable order makes the output of a failed test comparable between runs and machines.
+                tests:
+                  - HelpCardValidator_Validate_ErrorsAndWarnings_ErrorsFirstThenFileLineRule
+                  - HelpCardValidator_Validate_SeveralSourcesWithWarnings_OrdersBySourceBeforeFile
+
+              - id: HelpCards-Testing-HelpCardValidator-SummaryLength
+                title: >-
+                  The validator shall report a "summary-length" warning for a summary that is longer than the
+                  limit, which is shorter for a root card, and shall not report a summary at the limit.
+                justification: |
+                  Summaries are listed in indexes; long ones break the layout of every list.
+                tests:
+                  - HelpCardValidator_Validate_LongSummary_ReportsSummaryLength
+
+              - id: HelpCards-Testing-HelpCardValidator-CardSize
+                title: >-
+                  The validator shall report a "card-size" warning for a card whose text rendering is longer than the
+                  card limit, or longer than the index limit for a root card that has cards below it.
+                justification: |
+                  A card is read in a terminal or by an agent with a limited budget; oversized cards should be split.
+                tests:
+                  - HelpCardValidator_Validate_LargeCard_ReportsCardSize
+
+              - id: HelpCards-Testing-HelpCardValidator-HeadingReserved
+                title: >-
+                  The validator shall report a "heading-reserved" warning at the line of a level-one heading and of
+                  the headings Cards, Examples, and See also at level two outside fenced blocks, and shall not
+                  report the same text inside a fence.
+                justification: |
+                  The renderer writes these headings itself; a body that contains them produces ambiguous output.
+                tests:
+                  - HelpCardValidator_Validate_ReservedHeadings_ReportHeadingReservedWithLine
+
+              - id: HelpCards-Testing-HelpCardValidator-Fences
+                title: >-
+                  The validator shall report a "fence-language" warning at the line of a fenced block that names no
+                  language and a "fence-unclosed" warning at the line of a fence that is never closed.
+                justification: |
+                  Readers and tools highlight and extract code by its language, and an unclosed fence swallows the
+                  rest of a card.
+                tests:
+                  - HelpCardValidator_Validate_Fences_ReportLanguageAndUnclosed
+
+              - id: HelpCards-Testing-HelpCardValidator-UnusedTokens
+                title: >-
+                  The validator shall report an "unused-token" warning for a token that a source defines and no file
+                  of the source uses, naming the source and the token, and shall not report a token that is used in
+                  any text, including a title, or a built-in token. A file of a source that cannot be read shall be
+                  reported as a "source-read" error with its path and shall not stop the validation.
+                justification: |
+                  A token that nothing uses is a leftover that hides the real set of values a source needs, and a
+                  validator must report a damaged file instead of failing on it.
+                tests:
+                  - HelpCardValidator_Validate_UnusedToken_ReportsUnusedToken
+                  - HelpCardValidator_Validate_UnreadableDataFile_ReportsSourceReadInsteadOfThrowing
+                  - HelpCardValidator_Validate_TokenUsedInTitle_IsNotReported
+
+              - id: HelpCards-Testing-HelpCardValidator-LineLength
+                title: >-
+                  The validator shall report a "line-length" warning at the line of every body line that is longer
+                  than the limit when a limit is set, and shall report none when no limit is set.
+                justification: |
+                  Some products keep cards within a width so that they read well in a terminal and in a diff.
+                tests:
+                  - HelpCardValidator_Validate_LongLines_ReportLineLengthOnlyWithLimit
+
+              - id: HelpCards-Testing-HelpCardValidator-CommandParse
+                title: >-
+                  The validator shall report a "command-parse" warning for every command example that does not
+                  parse for the tool name of the catalog, which is the name set on the builder and otherwise the
+                  name of the first source, and shall not check examples of other kinds.
+                justification: |
+                  A command example that no test can run is a defective example.
+                tests:
+                  - HelpCardValidator_Validate_CommandExamples_ReportCommandParse
+                  - HelpCardValidator_Validate_CommandWithoutToolName_UsesSourceName
+
+              - id: HelpCards-Testing-HelpCardValidator-Rules
+                title: >-
+                  The validator shall apply every rule of the options to every card and include the problems they
+                  return, of any severity, in its result, accepting a rule that returns no sequence.
+                justification: |
+                  Products have domain rules the library cannot know, such as cards that must not contain commands.
+                tests:
+                  - HelpCardValidator_Validate_CustomRule_AddsItsProblems
+                  - HelpCardValidator_AssertValid_CustomRuleError_Fails
+
+              - id: HelpCards-Testing-HelpCardValidator-ExternalSources
+                title: >-
+                  The validator shall report a link to an absent external source as an "external-source-missing"
+                  error at the file and line of the link when the options require external sources, and shall not
+                  report it otherwise.
+                justification: |
+                  Creating a catalog tolerates absent companions, but a product that ships complete help wants a
+                  failure.
+                tests:
+                  - HelpCardValidator_Validate_ExternalSources_AreErrorsOnlyWhenRequired
+
+              - id: HelpCards-Testing-HelpCardValidator-Assert
+                title: >-
+                  The validator shall throw one catalog exception that carries every error, and the warnings only
+                  when the options say so, and shall not throw for a valid source or for warnings alone.
+                justification: |
+                  A test asserts validity in one line and sees every defect in the failure message.
+                tests:
+                  - HelpCardValidator_AssertValid_ValidSource_DoesNotThrow
+                  - HelpCardValidator_AssertValid_Errors_ThrowCatalogExceptionWithAllErrors
+                  - HelpCardValidator_AssertValid_Warnings_FailOnlyWithWarningsAreErrors
+
+              - id: HelpCards-Testing-HelpCardValidator-Options
+                title: >-
+                  The options shall default to a card limit of 6000, an index limit of 3500, a summary limit of 100
+                  for cards and 60 for roots, no line limit, no rules, no required sources, and warnings that do not
+                  fail; shall return every value that is set, copying the rules; and shall reject limits that are
+                  not positive and null rules where they are set.
+                justification: |
+                  The defaults are part of the contract, and an invalid limit should fail where it is written.
+                tests:
+                  - HelpValidationOptions_Defaults_AreTheDocumentedValues
+                  - HelpValidationOptions_Initialization_StoresEverySetting
+                  - HelpValidationOptions_Limits_NotPositive_ThrowArgumentOutOfRangeException
+                  - HelpValidationOptions_Rules_Null_ThrowArgumentNullException
+
+              - id: HelpCards-Testing-HelpCardValidator-Directory
+                title: >-
+                  The validator shall report a "resources-mismatch" warning, in path order, for every file that is in
+                  a directory but not embedded and every embedded file that is not in the directory, and none when
+                  both have the same files.
+                justification: |
+                  A card that exists on disk but is not embedded never reaches the reader, and the other way round.
+                tests:
+                  - HelpCardValidator_CompareToDirectory_SameFiles_ReturnsNoProblems
+                  - HelpCardValidator_CompareToDirectory_DifferentFiles_ReportsBothDirections
+
+              - id: HelpCards-Testing-HelpCardValidator-Arguments
+                title: >-
+                  The validator shall reject a null source, callback, catalog, or directory with an argument null
+                  exception, and a builder without a source and a directory that does not exist with an argument
+                  exception.
+                justification: |
+                  A mistake of the caller must be told apart from a defect of the help.
+                tests:
+                  - HelpCardValidator_Validate_BuilderWithoutSource_ThrowsArgumentException
+                  - HelpCardValidator_Members_NullArguments_ThrowArgumentNullException
+                  - HelpCardValidator_CompareToDirectory_InvalidArguments_Throw
+
+              - id: HelpCards-Testing-HelpCardValidator-SeveralSources
+                title: >-
+                  The validator shall check the composition of several sources that a configuration callback adds,
+                  and report a token as unused only when no source uses it.
+                justification: |
+                  A token of a library is often used only by the application that imports it.
+                tests:
+                  - HelpCardValidator_Validate_SeveralSources_ChecksCompositionAndTokenUseAcrossSources
+
+              - id: HelpCards-Testing-HelpCardValidator-Imports
+                title: >-
+                  The validator shall compose a source that it is given together with the sources it imports,
+                  directly or transitively, each once and in dependency order, so that a source with imports does
+                  not report "import-missing", and shall still report "import-missing" for a callback that leaves an
+                  import out.
+                justification: |
+                  An adopter asserts its own source in one line; the imports that the source declares are part of
+                  what it is.
+                tests:
+                  - HelpCardValidator_Validate_SourceWithImports_ComposesImportsInDependencyOrder
+                  - HelpCardValidator_Validate_SharedAndNestedImports_AreComposedOnceInOrder

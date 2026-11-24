@@ -1,0 +1,14 @@
+Usage:
+  tool [options]
+  tool help [PATH]
+
+Tool does things.
+
+Commands:
+  build  Build it
+
+Help topics:
+tool help guide      How to set up and use the tool.
+tool help reference  Facts about limits and options.
+
+Run 'tool help' for topics and examples.

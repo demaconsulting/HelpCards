@@ -9,7 +9,50 @@ input-files:
   - docs/design/title.txt
   - docs/design/introduction.md
   - docs/design/help-cards.md
-  - docs/design/help-cards/demo.md
+  - docs/design/help-cards/loading.md
+  - docs/design/help-cards/loading/help-source.md
+  - docs/design/help-cards/loading/help-file-provider.md
+  - docs/design/help-cards/loading/front-matter-decoder.md
+  - docs/design/help-cards/loading/card-reader.md
+  - docs/design/help-cards/loading/token-resolver.md
+  - docs/design/help-cards/loading/culture-selector.md
+  - docs/design/help-cards/loading/body-parser.md
+  - docs/design/help-cards/composition.md
+  - docs/design/help-cards/composition/help-catalog-builder.md
+  - docs/design/help-cards/composition/source-registry.md
+  - docs/design/help-cards/composition/mounter.md
+  - docs/design/help-cards/composition/overlay-merger.md
+  - docs/design/help-cards/composition/reference-validator.md
+  - docs/design/help-cards/composition/sibling-order.md
+  - docs/design/help-cards/composition/problem-collector.md
+  - docs/design/help-cards/catalog.md
+  - docs/design/help-cards/catalog/help-catalog.md
+  - docs/design/help-cards/catalog/help-card.md
+  - docs/design/help-cards/catalog/help-problem.md
+  - docs/design/help-cards/catalog/catalog-data.md
+  - docs/design/help-cards/catalog/catalog-scope.md
+  - docs/design/help-cards/catalog/path-resolver.md
+  - docs/design/help-cards/catalog/example-resolver.md
+  - docs/design/help-cards/catalog/search-index.md
+  - docs/design/help-cards/presentation.md
+  - docs/design/help-cards/presentation/help-render-options.md
+  - docs/design/help-cards/presentation/link-formatter.md
+  - docs/design/help-cards/presentation/text-renderer.md
+  - docs/design/help-cards/presentation/json-document-writer.md
+  - docs/design/help-cards/presentation/text-wrapper.md
+  - docs/design/help-cards/presentation/help-strings.md
+  - docs/design/help-cards/integration.md
+  - docs/design/help-cards/integration/help-cli.md
+  - docs/design/help-cards/integration/cli-argument-parser.md
+  - docs/design/help-cards/integration/cli-dispatcher.md
+  - docs/design/help-cards/integration/help-agent-tool.md
+  - docs/design/help-cards/integration/agent-argument-reader.md
+  - docs/design/help-cards/integration/agent-dispatcher.md
+  - docs/design/help-cards/testing.md
+  - docs/design/help-cards/testing/help-card-validator.md
+  - docs/design/help-cards/testing/help-examples.md
+  - docs/design/help-cards/testing/example-command-line.md
+  - docs/design/help-cards/testing/help-card-markdown.md
   - docs/design/ots.md
   - docs/design/ots/buildmark.md
   - docs/design/ots/fileassert.md

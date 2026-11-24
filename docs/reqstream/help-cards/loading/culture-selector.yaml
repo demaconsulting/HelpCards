@@ -1,0 +1,54 @@
+---
+# CultureSelector Unit Requirements
+#
+# Requirements for the CultureSelector unit of the Loading subsystem, which chooses the culture variant of
+# a file for a requested culture.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        sections:
+          - title: CultureSelector Requirements
+            requirements:
+              - id: HelpCards-Loading-CultureSelector-FallbackChain
+                title: >-
+                  The selector shall derive the fallback chain of a requested culture by removing the last
+                  subtag one at a time, give an empty chain for the invariant culture, and reject a null
+                  culture.
+                justification: |
+                  Readers of "de-DE" expect German text when only a German translation exists; the invariant
+                  culture is the explicit way to ask for the neutral text.
+                tests:
+                  - CultureSelector_GetFallbackChain_InvariantCulture_IsEmpty
+                  - CultureSelector_GetFallbackChain_NeutralCulture_HasOneName
+                  - CultureSelector_GetFallbackChain_RegionCulture_TrimsLastPart
+                  - CultureSelector_GetFallbackChain_ScriptAndRegion_TrimsOnePartAtATime
+                  - CultureSelector_GetFallbackChain_NullCulture_ThrowsArgumentNullException
+
+              - id: HelpCards-Loading-CultureSelector-Selection
+                title: >-
+                  The selector shall pick the most specific available translation of the chain, ignoring case
+                  and returning the suffix as written, shall never pick a more specific culture than requested,
+                  and shall pick none when nothing matches so that the neutral file is used.
+                justification: |
+                  Per-file selection with a neutral fallback guarantees that every card has text in every
+                  culture while translations stay optional.
+                tests:
+                  - CultureSelector_Select_SpecificAndLanguageAvailable_ReturnsSpecific
+                  - CultureSelector_Select_OnlyLanguageAvailable_ReturnsLanguage
+                  - CultureSelector_Select_NoMatch_ReturnsNull
+                  - CultureSelector_Select_RequestedLanguageOnlyRegionAvailable_ReturnsNull
+                  - CultureSelector_Select_DifferentCase_MatchesAndReturnsWrittenSuffix
+                  - CultureSelector_Select_EmptyChain_ReturnsNull
+
+              - id: HelpCards-Loading-CultureSelector-CultureNames
+                title: >-
+                  The selector shall accept as a culture suffix two or three lower-case letters followed by
+                  dash-separated subtags of two to eight letters or digits, and reject every other text.
+                justification: |
+                  File names such as "flow.de-DE.md" must be told apart from card names and from mistakes
+                  without asking the operating system which cultures it knows.
+                tests:
+                  - CultureSelector_IsCultureSuffix_ValidNames_ReturnsTrue
+                  - CultureSelector_IsCultureSuffix_InvalidNames_ReturnsFalse

@@ -1,0 +1,54 @@
+---
+# HelpCli Unit Requirements
+#
+# Requirements for the HelpCli unit of the Integration subsystem: the helper a tool creates once, the gate that lets
+# only the help verb through, the footer, and the options it is created from.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Integration Requirements
+        sections:
+          - title: HelpCli Requirements
+            requirements:
+              - id: HelpCards-Integration-HelpCli-Creation
+                title: >-
+                  The helper shall be created without calling the catalog factory or doing any I/O, shall give a footer
+                  that is a constant sentence naming the tool and the verb, and shall reject a null option set or
+                  factory, a tool name or verb that is white space, a verb with white space or a leading hyphen, a
+                  tool name with a brace, a white-space command template, and a default width that is not 0 or 20 to
+                  500.
+                justification: |
+                  A helper is kept in a static field and its footer is printed by commands that never need the catalog.
+                tests:
+                  - HelpCli_Create_AndFooter_NeverCallTheFactory
+                  - HelpCli_Create_InvalidOptions_Throw
+
+              - id: HelpCards-Integration-HelpCli-Gate
+                title: >-
+                  The helper shall return false at once, with exit code 0, without creating the catalog and without
+                  writing, unless the first argument equals the verb ignoring case, and shall run the help command
+                  of the remaining arguments when it does.
+                justification: |
+                  Every command of the tool passes through the gate, so it must be free for all but help.
+                tests:
+                  - HelpCli_TryRun_NotTheVerb_ReturnsFalseWithoutCallingTheFactory
+                  - HelpCli_TryRun_Verb_RunsTheCommandIgnoringCase
+                  - HelpCli_TryRun_VerbAlone_WritesTheIndex
+
+              - id: HelpCards-Integration-HelpCli-Verb
+                title: >-
+                  The helper shall use the verb of the options in place of help, in the gate and in the footer.
+                justification: |
+                  Some tools already use help for something else.
+                tests:
+                  - HelpCli_Create_CustomVerb_ReplacesHelp
+
+              - id: HelpCards-Integration-HelpCli-Run
+                title: >-
+                  The helper shall run a help command given the arguments after the verb, and reject null arguments
+                  and a null argument in the list.
+                justification: |
+                  Tools that already removed the verb call the command directly.
+                tests:
+                  - HelpCli_Run_Arguments_AreTheWordsAfterTheVerb

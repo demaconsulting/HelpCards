@@ -1,183 +1,38 @@
 # Introduction
 
-The following diagram is a placeholder: replace its TODO boxes to show how your application calls the
-library's subsystems, which inputs it takes, and which outputs it produces.
+HelpCards turns Markdown files into help for people and knowledge for AI agents. You write one Markdown file per
+topic, a *card*, with a small block of front matter. The package embeds the cards in your assembly, and the library
+loads them into an immutable catalog that renders text, Markdown, or JSON.
 
-![Placeholder architecture diagram: replace the TODO boxes for your application, library subsystems, support units, dependencies, inputs, and outputs with the real ones](architecture.svg)
+The following diagram shows how four kinds of consumers use the library: a library that ships cards, a command-line
+tool, an agent host, and a test project. The cards go in as Markdown files, the Loading, Composition, and Catalog
+subsystems turn them into a catalog, and Presentation, Integration, and Testing build on that catalog.
+
+![Architecture of HelpCards: consumers use six subsystems that turn Markdown cards into a catalog](architecture.svg)
 
 ## Purpose
 
-This document is the user guide for HelpCards, a .NET library for authoring help and knowledge
-content as Markdown cards with YAML front matter, embedded in assemblies and served as
-command-line help for people and as searchable knowledge for AI agents.
+This document is the user guide for HelpCards, a .NET library for authoring help and knowledge content as Markdown
+cards with YAML front matter, embedded in assemblies and served as command-line help for people and as searchable
+knowledge for AI agents. It explains how to write cards, package them, compose the cards of several libraries,
+connect them to a command line or an agent, and test them.
 
 ## Scope
 
 This user guide covers:
 
-- Installation of the library
-- Basic usage and examples
-- API reference
+- Installation of the library and a first working example
+- Writing cards: file layout, front matter, links, tokens, examples, and cultures
+- Packaging and embedding the cards in an assembly
+- Composing the cards of several libraries: mounts, imports, overlays, and collisions
+- The command-line helper, its options, its exit codes, and its JSON output
+- The agent knowledge tool, its arguments, its schema, and its output budgets
+- The helpers that test your cards
+- Versioning, compatibility, and security notes
 
-# Continuous Compliance
+The guide describes version 0.1 of HelpCards. It does not describe the internals of the library; the design
+document does.
 
-This repository follows the
-[Continuous Compliance](https://github.com/demaconsulting/ContinuousCompliance) methodology, which ensures
-compliance evidence is generated automatically on every CI run.
-
-## Key Practices
-
-- **Requirements Traceability**: Every requirement is linked to passing tests, and a trace matrix is
-  auto-generated on each release
-- **Linting Enforcement**: LintMark, TextLint, and yamllint are enforced before any build proceeds
-- **Automated Audit Documentation**: Each release ships with generated requirements, justifications,
-  trace matrix, and quality reports
-- **CodeQL and SonarCloud**: Security and quality analysis runs on every build
-
-# Installation
-
-Install the library using the .NET CLI:
-
-```bash
-dotnet add package DemaConsulting.HelpCards
-```
-
-# Usage
-
-## Basic Usage
-
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo();
-var result = demo.DemoMethod("World");
-Console.WriteLine(result); // Output: Hello, World!
-```
-
-## API Reference
-
-### Demo
-
-The `Demo` class provides sample functionality retained from the library template.
-
-#### Constants
-
-##### DefaultPrefix
-
-```csharp
-public const string DefaultPrefix = "Hello";
-```
-
-The greeting prefix used when no custom prefix is specified.
-
-#### Constructors
-
-##### Demo()
-
-```csharp
-public Demo()
-```
-
-Initializes a new instance of the `Demo` class with the default prefix "Hello".
-
-##### Demo(string prefix)
-
-```csharp
-public Demo(string prefix)
-```
-
-Initializes a new instance of the `Demo` class with a custom prefix.
-
-**Parameters:**
-
-- `prefix` (string): The prefix to use in greetings. Must not be null or empty.
-
-**Exceptions:**
-
-- `ArgumentNullException`: Thrown when `prefix` is null.
-- `ArgumentException`: Thrown when `prefix` is an empty string.
-
-#### Properties
-
-##### Prefix
-
-```csharp
-public string Prefix { get; }
-```
-
-Gets the greeting prefix used by this instance.
-
-#### Methods
-
-##### DemoMethod
-
-```csharp
-public string DemoMethod(string name)
-```
-
-Returns a greeting message for the specified name.
-
-**Parameters:**
-
-- `name` (string): The name to greet. Must not be null or empty.
-
-**Returns:**
-
-A string containing the greeting message in the format "{prefix}, {name}!".
-
-**Exceptions:**
-
-- `ArgumentNullException`: Thrown when `name` is null.
-- `ArgumentException`: Thrown when `name` is an empty string.
-
-**Example:**
-
-```csharp
-var demo = new Demo();
-var greeting = demo.DemoMethod("World");
-// greeting = "Hello, World!"
-```
-
-# Examples
-
-## Example 1: Basic Greeting
-
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo();
-var result = demo.DemoMethod("Alice");
-Console.WriteLine(result);
-// Output: Hello, Alice!
-```
-
-## Example 2: Custom Prefix
-
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo("Hi");
-var result = demo.DemoMethod("Alice");
-Console.WriteLine(result);
-// Output: Hi, Alice!
-```
-
-## Example 3: Error Handling
-
-```csharp
-using DemaConsulting.HelpCards;
-
-var demo = new Demo();
-try
-{
-    var result = demo.DemoMethod(null);
-}
-catch (ArgumentNullException ex)
-{
-    Console.WriteLine("Name cannot be null");
-}
-```
-
-# References
+## References
 
 - [REF-1] Continuous Compliance Methodology (<https://github.com/demaconsulting/ContinuousCompliance>)

@@ -1,0 +1,283 @@
+---
+# HelpCatalog Unit Requirements
+#
+# Requirements for the HelpCatalog unit of the Catalog subsystem: creating a catalog, its properties, lookups,
+# example searches, and filtered views.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: HelpCatalog Requirements
+            requirements:
+              - id: HelpCards-Catalog-HelpCatalog-Creation
+                title: >-
+                  The catalog shall reject a null configuration callback with an argument null exception, reject a
+                  builder without a source with an argument exception, and throw the catalog exception with every
+                  error, a message naming the first, and the number of further errors for a defective source.
+                justification: |
+                  Creation is the only point where help sources can fail, so its failure model must be exact.
+                tests:
+                  - HelpCatalog_Create_NullConfigure_ThrowsArgumentNullException
+                  - HelpCatalog_Create_NoSource_ThrowsArgumentException
+                  - HelpCatalog_Create_DefectiveSource_ThrowsExceptionWithAllErrors
+
+              - id: HelpCards-Catalog-HelpCatalog-Properties
+                title: >-
+                  The catalog shall expose its culture, its cards in depth-first order, its roots, its sources, its
+                  informational diagnostics, and the distinct tags of its cards in ordinal order.
+                justification: |
+                  These are the facts every renderer, search, and tool starts from.
+                tests:
+                  - HelpCatalog_Properties_SimpleFixture_ExposeTreeSourceTagsAndCulture
+                  - HelpCatalog_Diagnostics_AbsentExternalSource_HoldsInfoProblemsOnly
+
+              - id: HelpCards-Catalog-HelpCatalog-NoIo
+                title: >-
+                  The catalog shall list and read the files of its source once, while it is created, and never
+                  read a file when it or its views are used.
+                justification: |
+                  Callers use a catalog from hot paths and from threads; I/O after creation would make both
+                  unpredictable.
+                tests:
+                  - HelpCatalog_Create_ThenUse_ReadsEachFileOnceAndNeverAgain
+
+              - id: HelpCards-Catalog-HelpCatalog-Immutability
+                title: >-
+                  The catalog shall expose its lists as read-only collections that cannot be changed through a cast.
+                justification: |
+                  A shared catalog must not be changeable by one of its users.
+                tests:
+                  - HelpCatalog_Lists_AreReadOnlyCollections
+
+              - id: HelpCards-Catalog-HelpCatalog-Find
+                title: >-
+                  The catalog shall find a visible card by a path of names and aliases separated by slashes or white
+                  space, ignoring case, find nothing for an unknown, empty, or unqualified path, and reject a null
+                  path.
+                justification: |
+                  Paths typed by people and tools vary in spelling and separators; they must still find the card.
+                tests:
+                  - HelpCatalog_Find_PathForms_FindsCard
+                  - HelpCatalog_Find_UnknownOrEmptyPath_ReturnsNull
+
+              - id: HelpCards-Catalog-HelpCatalog-Resolve
+                title: >-
+                  The catalog shall resolve a path to its card, or report the card whose children were searched, the
+                  segment that matched nothing, the valid names at that level, and the closest name or alias there as a
+                  suggestion.
+                justification: |
+                  A failed lookup is only useful when it tells the caller what would have worked.
+                tests:
+                  - HelpCatalog_Resolve_ValidPath_ReturnsCardOnly
+                  - HelpCatalog_Resolve_UnknownChild_ReportsParentSegmentAndValidNames
+                  - HelpCatalog_Resolve_UnknownRoot_HasNoParentAndListsRoots
+                  - HelpCatalog_Resolve_UnknownSegment_SuggestsClosestNameOrAlias
+
+              - id: HelpCards-Catalog-HelpCatalog-Relations
+                title: >-
+                  The catalog shall give the visible children of a card in sibling order and its visible see-also
+                  cards in the order written, and reject a null card.
+                justification: |
+                  Navigation from card to card is the main use of a help catalog.
+                tests:
+                  - HelpCatalog_GetChildren_AndGetSeeAlso_FollowOrder
+
+              - id: HelpCards-Catalog-HelpCatalog-Examples
+                title: >-
+                  The catalog shall find all examples of a name, optionally limited by the form card-hash-name or a
+                  scope card to that card and the cards below it, and the first example of a name in a card and its
+                  subtree searched depth first.
+                justification: |
+                  Tools print one example by name and list the examples of a topic.
+                tests:
+                  - HelpCatalog_FindExamples_ByName_ReturnsEveryMatchWithOwner
+                  - HelpCatalog_FindExamples_CardFormAndScope_LimitToSubtree
+                  - HelpCatalog_FindExample_SearchesCardThenSubtreeDepthFirst
+
+              - id: HelpCards-Catalog-HelpCatalog-TagFilter
+                title: >-
+                  The catalog shall create a view that keeps the cards with an included tag and drops the cards with
+                  an excluded tag, comparing tags ignoring case, and reject an unknown tag only when the catalog has
+                  a closed tag vocabulary.
+                justification: |
+                  Products show cards by audience or topic; a typo must be caught where the vocabulary is closed.
+                tests:
+                  - HelpCatalog_Filter_IncludeAndExcludeTags_KeepsMatchingCards
+                  - HelpCatalog_Filter_UnknownTag_ThrowsOnlyForClosedVocabulary
+
+              - id: HelpCards-Catalog-HelpCatalog-SourceFilter
+                title: >-
+                  The catalog shall create a view that includes and excludes cards by source name, ignoring case,
+                  list only the sources that still have visible cards, and reject an unknown source name.
+                justification: |
+                  Callers that show the help of one source need that view and an early error for a misspelled name.
+                tests:
+                  - HelpCatalog_FilterSource_IncludeExcludeAndUnknown_Behaves
+
+              - id: HelpCards-Catalog-HelpCatalog-Predicate
+                title: >-
+                  The catalog shall call a view predicate once for each card, at once, in card order, on the calling
+                  thread, and not keep the predicate.
+                justification: |
+                  A view that called back later could not be shared between threads safely.
+                tests:
+                  - HelpCatalog_Where_Predicate_RunsOncePerCardEagerlyInOrderAndIsNotRetained
+
+              - id: HelpCards-Catalog-HelpCatalog-Without
+                title: >-
+                  The catalog shall create a view that hides exactly the cards with the given ids, lifting their
+                  visible children to the nearest visible ancestor or the roots, and reject an unknown or empty id.
+                justification: |
+                  Products hide single cards that do not apply, without losing the cards below them.
+                tests:
+                  - HelpCatalog_Without_HiddenParent_LiftsChildren
+                  - HelpCatalog_Without_HiddenMiddleCard_LiftsToNearestVisibleAncestor
+                  - HelpCatalog_Without_UnknownOrEmptyId_ThrowsArgumentException
+
+              - id: HelpCards-Catalog-HelpCatalog-HiddenCards
+                title: >-
+                  The catalog shall walk through hidden cards when it looks up a path but return nothing for a
+                  hidden target, drop hidden cards from see-also lists, and find no example of a hidden card.
+                justification: |
+                  A hidden card must not be revealed by its neighbors.
+                tests:
+                  - HelpCatalog_Find_HiddenCard_WalksThroughButReturnsNullForHiddenTarget
+                  - HelpCatalog_GetSeeAlso_HiddenTarget_IsDropped
+                  - HelpCatalog_FindExamples_HiddenCard_IsNotFound
+
+              - id: HelpCards-Catalog-HelpCatalog-ViewComposition
+                title: >-
+                  The catalog shall make views of views show the intersection of their filters, share the frozen
+                  data, leave the original catalog unchanged, and give each view its own card objects.
+                justification: |
+                  Views are cheap and independent, so they can be made per request.
+                tests:
+                  - HelpCatalog_Views_Compose_ByIntersectionAndShareData
+                  - HelpCatalog_Views_CardsOfViewsAreIndependentObjects
+
+              - id: HelpCards-Catalog-HelpCatalog-Concurrency
+                title: >-
+                  The catalog shall give consistent results when many threads use it and make views from it at the
+                  same time.
+                justification: |
+                  A catalog is shared by every request of a tool.
+                tests:
+                  - HelpCatalog_Concurrency_ParallelFindBodyWhereAndFilter_AreConsistent
+
+              - id: HelpCards-Catalog-HelpCatalog-Determinism
+                title: >-
+                  The catalog shall be created with the same cards, bodies, and order whatever the current culture
+                  of the thread is.
+                justification: |
+                  Help must be identical on every machine.
+                tests:
+                  - HelpCatalog_Create_Twice_IsDeterministicAndCultureIndependent
+
+              - id: HelpCards-Catalog-HelpCatalog-Render
+                title: >-
+                  The catalog shall render a card as text, Markdown, or JSON according to the format of the options,
+                  with the defaults when no options are given, as the card is shown by the catalog view that renders
+                  it, and call the link callback only for targets that view shows.
+                justification: |
+                  A view must render exactly what it shows, whichever view the card object came from.
+                tests:
+                  - HelpCatalog_Render_DefaultOptions_WritesTextDocument
+                  - HelpCatalog_Render_Format_SelectsTextMarkdownOrJson
+                  - HelpCatalog_Render_CardOfOtherView_UsesTheRulesOfTheRenderingView
+                  - HelpCatalog_Render_LinkFormatter_IsCalledOnlyForVisibleTargets
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderArguments
+                title: >-
+                  The catalog shall reject a null card with an argument null exception and a card that the catalog
+                  view does not show with an argument exception, for every rendering member that takes a card or a
+                  list of cards.
+                justification: |
+                  Rendering a hidden card would leak it.
+                tests:
+                  - HelpCatalog_Render_NullOrHiddenCard_ThrowsArgumentException
+                  - HelpCatalog_RenderCardList_CardsOfOtherView_AreMappedOrRejected
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderIndex
+                title: >-
+                  The catalog shall render the index down to the requested depth, reject a negative depth with an
+                  argument exception, and write the usage lines of the tool into the JSON index when they are
+                  supplied internally.
+                justification: |
+                  The command-line helper shows roots only and adds the usage lines of the tool.
+                tests:
+                  - HelpCatalog_RenderIndex_DepthAndFormats_AreHonored
+                  - HelpCatalog_RenderIndex_UsageLines_AreWrittenForJsonOnly
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderExamples
+                title: >-
+                  The catalog shall render the examples of a card and one example, in text and in JSON, find the
+                  example ignoring case, and reject an unknown example with an argument exception.
+                justification: |
+                  Examples are saved to files and run, so the right one must come out.
+                tests:
+                  - HelpCatalog_RenderExamplesAndExample_TextAndJson_AreWritten
+
+              - id: HelpCards-Catalog-HelpCatalog-RenderLists
+                title: >-
+                  The catalog shall render search results and lists of cards in text and in JSON, with the filter of
+                  the list written into the JSON document when it is supplied internally, and reject null arguments.
+                justification: |
+                  Searches and tag listings are rendered by the callers that produced them.
+                tests:
+                  - HelpCatalog_RenderSearchAndCardList_Documents_AreWritten
+                  - HelpCatalog_RenderCardList_Filter_IsWrittenForJson
+
+              - id: HelpCards-Catalog-HelpCatalog-FormatBody
+                title: >-
+                  The catalog shall write the body of a card with its links in the link style of the options,
+                  whatever the format, with the plain style equal to the body of the card.
+                justification: |
+                  Callers that print the body themselves still need links in their own style.
+                tests:
+                  - HelpCatalog_FormatBody_LinkStyle_IsAppliedWhateverTheFormat
+
+              - id: HelpCards-Catalog-HelpCatalog-ComposedData
+                title: >-
+                  The catalog shall wrap data that was already composed into a catalog that shows every card, with
+                  the same cards as a catalog created from the same source.
+                justification: |
+                  The validator composes data itself so that it can report problems without an exception, and
+                  must inspect the cards through the model that adopters see.
+                tests:
+                  - HelpCatalog_FromData_ComposedData_ShowsTheCardsOfCreate
+
+              - id: HelpCards-Catalog-HelpCatalog-Search
+                title: >-
+                  The catalog shall search its visible cards for a query and return at most the requested number of
+                  results, best first, each with the card data, the score, and the fields that matched, and never
+                  return a card that the view hides.
+                justification: |
+                  Search is how a reader finds a card without knowing where it is.
+                tests:
+                  - HelpCatalog_Search_MaxResults_LimitsTheBestResults
+                  - HelpCatalog_Search_Result_CarriesCardDataAndMatchedFields
+                  - HelpCatalog_Search_View_ReturnsVisibleCardsOnly
+
+              - id: HelpCards-Catalog-HelpCatalog-SearchOptions
+                title: >-
+                  The catalog shall restrict a search to the sources and tags of the options, and reject a null
+                  query, a maximum below one, an unknown source, and a tag outside a closed vocabulary.
+                justification: |
+                  Callers restrict searches to the libraries and topics they care about, and mistakes must be loud.
+                tests:
+                  - HelpCatalog_Search_SourcesAndTags_RestrictTheCardsSearched
+                  - HelpCatalog_Search_InvalidArguments_Throw
+
+              - id: HelpCards-Catalog-HelpCatalog-Suggest
+                title: >-
+                  The catalog shall suggest the names, aliases, and ids of its visible cards that are close to a word,
+                  never a hidden card, limit them to the requested count, and reject a null word and a count below
+                  one.
+                justification: |
+                  Suggestions must not reveal a card that a view hides.
+                tests:
+                  - HelpCatalog_Suggest_NamesAliasesAndIds_AreCandidates
+                  - HelpCatalog_Suggest_View_NeverSuggestsHiddenCards
+                  - HelpCatalog_Suggest_InvalidArguments_Throw

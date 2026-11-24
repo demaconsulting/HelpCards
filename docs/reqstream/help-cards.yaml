@@ -3,110 +3,532 @@
 #
 # These requirements describe the externally visible behavior of the library
 # from the perspective of its consumers, without specifying implementation details.
+# Every requirement here is tagged 'system' so it is a root of the decomposition
+# (see root-tags in requirements.yaml).
 
 sections:
-  - title: Library API
+  - title: HelpCards Requirements
     requirements:
-      - id: HelpCards-Lib-Greeting
-        title: The library shall generate a greeting string when given a name.
+      - id: HelpCards-Embedding-DefaultDirectory
+        title: >-
+          A project that references the package shall embed every file of its Help folder as an assembly
+          resource whose name starts with the assembly name followed by ".Help/" without any further
+          configuration.
         tags: [system]
         justification: |
-          Provides a simple demonstration of library functionality following
-          .NET library best practices for DEMA Consulting libraries.
-        children:
-          - HelpCards-Demo-Greeting
+          Library authors expect to drop Markdown cards into a Help folder and have them travel with
+          the assembly; any required boilerplate would be repeated in every adopting project.
         tests:
-          - HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting
-          - HelpCards_SystemCustomization_CustomPrefix_ReturnsExpectedGreeting
+          - HelpCards_Embedding_DefaultDirectory_UsesAssemblyNamePrefix
 
-      - id: HelpCards-Lib-GreetingFormat
-        title: The library shall return a greeting string in the format "{prefix}, {name}!".
+      - id: HelpCards-Embedding-OverriddenDirectory
+        title: >-
+          A project shall be able to override the embedded folder and the resource name prefix, and every
+          file below the folder, including nested folders and data files, shall be embedded under the
+          prefix with "/" separators.
         tags: [system]
         justification: |
-          The format is the core observable contract of the library: callers depend on this
-          specific structure in documentation examples and integration code.
-        children:
-          - HelpCards-Demo-Greeting
+          Projects that already use another folder name, or that embed several sources side by side,
+          need to choose the folder and the prefix without changing the package.
         tests:
-          - HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting
-          - HelpCards_SystemCustomization_CustomPrefix_ReturnsExpectedGreeting
+          - HelpCards_Embedding_OverriddenDirectory_EmbedsEveryFileUnderPrefix
+          - HelpCards_Embedding_EmbeddedResource_ReadsAuthoredContent
 
-      - id: HelpCards-Lib-DefaultPrefix
-        title: The library shall use "Hello" as the default greeting prefix.
+      - id: HelpCards-Embedding-LoadSources
+        title: >-
+          A help source shall be creatable from the embedded resources of an assembly or from text held in
+          memory, and creating a source shall perform no I/O.
         tags: [system]
         justification: |
-          Callers constructing the library without a prefix argument need a predictable default
-          greeting to rely on in documentation and examples.
+          Libraries embed cards and tools generate help at run time; creating a source must be cheap because
+          a library keeps it in a static field.
         children:
-          - HelpCards-Demo-DefaultPrefix
+          - HelpCards-Loading-Sources
         tests:
-          - HelpCards_SystemIntegration_DefaultConstruction_ReturnsExpectedGreeting
+          - HelpCards_Sources_Assembly_ReadsEmbeddedCards
+          - HelpCards_Sources_Memory_ReadsFiles
+          - HelpCards_Sources_Construction_PerformsNoIo
 
-      - id: HelpCards-Lib-CustomPrefix
-        title: The library shall support a customizable greeting prefix.
+      - id: HelpCards-FrontMatter-RestrictedSubset
+        title: >-
+          Cards shall be written in a restricted subset of YAML front matter that is decoded without any
+          YAML dependency, and every construct outside the subset shall be rejected with an error that
+          names the file and the line.
         tags: [system]
         justification: |
-          Consumers may need to produce greetings with a prefix other than the
-          default, so the library must allow the prefix to be specified at
-          construction time.
+          A dependency-free decoder keeps every adopting library and tool dependency-free, and strict,
+          line-accurate errors let authors fix a card without guessing what a YAML parser would have done.
         children:
-          - HelpCards-Demo-AcceptCustomPrefix
-          - HelpCards-Demo-Prefix
+          - HelpCards-Loading-FrontMatter
         tests:
-          - HelpCards_SystemCustomization_CustomPrefix_ReturnsExpectedGreeting
+          - HelpCards_FrontMatter_ValidSubset_ReadsCard
+          - HelpCards_FrontMatter_UnsupportedConstruct_ReportsFileAndLine
 
-      - id: HelpCards-Lib-Prefix
-        title: The library shall expose the configured greeting prefix via a read-only property.
+      - id: HelpCards-FrontMatter-Keys
+        title: >-
+          Cards, overlays, translations, and the source description shall accept only the keys defined for
+          them, with every value following the grammar of its key, and an unknown key shall be reported with
+          the keys that are allowed.
         tags: [system]
         justification: |
-          Callers may need to inspect the prefix configured at construction time without
-          re-specifying it or relying on the greeting output format to infer it.
+          A strict key matrix catches typos such as "tag" for "tags" that would otherwise silently drop
+          information from the help.
         children:
-          - HelpCards-Demo-Prefix
+          - HelpCards-Loading-Cards
         tests:
-          - HelpCards_SystemIntegration_CustomPrefix_ExposesPrefix
+          - HelpCards_FrontMatter_UnknownKey_ReportsKeyAndAllowedKeys
 
-      - id: HelpCards-Lib-ValidationNull-DemoMethod
-        title: The library shall reject a null name argument to DemoMethod with ArgumentNullException.
+      - id: HelpCards-FrontMatter-ExtensionsAndSchema
+        title: >-
+          Cards shall be able to carry extension keys that start with "x-", which the catalog keeps as extensions of the
+          card, and a source shall declare a schema that is 1 when omitted and rejected when higher than the library
+          supports.
         tags: [system]
         justification: |
-          Passing null to DemoMethod is a programming error. Throwing ArgumentNullException
-          immediately surfaces the mistake to callers and prevents obscure failures deeper in
-          the call stack.
-        children:
-          - HelpCards-Demo-ValidationNull-DemoMethod
+          Tools attach their own metadata to cards without a change of the library, and a source written for a newer
+          schema must fail clearly instead of being read wrongly.
         tests:
-          - HelpCards_SystemValidation_DemoMethodNullInput_ThrowsArgumentNullException
+          - HelpCards_FrontMatter_ExtensionKeysAndSchema_AreKeptAndEnforced
 
-      - id: HelpCards-Lib-ValidationNull-Constructor
-        title: The library shall reject a null prefix argument to the constructor with ArgumentNullException.
+      - id: HelpCards-Tokens-Substitution
+        title: >-
+          Text of cards shall be able to use tokens that are replaced with the values of the source and the
+          built-in tool name and version, and an unknown token shall be an error that names the file and the
+          line.
         tags: [system]
         justification: |
-          Passing null to the constructor is a programming error. Throwing ArgumentNullException
-          immediately surfaces the mistake and prevents invalid instances from being created.
+          Tokens keep values such as limits and tool names in one place so that help stays correct when
+          they change.
         children:
-          - HelpCards-Demo-ValidationNull-Constructor
+          - HelpCards-Loading-Tokens
         tests:
-          - HelpCards_SystemValidation_ConstructorNullPrefix_ThrowsArgumentNullException
+          - HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced
+          - HelpCards_Tokens_UnknownToken_ReportsFileAndLine
 
-      - id: HelpCards-Lib-ValidationEmpty-DemoMethod
-        title: The library shall reject an empty-string name argument to DemoMethod with ArgumentException.
+      - id: HelpCards-Cultures-Fallback
+        title: >-
+          Cards shall be translatable per file, an explicitly requested culture shall select the most
+          specific translation with fallback to less specific cultures and to the neutral text, and the
+          neutral culture shall select neutral text only.
         tags: [system]
         justification: |
-          Passing an empty string to DemoMethod is a programming error. Throwing ArgumentException
-          immediately surfaces the mistake and prevents malformed output such as "Hello, !".
+          Help is read in the language of the reader; a partly translated source must still be complete.
         children:
-          - HelpCards-Demo-ValidationEmpty-DemoMethod
+          - HelpCards-Loading-Cultures
+          - HelpCards-Catalog-Cultures
         tests:
-          - HelpCards_SystemValidation_DemoMethodEmptyInput_ThrowsArgumentException
+          - HelpCards_Cultures_Translation_IsSelectedPerFileWithFallback
+          - HelpCards_Cultures_Catalog_ExposesTranslatedCardsWithBodyCulture
 
-      - id: HelpCards-Lib-ValidationEmpty-Constructor
-        title: The library shall reject an empty-string prefix argument to the constructor with ArgumentException.
+      - id: HelpCards-Links-Syntax
+        title: >-
+          Card bodies shall be able to link to cards, to examples, and to cards of other sources outside code
+          spans and fences, and text that starts like a link but is not one shall be an error.
         tags: [system]
         justification: |
-          Passing an empty string to the constructor is a programming error. Throwing ArgumentException
-          immediately surfaces the mistake and prevents malformed output such as ", World!".
+          Cards refer to each other; links that fail silently would leave readers with broken references,
+          while code samples must be able to show the same brackets.
         children:
-          - HelpCards-Demo-ValidationEmpty-Constructor
+          - HelpCards-Loading-Links
         tests:
-          - HelpCards_SystemValidation_ConstructorEmptyPrefix_ThrowsArgumentException
+          - HelpCards_Links_OutsideCode_AreRecognizedAndTyposReported
+
+      - id: HelpCards-Diagnostics-Problems
+        title: >-
+          Every defect of a source shall be reported as a problem that carries its severity, rule, source,
+          file, line, and message, and all defects of a source shall be collected instead of stopping at the
+          first.
+        tags: [system]
+        justification: |
+          Authors fix their help in one pass; a precise, structured problem list is also what tests and
+          tools need to assert that cards are valid.
+        children:
+          - HelpCards-Loading-Diagnostics
+          - HelpCards-Catalog-Problems
+        tests:
+          - HelpCards_Diagnostics_Defects_AreReportedWithAllFields
+          - HelpCards_Diagnostics_SeveralDefectiveFiles_AreAllCollected
+
+      - id: HelpCards-Diagnostics-FailureModel
+        title: >-
+          Creating a catalog from a defective source shall throw one exception that carries every error, and an
+          invalid argument shall throw an argument exception that is never that exception.
+        tags: [system]
+        justification: |
+          Callers must be able to tell defective help content, which authors fix, from a programming mistake,
+          which developers fix.
+        children:
+          - HelpCards-Composition-Failures
+          - HelpCards-Catalog-Failures
+        tests:
+          - HelpCards_Diagnostics_CreateFailure_ThrowsCatalogExceptionForDefectsAndArgumentExceptionForMisuse
+
+      - id: HelpCards-Tree-Structure
+        title: >-
+          A catalog shall expose the cards of a source as an immutable tree with roots, children, aliases, tags,
+          see-also entries, examples, and links, and shall read no file after it was created.
+        tags: [system]
+        justification: |
+          The tree is the product of the library; adopters, renderers, and agents all start from it, and it is
+          shared between threads, so it must not change or touch the file system.
+        children:
+          - HelpCards-Composition-Tree
+          - HelpCards-Catalog-Model
+        tests:
+          - HelpCards_Catalog_SimpleFixture_ExposesTreeAliasesTagsExamplesAndLinks
+          - HelpCards_Catalog_Create_IsImmutableAndReadsNoFilesAfterwards
+
+      - id: HelpCards-MultiSource-Composition
+        title: >-
+          A catalog shall compose the help of several libraries and an application: each source can be mounted
+          under its own name or added flat, a source can import the sources of its own product to use their tokens
+          and card ids, overlays can extend cards of other sources, links between sources degrade to their display
+          text when the other source is absent, and clashes between sources shall be reported with both sources.
+        tags: [system]
+        justification: |
+          An application shows its own help together with the help of the libraries it uses, and a library must
+          be usable with or without its neighbors.
+        children:
+          - HelpCards-Composition-Sources
+          - HelpCards-Composition-Imports
+          - HelpCards-Composition-Overlays
+          - HelpCards-Composition-Collisions
+        tests:
+          - HelpCards_MultiSource_MountedLibrariesAndApp_ComposeOneCatalog
+          - HelpCards_MultiSource_AbsentSources_DegradeToDisplayTextAndSkipOptionalOverlays
+          - HelpCards_MultiSource_Collisions_AreCollectedInOneException
+
+      - id: HelpCards-Ordering-Siblings
+        title: >-
+          Cards that share a parent, and the roots, shall be ordered by the children list of their parent, then by
+          order value, then by name.
+        tags: [system]
+        justification: |
+          Help is read top down; authors must be able to steer the order and rely on it being stable.
+        children:
+          - HelpCards-Composition-Ordering
+        tests:
+          - HelpCards_Ordering_OrderFixture_FollowsChildrenOrderThenName
+
+      - id: HelpCards-References-Resolution
+        title: >-
+          Links, see-also entries, and example links shall be resolved over the whole tree, so that forward
+          references are valid, and every broken reference and every repeated name shall be reported with file and
+          line.
+        tags: [system]
+        justification: |
+          Cards refer to each other; dead references and ambiguous names would leave readers with wrong help.
+        children:
+          - HelpCards-Composition-References
+          - HelpCards-Composition-Uniqueness
+        tests:
+          - HelpCards_References_BrokenAndForwardReferences_AreHandled
+
+      - id: HelpCards-Lookup-PathsAndExamples
+        title: >-
+          A catalog shall find cards by a path of names and aliases and examples by name, and a failed path shall
+          report the valid names at the level where it failed.
+        tags: [system]
+        justification: |
+          Command lines and agents address help by path; a failed path must tell the caller what would have worked.
+        children:
+          - HelpCards-Catalog-Lookup
+        tests:
+          - HelpCards_Lookup_PathsAndExamples_FindCardsAndExamples
+
+      - id: HelpCards-Views-Subsets
+        title: >-
+          A catalog shall provide views that show a subset of its cards by tag, source, predicate, or id without
+          changing the catalog, and a view shall never point at a card it hides.
+        tags: [system]
+        justification: |
+          Products show different parts of their help to different readers.
+        children:
+          - HelpCards-Catalog-Views
+        tests:
+          - HelpCards_Views_FilterSourceWhereWithout_ShowSubsetsAndHideTargets
+
+      - id: HelpCards-Vocabulary-TagsAndRoots
+        title: >-
+          A catalog shall be able to enforce a closed tag vocabulary, required tags, and an expected set of root
+          cards.
+        tags: [system]
+        justification: |
+          A product that fixes its topics and tags needs a build failure when a card strays from them.
+        children:
+          - HelpCards-Composition-Vocabulary
+        tests:
+          - HelpCards_Tags_VocabularyAndExpectedRoots_AreEnforced
+
+      - id: HelpCards-ThreadSafety-SharedCatalog
+        title: >-
+          One catalog and the views made from it shall be safe to use from many threads at the same time, for
+          lookups, views, search and suggestions, and rendering.
+        tags: [system]
+        justification: |
+          A tool or service creates its catalog once and shares it between all requests.
+        children:
+          - HelpCards-Catalog-Concurrency
+        tests:
+          - HelpCards_ThreadSafety_ParallelUse_IsConsistent
+          - HelpCards_ThreadSafety_ParallelRendering_IsConsistent
+
+      - id: HelpCards-Determinism-Output
+        title: >-
+          Creating a catalog from the same source, and rendering it, shall give the same result whatever the current
+          culture of the machine is.
+        tags: [system]
+        justification: |
+          Help text and its order must be byte-identical on every machine.
+        children:
+          - HelpCards-Presentation-Determinism
+        tests:
+          - HelpCards_Determinism_CreateTwice_IsEqualRegardlessOfCurrentCulture
+          - HelpCards_Determinism_RenderTwice_IsEqualRegardlessOfCurrentCulture
+
+      - id: HelpCards-Rendering-TextAndMarkdown
+        title: >-
+          A catalog shall render a card, the index, and a list of cards as plain text and as Markdown with a fixed
+          layout, wrapping only the lines it generates, with LF line endings and no trailing line feed.
+        tags: [system]
+        justification: |
+          People read help in a terminal and in documents; a fixed, byte-stable layout can be learned and tested.
+        children:
+          - HelpCards-Presentation-Text
+          - HelpCards-Presentation-Markdown
+          - HelpCards-Presentation-Lists
+          - HelpCards-Presentation-Wrapping
+          - HelpCards-Presentation-Options
+          - HelpCards-Catalog-Rendering
+        tests:
+          - HelpCards_Rendering_SimpleFixtureText_EqualsGolden
+          - HelpCards_Rendering_SimpleFixtureMarkdown_EqualsGolden
+          - HelpCards_Rendering_CardListsAndWrapping_WrapOnlyGeneratedLinesInText
+
+      - id: HelpCards-Rendering-LinkStyles
+        title: >-
+          A catalog shall write the links of card bodies and lists in a plain, a command, and a Markdown style or
+          through a callback of the caller, and never point at a card that a view hides.
+        tags: [system]
+        justification: |
+          The same card is read in a terminal, in a document, and inside a tool with its own links.
+        children:
+          - HelpCards-Presentation-LinkStyles
+        tests:
+          - HelpCards_Rendering_LinkStyles_WriteTargetsInEachStyle
+
+      - id: HelpCards-Rendering-Examples
+        title: >-
+          A catalog shall print the examples of a card in full, list the cards below that have examples, and print
+          one example alone as exactly its content.
+        tags: [system]
+        justification: |
+          Examples are saved to files and run, so they must come out unchanged.
+        children:
+          - HelpCards-Presentation-Examples
+        tests:
+          - HelpCards_Rendering_Examples_ArePrintedInFullOrAlone
+
+      - id: HelpCards-JsonContract-Documents
+        title: >-
+          A catalog shall render its cards, indexes, examples, search results, and card lists as JSON documents of
+          contract version 1, each on one line of ASCII without any null, with the keys in a fixed order.
+        tags: [system]
+        justification: |
+          Tools and agents parse the JSON, so it follows a frozen, versioned contract.
+        children:
+          - HelpCards-Presentation-Json
+          - HelpCards-Presentation-JsonContract
+        tests:
+          - HelpCards_Rendering_SimpleFixtureJson_EqualsGolden
+          - HelpCards_JsonContract_Documents_AreOneAsciiLineWithoutNull
+
+      - id: HelpCards-Validation-Problems
+        title: >-
+          A product shall be able to validate its help sources and catalogs in its own tests and get every defect
+          as a problem list, with quality warnings for long summaries, large cards, reserved headings, fenced blocks
+          without a language or never closed, unused tokens, long lines, and commands that cannot be run, and to
+          fail a test with one exception for the errors.
+        tags: [system]
+        justification: |
+          Help is content that ships with the product; a test that checks it keeps broken or unreadable cards from
+          reaching a user, and a problem list is what tools and agents can act on.
+        children:
+          - HelpCards-Testing-Validation
+          - HelpCards-Testing-QualityRules
+        tests:
+          - HelpCards_Validation_SourcesAndCatalogs_ReportProblemsAndAssert
+
+      - id: HelpCards-Validation-Examples
+        title: >-
+          A product shall be able to enumerate the examples of its catalog with their cards and to read the
+          command line of a command example into the arguments for its own entry point, with a grammar that never
+          needs a shell.
+        tags: [system]
+        justification: |
+          Examples are data; a product proves them by running them itself, and the library never starts a process.
+        children:
+          - HelpCards-Testing-Examples
+        tests:
+          - HelpCards_Validation_Examples_AreEnumeratedAndCommandsParsed
+
+      - id: HelpCards-Validation-Markdown
+        title: >-
+          A product shall be able to read the headings, sections, and bullets of a card body to compare its help
+          with its other documents.
+        tags: [system]
+        justification: |
+          A user guide and the help cards describe the same behavior; a parity test keeps them from drifting apart.
+        children:
+          - HelpCards-Testing-Markdown
+        tests:
+          - HelpCards_Validation_MarkdownHelpers_ReadHeadingsSectionsAndBullets
+
+      - id: HelpCards-Validation-Resources
+        title: >-
+          A product shall be able to compare the cards embedded in its assembly with the cards in a directory and
+          get every file that exists on one side only.
+        tags: [system]
+        justification: |
+          Authors work in a directory while the product ships embedded resources; they must not differ.
+        children:
+          - HelpCards-Testing-Resources
+        tests:
+          - HelpCards_Validation_CompareToDirectory_ReportsFilesOnOneSideOnly
+
+      - id: HelpCards-PublicApi-FrozenSurface
+        title: >-
+          The library shall make public exactly the types and members of its documented public surface and keep every
+          other type and member internal.
+        tags: [system]
+        justification: |
+          Adopters compile against the public surface and expect it not to change; anything else that is public
+          becomes a commitment nobody planned.
+        tests:
+          - HelpCards_PublicApi_ExportedTypes_MatchTheFrozenSurface
+
+      - id: HelpCards-NoDependencies-FrameworkOnly
+        title: >-
+          The library shall reference no assembly that is not part of the .NET base class library.
+        tags: [system]
+        justification: |
+          Every adopting library and tool stays free of transitive dependencies.
+        tests:
+          - HelpCards_NoDependencies_ReferencedAssemblies_AreFrameworkOnly
+
+      - id: HelpCards-Search-Ranking
+        title: >-
+          A catalog shall search its visible cards for the words of a query and return the best cards first, ranked
+          by where and how well the words match, limited by count, source, and tag, and never return a card that a view
+          hides.
+        tags: [system]
+        justification: |
+          Readers and agents find help by the words they know, not by the path of a card.
+        children:
+          - HelpCards-Catalog-Search
+        tests:
+          - HelpCards_Search_BigFixture_MatchesRankingGolden
+          - HelpCards_Search_LimitsAndViews_RestrictResults
+
+      - id: HelpCards-Search-Suggestions
+        title: >-
+          A catalog shall suggest the visible names, aliases, and ids that are close to a word that was not found,
+          and a failed path shall name the closest name at the level where it failed.
+        tags: [system]
+        justification: |
+          A misspelled name should lead to the right card instead of to a dead end.
+        children:
+          - HelpCards-Catalog-Suggestions
+        tests:
+          - HelpCards_Suggestions_UnknownNames_SuggestClosest
+
+      - id: HelpCards-Cli-HelpVerb
+        title: >-
+          A tool shall be able to add help to its command line with one call before its own parser: the call answers a
+          help command and leaves every other command alone, without creating the catalog or reading a resource for
+          those, and offers a constant footer sentence for the usage text of the tool.
+        tags: [system]
+        justification: |
+          Help must cost nothing for the commands that are not help, and must work with any command-line library.
+        children:
+          - HelpCards-Integration-CliGate
+        tests:
+          - HelpCards_Cli_HelpVerb_RunsHelpAndLeavesOtherCommandsAlone
+
+      - id: HelpCards-Cli-Options
+        title: >-
+          The help command shall show the index, a card, the examples of a card, one example, search results, and the
+          cards that have a tag, in text, Markdown, and JSON, with the options and conflict rules of the command-line
+          grammar.
+        tags: [system]
+        justification: |
+          People and scripts navigate help by the same few questions, and the grammar must be learnable and exact.
+        children:
+          - HelpCards-Integration-CliOptions
+          - HelpCards-Integration-CliModes
+        tests:
+          - HelpCards_Cli_Options_SelectModesAndFormats
+          - HelpCards_Cli_OptionRules_RejectConflictsAndFilterBySource
+
+      - id: HelpCards-Cli-ExitCodes
+        title: >-
+          The help command shall exit with 0 on success, 2 for wrong arguments and unknown names, and 70 for a defective
+          catalog, and write an error to the error output as text, or to the output as a JSON error document.
+        tags: [system]
+        justification: |
+          Scripts depend on exit codes and on where a message is written.
+        children:
+          - HelpCards-Integration-CliFailures
+        tests:
+          - HelpCards_Cli_Failures_UseExitCodes
+
+      - id: HelpCards-Cli-Extensibility
+        title: >-
+          A tool shall be able to add usage lines, a preamble, and sections to the index, answer help subjects of its
+          own, choose the width and command template, and select the culture of its catalog.
+        tags: [system]
+        justification: |
+          Help for the commands of a tool lives beside the help cards, and each tool has its own conventions.
+        children:
+          - HelpCards-Integration-CliExtensions
+        tests:
+          - HelpCards_Cli_Extensions_FallbackSectionsWidthAndLanguage
+
+      - id: HelpCards-AgentTool-Knowledge
+        title: >-
+          A catalog shall be available to an AI agent as one provider-neutral tool that answers the index, a card with
+          the content of its examples, one example, and search results, restricted by source and tag, under a name that
+          the host chooses.
+        tags: [system]
+        justification: |
+          Agents need the same knowledge as people, in as few calls as possible, in any agent framework.
+        children:
+          - HelpCards-Integration-AgentCalls
+        tests:
+          - HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch
+          - HelpCards_AgentTool_SourceAndTag_RestrictIndexAndSearch
+
+      - id: HelpCards-AgentTool-Schema
+        title: >-
+          The knowledge tool shall describe itself with a name, a description, and a JSON schema of its arguments that
+          has an exact, documented text.
+        tags: [system]
+        justification: |
+          A host registers these with its agent framework, and the schema must not drift between releases.
+        children:
+          - HelpCards-Integration-AgentTool
+        tests:
+          - HelpCards_AgentTool_Schema_IsTheSpecifiedText
+
+      - id: HelpCards-AgentTool-Resilience
+        title: >-
+          The knowledge tool shall answer wrong arguments with text that says what to send instead, cut answers that
+          are too long at a line end, and never throw for bad input or a defective catalog.
+        tags: [system]
+        justification: |
+          An agent corrects itself from the text, has a limited context, and cannot continue after an exception.
+        children:
+          - HelpCards-Integration-AgentArguments
+          - HelpCards-Integration-AgentBudget
+        tests:
+          - HelpCards_AgentTool_BudgetAndBoundary_CutAnswersAndNeverThrowForBadInput

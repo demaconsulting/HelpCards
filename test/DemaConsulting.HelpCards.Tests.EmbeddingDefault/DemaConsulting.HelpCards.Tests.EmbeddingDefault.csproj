@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Packaged HelpCards defaults, imported as NuGet imports them (before the project body) -->
+  <Import Project="..\..\src\DemaConsulting.HelpCards\build\DemaConsulting.HelpCards.props" />
+
+  <!-- A source-less library whose only content is the embedded default Help folder. It proves the
+       packaged targets with HelpCardsDirectory and HelpCardsPrefix left at their defaults. It is
+       neither packed nor a test project. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Packaged HelpCards targets, imported as NuGet imports them (after the project body) -->
+  <Import Project="..\..\src\DemaConsulting.HelpCards\build\DemaConsulting.HelpCards.targets" />
+
+</Project>

@@ -1,0 +1,1 @@
+{"helpSchemaVersion":1,"ok":false,"kind":"error","code":"not-found","message":"Unknown help card 'setups' under 'guide'.","hint":"Did you mean 'setup'? Cards under 'guide': setup, usage. Run 'tool help guide' for their summaries.","candidates":["guide/setup","guide/usage"]}

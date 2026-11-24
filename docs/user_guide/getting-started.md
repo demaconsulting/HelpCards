@@ -1,0 +1,116 @@
+# Installation and Quick Start
+
+## Installation
+
+Install the library using the .NET CLI:
+
+```bash
+dotnet add package DemaConsulting.HelpCards
+```
+
+The package targets .NET 8, 9, 10, and 11 and has no dependencies beyond the .NET Base Class Library. Besides the
+assembly it contains two MSBuild files that embed your cards; the chapter *Packaging and Embedding* describes them.
+
+## A First Card
+
+Create a `Help` folder in your project. Each Markdown file in it is one card. This example has a root card and one
+child card, and a `_source.md` file that names the source:
+
+```text
+MyLib/
+├── MyLib.csproj
+└── Help/
+    ├── _source.md
+    ├── getting-started.md
+    └── getting-started/
+        └── install.md
+```
+
+The `_source.md` file describes the source as a whole:
+
+```markdown
+---
+name: demo
+title: MyLib
+summary: Help cards of MyLib.
+---
+MyLib reads data files and writes reports.
+```
+
+The root card has a title, a summary, a tag, and one example:
+
+```markdown
+---
+title: Getting started
+summary: Install MyLib and run it for the first time.
+tags:
+  - tutorial
+examples:
+  - name: load
+    kind: command
+    language: shell
+    content: '{{tool}} load data.csv'
+    description: Load a data file.
+---
+Install the package first, see [[getting-started/install]], then run [[#load]].
+```
+
+The child card is the file `getting-started/install.md`:
+
+```markdown
+---
+title: Install
+summary: Install the package.
+---
+Run `dotnet add package MyLib`.
+```
+
+## Loading and Rendering
+
+A `HelpSource` points at the cards. Creating one reads nothing; the catalog reads the files when it is built:
+
+```csharp
+using DemaConsulting.HelpCards.Catalog;
+using DemaConsulting.HelpCards.Loading;
+
+var catalog = HelpCatalog.Create(builder => builder
+    .AddSource(HelpSource.FromAssembly(typeof(Program).Assembly)));
+
+HelpCard? card = catalog.Find("getting-started");
+Console.WriteLine(catalog.Render(card!));
+```
+
+The default rendering is plain text. The output of this example is:
+
+```text
+# Getting started
+
+Install MyLib and run it for the first time.
+Tags: tutorial
+
+Install the package first, see the card `getting-started/install`, then run the example `load`.
+
+## Cards
+
+- getting-started/install
+  Install the package.
+
+## Examples
+
+- load [command]: Load a data file.
+```
+
+`catalog.RenderIndex()` lists every card with its summary. The overloads of `Render` take a `HelpRenderOptions` to
+choose Markdown or JSON, the link style, and the wrapping width; see the chapter *Command-Line Integration* for the
+JSON documents.
+
+If any card is defective, `HelpCatalog.Create` throws a `HelpCatalogException` that lists every problem with its file
+and line, not only the first one. See the chapter *Composing Sources* for the problem model.
+
+## Where to Go Next
+
+- To write richer cards, read *Writing Cards*.
+- To ship the cards of a library, read *Packaging and Embedding*.
+- To add `tool help` to a command-line tool, read *Command-Line Integration*.
+- To answer questions of an AI agent, read *Agent Knowledge Tool*.
+- To prove that the cards are valid in your tests, read *Testing Your Help*.

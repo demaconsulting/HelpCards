@@ -1,0 +1,48 @@
+---
+# ProblemCollector Unit Requirements
+#
+# Requirements for the ProblemCollector unit of the Composition subsystem, which collects the problems of a build
+# and hands them out in one deterministic order.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        sections:
+          - title: ProblemCollector Requirements
+            requirements:
+              - id: HelpCards-Composition-ProblemCollector-Ordering
+                title: >-
+                  The collector shall return problems ordered by the registration index of the source, the file
+                  path in ordinal order, the line, and the rule identifier in ordinal order, and keep the order in
+                  which problems were found when all of these are equal.
+                justification: |
+                  A fixed order makes problem lists the same on every machine and in every run.
+                tests:
+                  - ProblemCollector_GetOrdered_Problems_AreOrderedBySourceFileLineAndRule
+                  - ProblemCollector_GetOrdered_EqualKeys_KeepInsertionOrder
+
+              - id: HelpCards-Composition-ProblemCollector-Duplicates
+                title: >-
+                  The collector shall keep an identical problem of one source once.
+                justification: |
+                  A defect that two passes both notice is one defect.
+                tests:
+                  - ProblemCollector_GetOrdered_IdenticalProblem_IsKeptOnce
+
+              - id: HelpCards-Composition-ProblemCollector-Severity
+                title: >-
+                  The collector shall be able to return only the problems of one severity and shall say whether
+                  any error was collected.
+                justification: |
+                  Errors fail the build while informational problems only inform.
+                tests:
+                  - ProblemCollector_SeverityFilter_AndHasErrors_FollowProblems
+
+              - id: HelpCards-Composition-ProblemCollector-Arguments
+                title: >-
+                  The collector shall reject a null problem or a null list of problems.
+                justification: |
+                  A null problem is a programming error that must not be stored silently.
+                tests:
+                  - ProblemCollector_Add_Null_ThrowsArgumentNullException

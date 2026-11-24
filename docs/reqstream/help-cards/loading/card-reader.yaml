@@ -1,0 +1,229 @@
+---
+# CardReader Unit Requirements
+#
+# Requirements for the CardReader unit of the Loading subsystem, which classifies the files of a source and
+# reads cards, overlays, translations, examples, and the source description.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        sections:
+          - title: CardReader Requirements
+            requirements:
+              - id: HelpCards-Loading-CardReader-FileClassification
+                title: >-
+                  The reader shall accept card files named "segment.md" in folders named by segments (up to
+                  eight segments deep), translation files named "segment.culture.md", data files, and
+                  "_source.md" at the root, shall ignore data files, shall return cards in ordinal id order,
+                  and shall report every other name as a "file-name" problem.
+                justification: |
+                  The file name is the id of a card and decides its place in the tree, so names that fit no
+                  pattern must be rejected instead of silently ignored.
+                tests:
+                  - CardReader_Read_NestedAndUnorderedFiles_ReturnsCardsInOrdinalIdOrder
+                  - CardReader_Read_DataFile_IsIgnoredWithoutProblem
+                  - CardReader_Read_UpperCaseCardFileName_ReportsFileName
+                  - CardReader_Read_UnderscoreCardFileName_ReportsFileName
+                  - CardReader_Read_UpperCaseFolderName_ReportsFileName
+                  - CardReader_Read_SourceFileInFolder_ReportsFileName
+                  - CardReader_Read_InvalidCultureSuffix_ReportsFileName
+                  - CardReader_Read_HiddenDataFileName_ReportsFileName
+                  - CardReader_Read_NineSegmentPath_ReportsFileName
+                  - CardReader_Read_CultureSuffixesDifferingInCase_ReportsFileName
+
+              - id: HelpCards-Loading-CardReader-CardKeys
+                title: >-
+                  The reader shall read the keys title, summary, aliases, tags, order, children, see-also,
+                  examples, and extension keys of a card, require title and summary, and report an unknown key
+                  with the allowed keys, a missing required key, and a value that breaks the grammar of its key
+                  as problems at their lines.
+                justification: |
+                  A strict key matrix catches typos such as "tag" for "tags" that would otherwise silently drop
+                  information.
+                tests:
+                  - CardReader_Read_CardWithEveryKey_ReturnsExactDefinition
+                  - CardReader_Read_UnknownKey_ReportsKeyUnknownWithAllowedKeys
+                  - CardReader_Read_SourceKeysInCard_ReportKeyUnknown
+                  - CardReader_Read_MissingTitleAndSummary_ReportsKeyMissing
+                  - CardReader_Read_EmptyTitle_ReportsValueInvalid
+                  - CardReader_Read_ListAsTitle_ReportsValueInvalid
+                  - CardReader_Read_InvalidAlias_ReportsValueInvalid
+                  - CardReader_Read_DuplicateTag_ReportsValueInvalid
+                  - CardReader_Read_DuplicateChildren_AreKeptForComposition
+                  - CardReader_Read_OrderValues_AcceptsIntegersAndRejectsOthers
+                  - CardReader_Read_InvalidChild_ReportsValueInvalid
+                  - CardReader_Read_InvalidSeeAlso_ReportsValueInvalid
+                  - CardReader_Read_ScalarForListKey_ReportsValueInvalid
+                  - CardReader_Read_ExtensionKeyAsList_ReportsValueInvalidAndEmptyTagsAreAccepted
+
+              - id: HelpCards-Loading-CardReader-Overlays
+                title: >-
+                  The reader shall read a file whose front matter has "extends" as an overlay with the keys
+                  extends, optional, title, summary, see-also, examples, and extension keys, and report other
+                  keys and invalid values as problems.
+                justification: |
+                  Overlays let one library extend the cards of another; only the keys that make sense for an
+                  extension are allowed.
+                tests:
+                  - CardReader_Read_OverlayWithEveryKey_ReturnsExactOverlay
+                  - CardReader_Read_OverlayWithOnlyExtends_HasDefaults
+                  - CardReader_Read_CardKeysInOverlay_ReportKeyUnknown
+                  - CardReader_Read_InvalidOptionalFlag_ReportsValueInvalid
+                  - CardReader_Read_InvalidExtends_ReportsValueInvalid
+                  - CardReader_Read_OverlayExampleFile_IsRelativeToOverlayFolder
+
+              - id: HelpCards-Loading-CardReader-Examples
+                title: >-
+                  The reader shall read examples of the kinds command, source, and snippet, take the content of
+                  a source or snippet from its inline content or from the file next to the card, normalize
+                  content to LF without trailing line feeds, and report an invalid kind, language, name, file
+                  name, missing key, missing file, empty content, content that starts with a blank line, and a
+                  command that is not exactly one line.
+                justification: |
+                  Examples are shown to people and agents as runnable material; invalid ones must be found
+                  when the card is read, not when someone tries to use them.
+                tests:
+                  - CardReader_Read_CommandExample_ReturnsExactExample
+                  - CardReader_Read_SourceExampleWithFile_ReadsFileNextToCard
+                  - CardReader_Read_ExampleFileInSubfolder_IsRelativeToCardFolder
+                  - CardReader_Read_SourceExampleWithInlineContent_DoesNotReadFile
+                  - CardReader_Read_MissingExampleFile_ReportsExampleFileMissing
+                  - CardReader_Read_ExampleFileWithTokens_ReplacesAndReportsInDataFile
+                  - CardReader_Read_SourceExampleWithoutFile_ReportsKeyMissing
+                  - CardReader_Read_CommandExampleWithFile_ReportsValueInvalid
+                  - CardReader_Read_CommandExampleWithoutContent_ReportsKeyMissing
+                  - CardReader_Read_MultiLineCommand_ReportsExampleInvalid
+                  - CardReader_Read_EmptyContent_ReportsExampleInvalid
+                  - CardReader_Read_ContentStartingWithBlankLine_ReportsExampleInvalid
+                  - CardReader_Read_BlockScalarContent_RemovesIndentAndKeepsStructure
+                  - CardReader_Read_UnknownExampleKind_ReportsValueInvalid
+                  - CardReader_Read_InvalidExampleLanguage_ReportsValueInvalid
+                  - CardReader_Read_ExampleWithoutRequiredKeys_ReportsKeyMissing
+                  - CardReader_Read_UnknownExampleKey_ReportsKeyUnknown
+                  - CardReader_Read_InvalidExampleName_ReportsValueInvalid
+                  - CardReader_Read_UnsafeExampleFileNames_AreReported
+                  - CardReader_Read_ExamplesNotListOfMaps_ReportsValueInvalid
+                  - CardReader_Read_ExampleProblems_KeepCardOnlyWhenStructureIsValid
+
+              - id: HelpCards-Loading-CardReader-Tokens
+                title: >-
+                  The reader shall replace tokens in titles, summaries, example descriptions and content, and
+                  bodies, and report an unknown token at the line of the token in the file that contains it
+                  without dropping the card.
+                justification: |
+                  Tokens keep values such as limits in one place; an unknown token must be an error that points
+                  at the exact text.
+                tests:
+                  - CardReader_Read_TokensInTitleSummaryAndBody_AreReplaced
+                  - CardReader_Read_UnknownTokenInBody_ReportsLineAndKeepsCard
+                  - CardReader_Read_UnknownTokenInSummary_ReportsSummaryLine
+                  - CardReader_Read_SourceRedefinesBuiltInToken_ReportsTokenRedefined
+
+              - id: HelpCards-Loading-CardReader-Links
+                title: >-
+                  The reader shall split the body of a card into text and link parts and report link typos with
+                  the line of the typo in the file.
+                justification: |
+                  Links are resolved later over the whole tree; the reader must hand over parsed parts with
+                  correct lines.
+                tests:
+                  - CardReader_Read_BodyLinks_AreParsedAndTyposReported
+                  - CardReader_Read_EmptyBody_HasNoParts
+
+              - id: HelpCards-Loading-CardReader-CultureSelection
+                title: >-
+                  The reader shall use only neutral files for the invariant culture, ignoring the thread's UI
+                  culture, apply for each file the most specific translation of the requested culture, take
+                  title, summary, aliases, and example descriptions from the translation with individual
+                  fallback to the neutral values, use the neutral file whole when the translation has no body,
+                  and record the culture of the file that supplied the body.
+                justification: |
+                  Each file chooses its own variant so a partly translated source still reads completely, and
+                  the culture is never taken from ambient state that could change between runs.
+                tests:
+                  - CardReader_Read_InvariantCulture_UsesNeutralFiles
+                  - CardReader_Read_BodyFile_IsTheFileThatSuppliedTheBody
+                  - CardReader_Read_InvariantCultureWithGermanUiCulture_IgnoresUiCulture
+                  - CardReader_Read_TranslationSelected_AppliesTranslation
+                  - CardReader_Read_TranslationSelected_TranslatesExampleDescriptions
+                  - CardReader_Read_RegionCultureWithLanguageTranslation_FallsBackToLanguage
+                  - CardReader_Read_RegionTranslationAvailable_PrefersRegion
+                  - CardReader_Read_CultureWithoutTranslation_UsesNeutralFile
+                  - CardReader_Read_TranslationWithoutTitle_FallsBackToNeutralTitle
+                  - CardReader_Read_TranslationWithoutBody_UsesNeutralFileWhole
+                  - CardReader_Read_TranslationForOneCardOnly_OtherCardsStayNeutral
+                  - CardReader_Read_SourceLanguage_IsCultureOfNeutralFiles
+                  - CardReader_Read_OverlayTranslation_TranslatesOverlayBody
+                  - CardReader_Read_SourceTranslation_AppliesToSourceDescription
+
+              - id: HelpCards-Loading-CardReader-TranslationValidation
+                title: >-
+                  The reader shall validate every translation file whether or not its culture is requested,
+                  report keys that a translation may not contain as "translation-key", report a translation
+                  without a neutral file as "translation-orphan", and normalize and validate translation
+                  aliases.
+                justification: |
+                  Translators work on files that the default build never selects; their defects must still be
+                  found before a user asks for that culture.
+                tests:
+                  - CardReader_Read_TranslationWithStructuralKey_ReportsTranslationKey
+                  - CardReader_Read_TranslationSyntaxError_IsReportedForOtherCulture
+                  - CardReader_Read_TranslatedExampleWithOtherKey_ReportsTranslationKey
+                  - CardReader_Read_TranslationAliases_AreNormalizedAndValidated
+                  - CardReader_Read_TranslationWithoutNeutralFile_ReportsTranslationOrphan
+                  - CardReader_Read_SourceTranslationWithoutSourceFile_ReportsTranslationOrphan
+                  - CardReader_Read_OverlayTranslationWithAliases_ReportsTranslationKey
+                  - CardReader_Read_TranslationFiles_AreReadEvenWhenNotRequested
+
+              - id: HelpCards-Loading-CardReader-SourceFile
+                title: >-
+                  The reader shall read the optional "_source.md" with name, title, summary, language, schema,
+                  aliases, children, extension keys, and a landing body, apply the documented defaults, let a
+                  name set in code win over the file, require a valid name, and refuse a schema newer than the
+                  highest supported without reading cards.
+                justification: |
+                  The source file is the public identity of a library: its name is the target of external links
+                  and its schema protects older loaders from cards they cannot read.
+                tests:
+                  - CardReader_Read_SourceFileWithEveryKey_ReturnsExactDescription
+                  - CardReader_Read_NoSourceFile_UsesDefaults
+                  - CardReader_Read_NameInCodeAndInFile_CodeWins
+                  - CardReader_Read_NoNameAnywhere_ReportsSourceInvalid
+                  - CardReader_Read_SourceFileWithoutName_ReportsSourceInvalidForFile
+                  - CardReader_Read_InvalidName_ReportsSourceInvalid
+                  - CardReader_Read_UnsupportedSchema_ReportsSchemaUnsupportedAndReadsNoCards
+                  - CardReader_Read_SchemaValues_DefaultsToOneAndRejectsInvalid
+                  - CardReader_Read_InvalidLanguage_ReportsCultureInvalid
+                  - CardReader_Read_CardKeysInSourceFile_ReportKeyUnknown
+                  - CardReader_Read_SourceFileSyntaxError_ReportsOnceAndReadsCards
+
+              - id: HelpCards-Loading-CardReader-CollectAllProblems
+                title: >-
+                  The reader shall report every problem of a source instead of stopping at the first, end only
+                  the file whose front matter cannot be read, list the ids of such files, report a file that
+                  cannot be read or listed as a "source-read" problem with the exception type and message, and
+                  reject a null argument.
+                justification: |
+                  Authors fix all defects of their cards in one pass, and one broken file must not hide the
+                  defects of the others.
+                tests:
+                  - CardReader_Read_NullSource_ThrowsArgumentNullException
+                  - CardReader_Read_SyntaxErrorInOneFile_EndsOnlyThatFile
+                  - CardReader_Read_SeveralDefectiveFiles_CollectsEveryProblem
+                  - CardReader_Read_FileReadFails_ReportsSourceReadAndContinues
+                  - CardReader_Read_ListFails_ReportsSourceReadWithoutCards
+                  - CardReader_Read_ListFails_StillReportsTokenScopeProblems
+                  - CardReader_Read_MissingDirectory_ReportsSourceRead
+
+              - id: HelpCards-Loading-CardReader-ReadOnce
+                title: >-
+                  The reader shall list the files of a source once and read each Markdown file and each data file
+                  that an example uses once, however many examples use it, and shall not read data files that no
+                  example uses.
+                justification: |
+                  Reading cost grows with the size of the help; each file must be read exactly once and never
+                  unnecessarily.
+                tests:
+                  - CardReader_Read_NormalSource_ListsOnceAndReadsEachMarkdownFileOnce
+                  - CardReader_Read_SharedExampleDataFile_IsReadOnce

@@ -68,6 +68,7 @@ reviews:
       - "docs/verification/introduction.md"                                    # verification introduction
       - "docs/verification/help-cards.md"                        # system verification
       - "test/DemaConsulting.HelpCards.Tests/HelpCardsTests.cs"  # integration tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/*.cs"   # helpers used by the integration tests
 
   # HelpCards-Design Review (one per system)
   - id: HelpCards-Design
@@ -102,18 +103,773 @@ reviews:
       - "requirements.yaml"                                                 # root requirements file
       - "docs/reqstream/**/*.yaml"                                          # all requirements files
 
-  # HelpCards-Demo Review (one per unit)
-  - id: HelpCards-Demo
-    title: Review that HelpCards Demo Implementation is Correct
+  # HelpCards-Loading Review (one per subsystem)
+  - id: HelpCards-Loading
+    title: Review that HelpCards Loading Satisfies Subsystem Requirements
     context:
       - "docs/design/help-cards.md"
       - "docs/reqstream/help-cards.yaml"
     paths:
-      - "docs/reqstream/help-cards/demo.yaml"                 # unit requirements
-      - "docs/design/help-cards/demo.md"                     # unit design
-      - "docs/verification/help-cards/demo.md"               # unit verification
-      - "src/DemaConsulting.HelpCards/Demo.cs"                  # unit source
-      - "test/DemaConsulting.HelpCards.Tests/DemoTests.cs"      # unit tests
+      - "docs/reqstream/help-cards/loading.yaml"                    # subsystem requirements
+      - "docs/design/help-cards/loading.md"                         # subsystem design
+      - "docs/verification/help-cards/loading.md"                   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Loading/LoadingTests.cs"  # subsystem tests
+
+  # HelpCards-Loading-HelpSource Review (one per unit)
+  - id: HelpCards-Loading-HelpSource
+    title: Review that HelpCards Loading HelpSource Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/loading.md"
+      - "docs/reqstream/help-cards/loading.yaml"
+    paths:
+      - "docs/reqstream/help-cards/loading/help-source.yaml"        # unit requirements
+      - "docs/design/help-cards/loading/help-source.md"             # unit design
+      - "docs/verification/help-cards/loading/help-source.md"       # unit verification
+      - "src/DemaConsulting.HelpCards/Loading/HelpSource.cs"        # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Loading/HelpSourceTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"  # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/TemporaryDirectory.cs"    # test support
+
+  # HelpCards-Loading-HelpFileProvider Review (one per unit)
+  - id: HelpCards-Loading-HelpFileProvider
+    title: Review that HelpCards Loading HelpFileProvider Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/loading.md"
+      - "docs/reqstream/help-cards/loading.yaml"
+    paths:
+      - "docs/reqstream/help-cards/loading/help-file-provider.yaml"  # unit requirements
+      - "docs/design/help-cards/loading/help-file-provider.md"       # unit design
+      - "docs/verification/help-cards/loading/help-file-provider.md"  # unit verification
+      - "src/DemaConsulting.HelpCards/Loading/HelpFileProvider.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Loading/AssemblyFileProvider.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Loading/DirectoryFileProvider.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Loading/MemoryFileProvider.cs"     # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Loading/HelpFileProviderTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/TemporaryDirectory.cs"  # test support
+
+  # HelpCards-Loading-FrontMatterDecoder Review (one per unit)
+  - id: HelpCards-Loading-FrontMatterDecoder
+    title: Review that HelpCards Loading FrontMatterDecoder Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/loading.md"
+      - "docs/reqstream/help-cards/loading.yaml"
+    paths:
+      - "docs/reqstream/help-cards/loading/front-matter-decoder.yaml"   # unit requirements
+      - "docs/design/help-cards/loading/front-matter-decoder.md"        # unit design
+      - "docs/verification/help-cards/loading/front-matter-decoder.md"  # unit verification
+      - "src/DemaConsulting.HelpCards/Loading/FrontMatterDecoder.cs"          # unit source
+      - "src/DemaConsulting.HelpCards/Loading/FrontMatterDecoder.Scalars.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Loading/FrontMatterDocument.cs"         # unit source
+      - "src/DemaConsulting.HelpCards/Loading/FrontMatterEntry.cs"            # unit source
+      - "src/DemaConsulting.HelpCards/Loading/FrontMatterItem.cs"             # unit source
+      - "src/DemaConsulting.HelpCards/Loading/FrontMatterScalar.cs"           # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Loading/FrontMatterDecoderTests.cs"  # unit tests
+
+  # HelpCards-Loading-CardReader Review (one per unit)
+  - id: HelpCards-Loading-CardReader
+    title: Review that HelpCards Loading CardReader Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/loading.md"
+      - "docs/reqstream/help-cards/loading.yaml"
+    paths:
+      - "docs/reqstream/help-cards/loading/card-reader.yaml"        # unit requirements
+      - "docs/design/help-cards/loading/card-reader.md"             # unit design
+      - "docs/verification/help-cards/loading/card-reader.md"       # unit verification
+      - "src/DemaConsulting.HelpCards/Loading/CardReader*.cs"       # unit source (partial files)
+      - "src/DemaConsulting.HelpCards/Loading/SourceDefinition.cs"       # unit source
+      - "src/DemaConsulting.HelpCards/Loading/CardDefinition.cs"         # unit source
+      - "src/DemaConsulting.HelpCards/Loading/OverlayDefinition.cs"      # unit source
+      - "src/DemaConsulting.HelpCards/Loading/TranslationDefinition.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Loading/ExampleDefinition.cs"      # unit source
+      - "src/DemaConsulting.HelpCards/Loading/ReferenceDefinition.cs"    # unit source
+      - "src/DemaConsulting.HelpCards/Loading/LocatedValue.cs"           # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Loading/CardReaderTests*.cs"  # unit tests (partial files)
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"       # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"  # test support
+
+  # HelpCards-Loading-TokenResolver Review (one per unit)
+  - id: HelpCards-Loading-TokenResolver
+    title: Review that HelpCards Loading TokenResolver Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/loading.md"
+      - "docs/reqstream/help-cards/loading.yaml"
+    paths:
+      - "docs/reqstream/help-cards/loading/token-resolver.yaml"     # unit requirements
+      - "docs/design/help-cards/loading/token-resolver.md"          # unit design
+      - "docs/verification/help-cards/loading/token-resolver.md"    # unit verification
+      - "src/DemaConsulting.HelpCards/Loading/TokenResolver.cs"     # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Loading/TokenResolverTests.cs"  # unit tests
+
+  # HelpCards-Loading-CultureSelector Review (one per unit)
+  - id: HelpCards-Loading-CultureSelector
+    title: Review that HelpCards Loading CultureSelector Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/loading.md"
+      - "docs/reqstream/help-cards/loading.yaml"
+    paths:
+      - "docs/reqstream/help-cards/loading/culture-selector.yaml"   # unit requirements
+      - "docs/design/help-cards/loading/culture-selector.md"        # unit design
+      - "docs/verification/help-cards/loading/culture-selector.md"  # unit verification
+      - "src/DemaConsulting.HelpCards/Loading/CultureSelector.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Loading/CultureSelectorTests.cs"  # unit tests
+
+  # HelpCards-Loading-BodyParser Review (one per unit)
+  - id: HelpCards-Loading-BodyParser
+    title: Review that HelpCards Loading BodyParser Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/loading.md"
+      - "docs/reqstream/help-cards/loading.yaml"
+    paths:
+      - "docs/reqstream/help-cards/loading/body-parser.yaml"        # unit requirements
+      - "docs/design/help-cards/loading/body-parser.md"             # unit design
+      - "docs/verification/help-cards/loading/body-parser.md"       # unit verification
+      - "src/DemaConsulting.HelpCards/Loading/BodyParser.cs"        # unit source
+      - "src/DemaConsulting.HelpCards/Loading/BodyPart.cs"          # unit source
+      - "src/DemaConsulting.HelpCards/Loading/ParsedLink.cs"        # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Loading/BodyParserTests.cs"  # unit tests
+
+  # HelpCards-Composition Review (one per subsystem)
+  - id: HelpCards-Composition
+    title: Review that HelpCards Composition Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition.yaml"                # subsystem requirements
+      - "docs/design/help-cards/composition.md"                     # subsystem design
+      - "docs/verification/help-cards/composition.md"               # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionTests.cs"  # subsystem tests
+      - "test/DemaConsulting.HelpCards.Tests/Composition/CompositionMultiSourceTests.cs"  # subsystem tests
+
+  # HelpCards-Composition-HelpCatalogBuilder Review (one per unit)
+  - id: HelpCards-Composition-HelpCatalogBuilder
+    title: Review that HelpCards Composition HelpCatalogBuilder Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/help-catalog-builder.yaml"   # unit requirements
+      - "docs/design/help-cards/composition/help-catalog-builder.md"        # unit design
+      - "docs/verification/help-cards/composition/help-catalog-builder.md"  # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/HelpCatalogBuilder*.cs"   # unit source (partial files)
+      - "src/DemaConsulting.HelpCards/Composition/CompositionResult.cs"     # unit source
+      - "src/DemaConsulting.HelpCards/Composition/SourceTree.cs"            # unit source
+      - "src/DemaConsulting.HelpCards/Composition/CardBuild.cs"             # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/HelpCatalogBuilderTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"          # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"            # test support
+
+  # HelpCards-Composition-ReferenceValidator Review (one per unit)
+  - id: HelpCards-Composition-ReferenceValidator
+    title: Review that HelpCards Composition ReferenceValidator Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/reference-validator.yaml"    # unit requirements
+      - "docs/design/help-cards/composition/reference-validator.md"         # unit design
+      - "docs/verification/help-cards/composition/reference-validator.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/ReferenceValidator.cs"    # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/ReferenceValidatorTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"          # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"            # test support
+
+  # HelpCards-Composition-SourceRegistry Review (one per unit)
+  - id: HelpCards-Composition-SourceRegistry
+    title: Review that HelpCards Composition SourceRegistry Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/source-registry.yaml"   # unit requirements
+      - "docs/design/help-cards/composition/source-registry.md"   # unit design
+      - "docs/verification/help-cards/composition/source-registry.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/SourceRegistry.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/SourceEntry.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/SourceRegistration.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/LookupKind.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Composition/LookupResult.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/SourceRegistryTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Composition-Mounter Review (one per unit)
+  - id: HelpCards-Composition-Mounter
+    title: Review that HelpCards Composition Mounter Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/mounter.yaml"   # unit requirements
+      - "docs/design/help-cards/composition/mounter.md"   # unit design
+      - "docs/verification/help-cards/composition/mounter.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/Mounter.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/MounterTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Composition-OverlayMerger Review (one per unit)
+  - id: HelpCards-Composition-OverlayMerger
+    title: Review that HelpCards Composition OverlayMerger Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/overlay-merger.yaml"   # unit requirements
+      - "docs/design/help-cards/composition/overlay-merger.md"   # unit design
+      - "docs/verification/help-cards/composition/overlay-merger.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/OverlayMerger.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/OverlayMergerTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Composition-SiblingOrder Review (one per unit)
+  - id: HelpCards-Composition-SiblingOrder
+    title: Review that HelpCards Composition SiblingOrder Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/sibling-order.yaml"          # unit requirements
+      - "docs/design/help-cards/composition/sibling-order.md"               # unit design
+      - "docs/verification/help-cards/composition/sibling-order.md"         # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/SiblingOrder.cs"          # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/SiblingOrderTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"      # test support
+
+  # HelpCards-Composition-ProblemCollector Review (one per unit)
+  - id: HelpCards-Composition-ProblemCollector
+    title: Review that HelpCards Composition ProblemCollector Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/composition.md"
+      - "docs/reqstream/help-cards/composition.yaml"
+    paths:
+      - "docs/reqstream/help-cards/composition/problem-collector.yaml"      # unit requirements
+      - "docs/design/help-cards/composition/problem-collector.md"           # unit design
+      - "docs/verification/help-cards/composition/problem-collector.md"     # unit verification
+      - "src/DemaConsulting.HelpCards/Composition/ProblemCollector.cs"      # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Composition/ProblemCollectorTests.cs"  # unit tests
+
+  # HelpCards-Catalog Review (one per subsystem)
+  - id: HelpCards-Catalog
+    title: Review that HelpCards Catalog Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog.yaml"                    # subsystem requirements
+      - "docs/design/help-cards/catalog.md"                         # subsystem design
+      - "docs/verification/help-cards/catalog.md"                   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/CatalogTests.cs"  # subsystem tests
+
+  # HelpCards-Catalog-HelpCatalog Review (one per unit)
+  - id: HelpCards-Catalog-HelpCatalog
+    title: Review that HelpCards Catalog HelpCatalog Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/help-catalog.yaml"       # unit requirements
+      - "docs/design/help-cards/catalog/help-catalog.md"            # unit design
+      - "docs/verification/help-cards/catalog/help-catalog.md"      # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.cs"       # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Views.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Search.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpSearchOptions.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCatalog.Render.cs"  # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/HelpCatalogTests*.cs"  # unit tests (partial files)
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"       # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"         # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"  # test support
+
+  # HelpCards-Catalog-HelpCard Review (one per unit)
+  - id: HelpCards-Catalog-HelpCard
+    title: Review that HelpCards Catalog HelpCard Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/help-card.yaml"          # unit requirements
+      - "docs/design/help-cards/catalog/help-card.md"               # unit design
+      - "docs/verification/help-cards/catalog/help-card.md"         # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCard*.cs"         # unit source (partial files)
+      - "src/DemaConsulting.HelpCards/Catalog/BodyPiece.cs"         # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpExample.cs"       # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpExampleReference.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpLink.cs"          # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpSourceInfo.cs"    # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpPathResolution.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpSearchResult.cs"  # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/HelpCardTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"  # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"    # test support
+
+  # HelpCards-Catalog-HelpProblem Review (one per unit)
+  - id: HelpCards-Catalog-HelpProblem
+    title: Review that HelpCards Catalog HelpProblem Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/help-problem.yaml"       # unit requirements
+      - "docs/design/help-cards/catalog/help-problem.md"            # unit design
+      - "docs/verification/help-cards/catalog/help-problem.md"      # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/HelpProblem.cs"       # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpSeverity.cs"      # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/HelpCatalogException.cs"  # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/RuleIds.cs"           # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/HelpProblemTests.cs"  # unit tests
+
+  # HelpCards-Catalog-CatalogData Review (one per unit)
+  - id: HelpCards-Catalog-CatalogData
+    title: Review that HelpCards Catalog CatalogData Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/catalog-data.yaml"       # unit requirements
+      - "docs/design/help-cards/catalog/catalog-data.md"            # unit design
+      - "docs/verification/help-cards/catalog/catalog-data.md"      # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/CatalogData.cs"       # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/CardNode.cs"          # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/ResolvedPart.cs"      # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/ResolvedLink.cs"      # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/CatalogDataTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"  # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"    # test support
+
+  # HelpCards-Catalog-CatalogScope Review (one per unit)
+  - id: HelpCards-Catalog-CatalogScope
+    title: Review that HelpCards Catalog CatalogScope Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/catalog-scope.yaml"      # unit requirements
+      - "docs/design/help-cards/catalog/catalog-scope.md"           # unit design
+      - "docs/verification/help-cards/catalog/catalog-scope.md"     # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/CatalogScope.cs"      # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/CatalogScopeTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"  # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"    # test support
+
+  # HelpCards-Catalog-PathResolver Review (one per unit)
+  - id: HelpCards-Catalog-PathResolver
+    title: Review that HelpCards Catalog PathResolver Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/path-resolver.yaml"      # unit requirements
+      - "docs/design/help-cards/catalog/path-resolver.md"           # unit design
+      - "docs/verification/help-cards/catalog/path-resolver.md"     # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/PathResolver.cs"      # unit source
+      - "src/DemaConsulting.HelpCards/Catalog/PathMatch.cs"         # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/PathResolverTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"  # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"    # test support
+
+  # HelpCards-Catalog-ExampleResolver Review (one per unit)
+  - id: HelpCards-Catalog-ExampleResolver
+    title: Review that HelpCards Catalog ExampleResolver Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/example-resolver.yaml"   # unit requirements
+      - "docs/design/help-cards/catalog/example-resolver.md"        # unit design
+      - "docs/verification/help-cards/catalog/example-resolver.md"  # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/ExampleResolver.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/ExampleResolverTests.cs"  # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"  # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"    # test support
+
+  # HelpCards-Catalog-SearchIndex Review (one per unit)
+  - id: HelpCards-Catalog-SearchIndex
+    title: Review that HelpCards Catalog SearchIndex Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/catalog.md"
+      - "docs/reqstream/help-cards/catalog.yaml"
+    paths:
+      - "docs/reqstream/help-cards/catalog/search-index.yaml"   # unit requirements
+      - "docs/design/help-cards/catalog/search-index.md"   # unit design
+      - "docs/verification/help-cards/catalog/search-index.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Catalog/SearchIndex*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Catalog/SearchIndexTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/RankingReport.cs"   # test support
+
+  # HelpCards-Presentation Review (one per subsystem)
+  - id: HelpCards-Presentation
+    title: Review that HelpCards Presentation Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation.yaml"   # subsystem requirements
+      - "docs/design/help-cards/presentation.md"   # subsystem design
+      - "docs/verification/help-cards/presentation.md"   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/PresentationTests.cs"   # subsystem tests
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/render/**"   # golden files the renderers are compared with
+      - "test/DemaConsulting.HelpCards.Tests/Fixtures/simple/**"   # fixture cards the subsystem tests render
+
+  # HelpCards-Presentation-HelpRenderOptions Review (one per unit)
+  - id: HelpCards-Presentation-HelpRenderOptions
+    title: Review that HelpCards Presentation HelpRenderOptions Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/help-render-options.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/help-render-options.md"   # unit design
+      - "docs/verification/help-cards/presentation/help-render-options.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/HelpRenderOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Presentation/HelpFormat.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Presentation/HelpLinkStyle.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Presentation/RenderContext.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/HelpRenderOptionsTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Presentation-LinkFormatter Review (one per unit)
+  - id: HelpCards-Presentation-LinkFormatter
+    title: Review that HelpCards Presentation LinkFormatter Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/link-formatter.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/link-formatter.md"   # unit design
+      - "docs/verification/help-cards/presentation/link-formatter.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/LinkFormatter.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/LinkFormatterTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Presentation-TextRenderer Review (one per unit)
+  - id: HelpCards-Presentation-TextRenderer
+    title: Review that HelpCards Presentation TextRenderer Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/text-renderer.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/text-renderer.md"   # unit design
+      - "docs/verification/help-cards/presentation/text-renderer.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/TextRenderer*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/TextRendererTests*.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+
+  # HelpCards-Presentation-JsonDocumentWriter Review (one per unit)
+  - id: HelpCards-Presentation-JsonDocumentWriter
+    title: Review that HelpCards Presentation JsonDocumentWriter Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/json-document-writer.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/json-document-writer.md"   # unit design
+      - "docs/verification/help-cards/presentation/json-document-writer.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/JsonDocumentWriter*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/JsonDocumentWriterTests*.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/RenderSources.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+
+  # HelpCards-Presentation-TextWrapper Review (one per unit)
+  - id: HelpCards-Presentation-TextWrapper
+    title: Review that HelpCards Presentation TextWrapper Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/text-wrapper.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/text-wrapper.md"   # unit design
+      - "docs/verification/help-cards/presentation/text-wrapper.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/TextWrapper.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/TextWrapperTests.cs"   # unit tests
+
+  # HelpCards-Presentation-HelpStrings Review (one per unit)
+  - id: HelpCards-Presentation-HelpStrings
+    title: Review that HelpCards Presentation HelpStrings Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/presentation.md"
+      - "docs/reqstream/help-cards/presentation.yaml"
+    paths:
+      - "docs/reqstream/help-cards/presentation/help-strings.yaml"   # unit requirements
+      - "docs/design/help-cards/presentation/help-strings.md"   # unit design
+      - "docs/verification/help-cards/presentation/help-strings.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Presentation/HelpStrings.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Presentation/HelpStringsTests.cs"   # unit tests
+
+  # HelpCards-Integration Review (one per subsystem)
+  - id: HelpCards-Integration
+    title: Review that HelpCards Integration Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration.yaml"   # subsystem requirements
+      - "docs/design/help-cards/integration.md"   # subsystem design
+      - "docs/verification/help-cards/integration.md"   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Integration/IntegrationTests.cs"   # subsystem tests
+
+  # HelpCards-Integration-HelpCli Review (one per unit)
+  - id: HelpCards-Integration-HelpCli
+    title: Review that HelpCards Integration HelpCli Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/help-cli.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/help-cli.md"   # unit design
+      - "docs/verification/help-cards/integration/help-cli.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/HelpCli.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliSection.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliAnswer.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/HelpCliTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CliHarness.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Integration-CliArgumentParser Review (one per unit)
+  - id: HelpCards-Integration-CliArgumentParser
+    title: Review that HelpCards Integration CliArgumentParser Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/cli-argument-parser.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/cli-argument-parser.md"   # unit design
+      - "docs/verification/help-cards/integration/cli-argument-parser.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/CliArgumentParser.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliMode.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliRequest.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliParseResult.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/CliArgumentParserTests.cs"   # unit tests
+
+  # HelpCards-Integration-CliDispatcher Review (one per unit)
+  - id: HelpCards-Integration-CliDispatcher
+    title: Review that HelpCards Integration CliDispatcher Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/cli-dispatcher.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/cli-dispatcher.md"   # unit design
+      - "docs/verification/help-cards/integration/cli-dispatcher.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/CliDispatcher*.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliOutcome.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/CliFailure.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/CliDispatcherTests*.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CliHarness.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Integration-HelpAgentTool Review (one per unit)
+  - id: HelpCards-Integration-HelpAgentTool
+    title: Review that HelpCards Integration HelpAgentTool Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/help-agent-tool.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/help-agent-tool.md"   # unit design
+      - "docs/verification/help-cards/integration/help-agent-tool.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/HelpAgentTool.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpAgentToolOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpAgentTools.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/HelpAgentToolTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CountingFileProvider.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Integration-AgentArgumentReader Review (one per unit)
+  - id: HelpCards-Integration-AgentArgumentReader
+    title: Review that HelpCards Integration AgentArgumentReader Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/agent-argument-reader.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/agent-argument-reader.md"   # unit design
+      - "docs/verification/help-cards/integration/agent-argument-reader.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/AgentArgumentReader.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/AgentArguments.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/AgentReadResult.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/AgentArgumentReaderTests.cs"   # unit tests
+
+  # HelpCards-Integration-AgentDispatcher Review (one per unit)
+  - id: HelpCards-Integration-AgentDispatcher
+    title: Review that HelpCards Integration AgentDispatcher Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/integration.md"
+      - "docs/reqstream/help-cards/integration.yaml"
+    paths:
+      - "docs/reqstream/help-cards/integration/agent-dispatcher.yaml"   # unit requirements
+      - "docs/design/help-cards/integration/agent-dispatcher.md"   # unit design
+      - "docs/verification/help-cards/integration/agent-dispatcher.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Integration/AgentDispatcher*.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Integration/AgentDispatcherTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Testing Review (one per subsystem)
+  - id: HelpCards-Testing
+    title: Review that HelpCards Testing Satisfies Subsystem Requirements
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing.yaml"   # subsystem requirements
+      - "docs/design/help-cards/testing.md"   # subsystem design
+      - "docs/verification/help-cards/testing.md"   # subsystem verification
+      - "test/DemaConsulting.HelpCards.Tests/Testing/TestingTests.cs"   # subsystem tests
+
+  # HelpCards-Testing-HelpCardValidator Review (one per unit)
+  - id: HelpCards-Testing-HelpCardValidator
+    title: Review that HelpCards Testing HelpCardValidator Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/help-card-validator.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/help-card-validator.md"   # unit design
+      - "docs/verification/help-cards/testing/help-card-validator.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/HelpCardValidator*.cs"   # unit source (partial files)
+      - "src/DemaConsulting.HelpCards/Testing/HelpValidationOptions.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/IHelpCardRule.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/HelpCardValidatorTests*.cs"   # unit tests (partial files)
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/TemporaryDirectory.cs"   # test support
+
+  # HelpCards-Testing-HelpExamples Review (one per unit)
+  - id: HelpCards-Testing-HelpExamples
+    title: Review that HelpCards Testing HelpExamples Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/help-examples.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/help-examples.md"   # unit design
+      - "docs/verification/help-cards/testing/help-examples.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/HelpExamples.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/HelpExamplesTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
+
+  # HelpCards-Testing-ExampleCommandLine Review (one per unit)
+  - id: HelpCards-Testing-ExampleCommandLine
+    title: Review that HelpCards Testing ExampleCommandLine Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/example-command-line.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/example-command-line.md"   # unit design
+      - "docs/verification/help-cards/testing/example-command-line.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/ExampleCommandLine.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/ExampleCommandLineTests.cs"   # unit tests
+
+  # HelpCards-Testing-HelpCardMarkdown Review (one per unit)
+  - id: HelpCards-Testing-HelpCardMarkdown
+    title: Review that HelpCards Testing HelpCardMarkdown Implementation is Correct
+    context:
+      - "docs/design/help-cards.md"
+      - "docs/reqstream/help-cards.yaml"
+      - "docs/design/help-cards/testing.md"
+      - "docs/reqstream/help-cards/testing.yaml"
+    paths:
+      - "docs/reqstream/help-cards/testing/help-card-markdown.yaml"   # unit requirements
+      - "docs/design/help-cards/testing/help-card-markdown.md"   # unit design
+      - "docs/verification/help-cards/testing/help-card-markdown.md"   # unit verification
+      - "src/DemaConsulting.HelpCards/Testing/HelpCardMarkdown.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/MarkdownLine.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Testing/MarkdownLineKind.cs"   # unit source
+      - "test/DemaConsulting.HelpCards.Tests/Testing/HelpCardMarkdownTests.cs"   # unit tests
 
   # OTS-BuildMark Review (one per OTS item)
   - id: OTS-BuildMark

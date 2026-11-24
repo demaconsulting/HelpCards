@@ -5,7 +5,7 @@ repository.
 
 ## Overview
 
-HelpCards itself has zero runtime NuGet dependencies — the `Demo` unit is
+HelpCards itself has zero runtime NuGet dependencies — the library is
 implemented exclusively against the .NET Base Class Library. All OTS items listed below are
 build-time and quality-pipeline tools, not runtime library dependencies. Each OTS item provides one
 stage of the documentation, requirements-traceability, testing, and quality-reporting pipeline
@@ -13,6 +13,10 @@ invoked by `build.ps1`, `lint.ps1`, and the `.github/workflows/build.yaml` CI wo
 these tools are linked into, or shipped with, the compiled NuGet package.
 
 ## OTS Items
+
+The OTS items are modeled in SysML2 (docs/sysml2/model/ots.sysml) and rendered by SysML2Tools as the OTS view below.
+
+![OTS Items](OtsView.svg)
 
 | OTS Item | Purpose |
 | --- | --- |

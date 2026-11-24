@@ -1,0 +1,59 @@
+---
+# HelpRenderOptions Unit Requirements
+#
+# Requirements for the HelpRenderOptions unit of the Presentation subsystem: the public options of a rendering with
+# their defaults and checks, and the context that resolves them against a catalog view for one call.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Presentation Requirements
+        sections:
+          - title: HelpRenderOptions Requirements
+            requirements:
+              - id: HelpCards-Presentation-HelpRenderOptions-Defaults
+                title: >-
+                  The options shall default to the text format, plain links, no command template, a width of 78,
+                  tags shown, example content hidden, and no callbacks, and shall return every setting that is given.
+                justification: |
+                  Callers render with no options at all most of the time, so the defaults are part of the contract.
+                tests:
+                  - HelpRenderOptions_Defaults_AreTheDocumentedValues
+                  - HelpRenderOptions_Initialization_StoresEverySetting
+
+              - id: HelpCards-Presentation-HelpRenderOptions-Validation
+                title: >-
+                  The options shall accept a width of zero or from 20 to 500, reject any other width, reject numbers
+                  that name no format or link style, and reject a command template that is only white space, each as
+                  an argument error where the value is set.
+                justification: |
+                  An invalid option should fail where it is written, not somewhere inside a rendering.
+                tests:
+                  - HelpRenderOptions_Width_AllowedValues_AreAccepted
+                  - HelpRenderOptions_Width_OutOfRange_ThrowsArgumentException
+                  - HelpRenderOptions_UndefinedEnumerationValues_ThrowArgumentException
+                  - HelpRenderOptions_CommandTemplate_WhiteSpace_ThrowsArgumentException
+
+              - id: HelpCards-Presentation-HelpRenderOptions-Context
+                title: >-
+                  The context of a call shall take the tool name from the builder and otherwise from the first
+                  source, report the version of the builder, never wrap Markdown, and reject a null catalog.
+                justification: |
+                  Commands and JSON documents name the tool, and Markdown must never be reflowed.
+                tests:
+                  - RenderContext_ToolName_BuilderThenSourceName
+                  - RenderContext_WrapWidth_FollowsFormatAndWidth
+                  - RenderContext_Create_NullCatalog_ThrowsArgumentNullException
+
+              - id: HelpCards-Presentation-HelpRenderOptions-Walks
+                title: >-
+                  The context shall list the visible cards depth first with their depth down to a limit, list the
+                  cards below a card that have examples, map a card of another view to the card of its own view and
+                  reject a hidden card, and find an example in a card or the cards below it.
+                justification: |
+                  Indexes, example documents, and every render call must see the catalog view they are called on.
+                tests:
+                  - RenderContext_Flatten_ListsCardsDepthFirstDownToDepth
+                  - RenderContext_DescendantsWithExamples_ListsOnlyCardsWithExamples
+                  - RenderContext_Own_OtherViewCard_IsMappedAndHiddenCardIsRejected
+                  - RenderContext_RequireExample_FindsSubtreeExampleOrThrows

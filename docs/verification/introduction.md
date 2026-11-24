@@ -25,7 +25,24 @@ This document covers the verification design for the HelpCards system and its
 constituent software items, specifically:
 
 - **HelpCards (System)** — The complete HelpCards .NET library system
-- **Demo (Unit)** — Demonstration greeting class providing example functionality
+- **Loading (Subsystem)** — Finds the files of a source, decodes front matter, and reads cards, overlays,
+  translations, tokens, and bodies into definitions; its units are HelpSource, HelpFileProvider,
+  FrontMatterDecoder, CardReader, TokenResolver, CultureSelector, and BodyParser
+- **Composition (Subsystem)** — Registers the sources, mounts them, resolves imports and overlays, runs the one
+  composition pipeline, orders siblings, validates every reference and name, and collects all problems; its units are
+  HelpCatalogBuilder, SourceRegistry, Mounter, OverlayMerger, ReferenceValidator, SiblingOrder, and ProblemCollector
+- **Catalog (Subsystem)** — The frozen data, the immutable model, filtered views, path and example lookup, and the
+  problem model, plus search and suggestions; its units are HelpCatalog, HelpCard, HelpProblem, CatalogData,
+  CatalogScope, PathResolver, ExampleResolver, and SearchIndex
+- **Presentation (Subsystem)** — Renders cards, indexes, examples, search results, and card lists as text, Markdown,
+  and JSON with three link styles; its units are HelpRenderOptions, LinkFormatter, TextRenderer, JsonDocumentWriter,
+  TextWrapper, and HelpStrings
+- **Integration (Subsystem)** — Connects the catalog to its readers: the command-line help helper for people and the
+  knowledge tool for AI agents, both independent of any command-line or agent framework; its units are HelpCli,
+  CliArgumentParser, CliDispatcher, HelpAgentTool, AgentArgumentReader, and AgentDispatcher
+- **Testing (Subsystem)** — The helpers an adopter uses to test its own help: the validator with its options and rule
+  interface, the parser for the command line of an example, the enumeration of examples, and the readers for the
+  structure of a card body; its units are HelpCardValidator, HelpExamples, ExampleCommandLine, and HelpCardMarkdown
 
 The following OTS items are also covered:
 
@@ -36,6 +53,7 @@ The following OTS items are also covered:
 - **ReviewMark** — file review enforcement tool
 - **SarifMark** — SARIF report conversion tool
 - **SonarMark** — SonarCloud quality report tool
+- **SysML2Tools** — architecture model lint and diagram rendering tool
 - **VersionMark** — tool-version documentation tool
 - **WeasyPrint** — HTML-to-PDF conversion tool
 - **xUnit** — unit-testing framework
@@ -48,6 +66,7 @@ HelpCards.
 The following topics are explicitly excluded from this verification documentation:
 
 - Build pipeline and CI/CD process testing
+- Test projects and test infrastructure
 - Infrastructure and hosting environment testing
 
 ## Companion Artifact Structure

@@ -35,24 +35,43 @@ results containing both passing and failing outcomes.
 
 **Requirement coverage**: `HelpCards-OTS-FileAssert`.
 
-#### FileAssert_Exists
+#### FileAssert_File
 
-**Scenario**: FileAssert self-validation exercises a test configuration using a glob pattern to
-assert file existence.
+**Scenario**: FileAssert self-validation exercises a test configuration that matches files by glob
+pattern and asserts file-level criteria such as existence and count.
 
-**Expected**: Passes when the specified file is present.
+**Expected**: Passes when the matching files satisfy the asserted criteria.
 
 **Requirement coverage**: `HelpCards-OTS-FileAssert`.
 
-#### FileAssert_Contains
+#### FileAssert_Text
 
-**Scenario**: FileAssert self-validation exercises a test configuration using a `contains` assertion
-to verify file content.
+**Scenario**: FileAssert self-validation exercises a test configuration that asserts the text content
+of a file, such as a `contains` assertion.
 
 **Expected**: Passes when the specified content is present.
 
 **Requirement coverage**: `HelpCards-OTS-FileAssert`.
 
+#### FileAssert_Html
+
+**Scenario**: FileAssert self-validation exercises a test configuration that asserts the structure of
+an HTML document.
+
+**Expected**: Passes when the document satisfies the asserted structure.
+
+**Requirement coverage**: `HelpCards-OTS-FileAssert`.
+
+#### FileAssert_Pdf
+
+**Scenario**: FileAssert self-validation exercises a test configuration that asserts criteria of a PDF
+document, such as its page count and text.
+
+**Expected**: Passes when the document satisfies the asserted criteria.
+
+**Requirement coverage**: `HelpCards-OTS-FileAssert`.
+
 ### Requirements Coverage
 
-- **`HelpCards-OTS-FileAssert`**: FileAssert_Results, FileAssert_Exists, FileAssert_Contains
+- **`HelpCards-OTS-FileAssert`**: FileAssert_Results, FileAssert_File, FileAssert_Text, FileAssert_Html,
+  FileAssert_Pdf

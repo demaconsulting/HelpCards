@@ -6,6 +6,15 @@ resource-path:
 input-files:
   - docs/user_guide/title.txt
   - docs/user_guide/introduction.md
+  - docs/user_guide/getting-started.md
+  - docs/user_guide/writing-cards.md
+  - docs/user_guide/packaging-and-embedding.md
+  - docs/user_guide/composing-sources.md
+  - docs/user_guide/command-line-integration.md
+  - docs/user_guide/agent-knowledge-tool.md
+  - docs/user_guide/testing-your-help.md
+  - docs/user_guide/versioning-and-security.md
+  - docs/user_guide/continuous-compliance.md
 template: template.html
 table-of-contents: true
 number-sections: true

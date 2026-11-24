@@ -1,0 +1,30 @@
+# Guide
+
+How to set up and use the tool.
+**Also known as:** start
+**Tags:** tutorial, authoring
+
+Start with the card `guide/setup` and then read the card `guide/usage`.
+Run it with the example `run` or see the example `settings` of the card `guide` for the settings file.
+The limits are described in the card `reference/limits`, and
+the thing lives in another library.
+A code span such as `[[x]]` is not a link.
+Version 2.5 of simple accepts at most 42 items.
+
+## Cards
+
+- guide/setup
+  Prepare the tool before the first run.
+- guide/usage
+  Everyday use of the tool.
+
+## Examples
+
+- run [command]: Run the tool on a file.
+- settings [source] guide/settings.yaml: A settings file with the limit.
+- fragment [snippet] fragment.yaml: A fragment of a settings file.
+
+## See also
+
+- reference/limits
+  The numbers the tool enforces.

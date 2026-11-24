@@ -1,0 +1,72 @@
+---
+# OverlayMerger Unit Requirements
+#
+# Requirements for the OverlayMerger unit of the Composition subsystem, which applies the overlays of every source to
+# the cards they extend.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Composition Requirements
+        sections:
+          - title: OverlayMerger Requirements
+            requirements:
+              - id: HelpCards-Composition-OverlayMerger-Merge
+                title: >-
+                  The unit shall merge an overlay into the card it extends: the title and summary replace those of
+                  the card, the body is appended after a blank line, see-also entries and examples are appended,
+                  extension keys replace those of the same name, and an overlay without a body adds no separator.
+                justification: |
+                  An application extends the cards of its libraries without copying them.
+                tests:
+                  - OverlayMerger_Apply_AllKeys_MergeIntoTarget
+                  - OverlayMerger_Apply_EmptyBodies_AddNoSeparator
+
+              - id: HelpCards-Composition-OverlayMerger-Order
+                title: >-
+                  The unit shall apply overlays by source in registration order and, inside one source, by ordinal
+                  file path, so that the last overlay wins the title and summary on every machine.
+                justification: |
+                  The merged text must not depend on how a file system lists files.
+                tests:
+                  - OverlayMerger_Apply_OverlaysOfOneSource_ApplyInOrdinalFileOrder
+                  - OverlayMerger_Apply_OverlaysOfTwoSources_ApplyInRegistrationOrder
+
+              - id: HelpCards-Composition-OverlayMerger-Targets
+                title: >-
+                  The unit shall resolve the extends reference of an overlay in the source of the overlay and its
+                  imports, or in the source it names, report a target that names no card or a generated mount root as
+                  overlay-target, a target source that is not registered or is registered later as extends-target,
+                  and an id that two sources of one product both have as ambiguous-reference, each at the line
+                  of the extends key, and shall stay silent when the target card failed to load, because that
+                  defect is already reported.
+                justification: |
+                  An overlay that targets nothing is a defect the author must see where it is written.
+                tests:
+                  - OverlayMerger_Apply_MissingTargetAndMountRoot_ReportOverlayTarget
+                  - OverlayMerger_Apply_AbsentAndLaterSource_ReportExtendsTargetUnlessOptionalAndAbsent
+                  - OverlayMerger_Apply_BareTargetInSourceAndImport_IsAmbiguousUnlessQualified
+                  - OverlayMerger_Apply_TargetFailedToLoad_ReportsOnlyTheSyntaxError
+                  - OverlayMerger_Apply_NullArguments_ThrowArgumentNullException
+
+              - id: HelpCards-Composition-OverlayMerger-Optional
+                title: >-
+                  The unit shall skip an optional overlay whose target source is not part of the catalog with the
+                  informational problem overlay-optional-skipped, and still report an optional overlay whose
+                  target card does not exist.
+                justification: |
+                  An application may extend a library that is not always present, but a typo is still a typo.
+                tests:
+                  - OverlayMerger_Apply_AbsentAndLaterSource_ReportExtendsTargetUnlessOptionalAndAbsent
+                  - OverlayMerger_Apply_OptionalWithBareMissingTarget_IsStillAnError
+
+              - id: HelpCards-Composition-OverlayMerger-Scope
+                title: >-
+                  The unit shall resolve the links and see-also entries of an overlay in the scope of the source of
+                  the overlay, let a link to an example without a card refer to the subtree of the card the overlay
+                  extends, and report a broken link in the file of the overlay.
+                justification: |
+                  The text belongs to the overlay's author while it is shown on the target card.
+                tests:
+                  - OverlayMerger_Apply_BodyLinks_ResolveInOverlaySourceWithTargetSubtree
+                  - OverlayMerger_Apply_BrokenLinkInOverlayBody_IsReportedInOverlayFile

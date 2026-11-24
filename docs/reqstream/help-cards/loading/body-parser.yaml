@@ -1,0 +1,78 @@
+---
+# BodyParser Unit Requirements
+#
+# Requirements for the BodyParser unit of the Loading subsystem, which splits a card body into text and
+# links.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Loading Requirements
+        sections:
+          - title: BodyParser Requirements
+            requirements:
+              - id: HelpCards-Loading-BodyParser-LinkForms
+                title: >-
+                  The parser shall recognize the link forms "[[id]]", "[[id#example]]", "[[#example]]",
+                  "[[source:id|text]]", and "[[source:id#example|text]]", record the line of each link, keep
+                  the text between links, and split an external link at the first bar.
+                justification: |
+                  Cards link to each other, to examples, and to cards of other libraries; the parts let each
+                  rendering write a link in the style the reader needs.
+                tests:
+                  - BodyParser_Parse_NoLinks_ReturnsOneTextPart
+                  - BodyParser_Parse_EmptyBody_ReturnsNoParts
+                  - BodyParser_Parse_CardLink_ReturnsLinkWithIdAndLine
+                  - BodyParser_Parse_CardExampleLink_ReturnsCardAndExample
+                  - BodyParser_Parse_LocalExampleLink_ReturnsExampleOnly
+                  - BodyParser_Parse_ExternalLink_ReturnsSourceCardAndText
+                  - BodyParser_Parse_ExternalExampleLinkWithBarInText_FirstBarSplits
+                  - BodyParser_Parse_SeveralLinks_KeepsOrderAndText
+
+              - id: HelpCards-Loading-BodyParser-CodeAwareness
+                title: >-
+                  The parser shall not treat as a link any text inside an inline code span, a backtick fence,
+                  or a tilde fence, and shall keep brackets that do not start like a link as literal text.
+                justification: |
+                  Diagram and code syntax uses the same double brackets as links; cards about such syntax must
+                  be able to show it.
+                tests:
+                  - BodyParser_Parse_LinkInsideCodeSpan_IsLiteralText
+                  - BodyParser_Parse_LinkInsideDoubleBacktickSpan_IsLiteralText
+                  - BodyParser_Parse_CodeSpanAcrossLineBreak_IsLiteralText
+                  - BodyParser_Parse_UnmatchedBacktickInEarlierParagraph_DoesNotHideLaterLink
+                  - BodyParser_Parse_LinkInsideBacktickFence_IsLiteralAndLaterLinkIsLink
+                  - BodyParser_Parse_LinkInsideTildeFence_IsLiteral
+                  - BodyParser_Parse_ShortFenceInsideLongFence_DoesNotClose
+                  - BodyParser_Parse_UnclosedFence_RunsToEndOfBody
+                  - BodyParser_Parse_BackticksWithClosingOnSameLine_AreNotAFence
+                  - BodyParser_Parse_BracketsNotStartingLikeLink_AreLiteral
+
+              - id: HelpCards-Loading-BodyParser-LinkErrors
+                title: >-
+                  The parser shall report text outside code that starts like a link but is not one (upper-case
+                  names, spaces, an external link without text, display text that is padded or longer than 120
+                  characters, an id with more than eight segments) as a "link-syntax" problem at its line, and
+                  shall report every such text.
+                justification: |
+                  A typo in a link must be an error, not silently literal text that readers see as stray
+                  brackets.
+                tests:
+                  - BodyParser_Parse_UpperCaseLink_ReportsLinkSyntaxAtLine
+                  - BodyParser_Parse_LinkWithSpace_ReportsLinkSyntax
+                  - BodyParser_Parse_ExternalLinkWithoutText_ReportsLinkSyntax
+                  - BodyParser_Parse_ExternalLinkTextTooLongOrPadded_ReportsLinkSyntax
+                  - BodyParser_Parse_IdWithNineSegments_ReportsLinkSyntax
+                  - BodyParser_Parse_SeveralTypos_ReportsEach
+
+              - id: HelpCards-Loading-BodyParser-FenceLines
+                title: >-
+                  The parser shall offer the rule that finds fenced code, so that other units use the same
+                  definition: a line that opens a fence has at least three backticks or tildes and, for backticks,
+                  no further backtick, and a line closes a fence when it holds at least as many of the same
+                  character and nothing else.
+                justification: |
+                  The validator must agree with the loader on what is code, or it would report headings and
+                  fences that the loader treats as text, and the other way round.
+                tests:
+                  - BodyParser_FenceLines_OpeningAndClosingLines_FollowTheFenceRule

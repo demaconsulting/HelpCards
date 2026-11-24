@@ -1,0 +1,83 @@
+---
+# HelpAgentTool Unit Requirements
+#
+# Requirements for the HelpAgentTool unit of the Integration subsystem: the knowledge tool for AI agents, its options,
+# and the factory that creates it.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Integration Requirements
+        sections:
+          - title: HelpAgentTool Requirements
+            requirements:
+              - id: HelpCards-Integration-HelpAgentTool-Schema
+                title: >-
+                  The tool shall give the JSON schema of its arguments as the one-line text of the contract, with the
+                  properties topic, example, query, source, tag, and maxResults and no additional property.
+                justification: |
+                  A host registers the schema with its agent framework, so the text must not drift.
+                tests:
+                  - HelpAgentTool_ParametersSchema_IsTheSpecifiedTextByteForByte
+
+              - id: HelpCards-Integration-HelpAgentTool-Name
+                title: >-
+                  The tool shall be named help unless the options give another name that starts with a lower-case
+                  letter and has up to 64 lower-case letters, digits, and underscores.
+                justification: |
+                  Hosts register the tool under a name of their own, such as canvasnet_help.
+                tests:
+                  - HelpAgentTools_Create_Name_DefaultsToHelpAndAcceptsAHostName
+
+              - id: HelpCards-Integration-HelpAgentTool-Creation
+                title: >-
+                  The factory shall reject a null catalog, a name outside the pattern, a white-space description or
+                  tool name, a result limit outside 1 to 20, an output limit outside 1000 to 200000, and an index depth
+                  outside 0 to 8, and accept the limits of the ranges.
+                justification: |
+                  Options are checked where they are given, not where they fail.
+                tests:
+                  - HelpAgentTools_Create_InvalidArguments_Throw
+
+              - id: HelpCards-Integration-HelpAgentTool-Description
+                title: >-
+                  The tool shall use the description of the options, or generate one that names the tool, lists every
+                  source with its summary, and gives the three ways to call it.
+                justification: |
+                  The agent chooses the tool from its description.
+                tests:
+                  - HelpAgentTools_Create_Description_ListsSourcesAndUsageOrIsTheGivenText
+
+              - id: HelpCards-Integration-HelpAgentTool-Budget
+                title: >-
+                  The tool shall cut an answer longer than the output limit at the last line end at or before the
+                  limit, or at the limit without splitting a surrogate pair when there is none, and append the number of
+                  omitted characters, and shall keep the line that names an ignored query after the cut.
+                justification: |
+                  An agent has a limited context and must be told when text was left out and when part of its call was
+                  not used.
+                tests:
+                  - HelpAgentTool_Invoke_LongAnswer_IsCutAtALineEndWithTheOmittedCount
+                  - HelpAgentTool_Invoke_LongAnswerWithIgnoredQuery_KeepsTheNoticeAfterTheCut
+                  - HelpAgentTool_Invoke_LongSingleLine_IsCutAtTheLimitWithoutSplittingAPair
+
+              - id: HelpCards-Integration-HelpAgentTool-Boundary
+                title: >-
+                  The tool shall answer a catalog, argument, invalid operation, key, format, or JSON exception with a
+                  message that names only the type of the exception, never throw for any text it is sent, and let
+                  out-of-memory and cancellation conditions pass.
+                justification: |
+                  A tool that throws ends the conversation, but a condition of the process must not be hidden.
+                tests:
+                  - HelpAgentTool_Invoke_RecoverableExceptions_BecomeAMessageWithoutTheirText
+                  - HelpAgentTool_Invoke_NonRecoverableExceptions_Propagate
+                  - HelpAgentTool_Invoke_HostileText_NeverThrows
+
+              - id: HelpCards-Integration-HelpAgentTool-NoIo
+                title: >-
+                  The tool shall read no file when it is called, and give the same answers to the same arguments
+                  from any number of threads.
+                justification: |
+                  Argument text is never used as a path, and the tool is shared by the host.
+                tests:
+                  - HelpAgentTool_Invoke_ManyCallsAndThreads_ReadNoFileAndAgree

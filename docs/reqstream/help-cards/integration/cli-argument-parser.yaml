@@ -1,0 +1,109 @@
+---
+# CliArgumentParser Unit Requirements
+#
+# Requirements for the CliArgumentParser unit of the Integration subsystem, which reads the arguments that follow the
+# help verb into a request or the first usage error.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Integration Requirements
+        sections:
+          - title: CliArgumentParser Requirements
+            requirements:
+              - id: HelpCards-Integration-CliArgumentParser-Words
+                title: >-
+                  The parser shall read the arguments that are not options as the words of one card path, accept
+                  options before, between, and after them, end the options at a double hyphen, and treat a single
+                  hyphen as a word.
+                justification: |
+                  Users write help commands in any order.
+                tests:
+                  - CliArgumentParser_Parse_WordsAndNone_AreCardAndIndexModes
+                  - CliArgumentParser_Parse_OptionsAnywhereAndDoubleDash_SplitWordsFromOptions
+
+              - id: HelpCards-Integration-CliArgumentParser-Format
+                title: >-
+                  The parser shall choose the format from the json option or the format option with text, Markdown,
+                  or JSON ignoring case, accept both when they agree, and reject any other combination.
+                justification: |
+                  The format decides where an error is written, so it must be unambiguous.
+                tests:
+                  - CliArgumentParser_Parse_Format_ChoosesTheFormat
+
+              - id: HelpCards-Integration-CliArgumentParser-Values
+                title: >-
+                  The parser shall take a value from the next argument only, never from an argument that starts with
+                  two hyphens or is white space, accept a width from 20 to 500 or auto, and report an unknown option
+                  with the list of valid options.
+                justification: |
+                  A value must never swallow the next option, and the user must be told what is valid.
+                tests:
+                  - CliArgumentParser_Parse_InvalidOptionsAndValues_ReportUsageErrors
+                  - CliArgumentParser_Parse_UnknownOption_HintListsValidOptions
+                  - CliArgumentParser_Parse_Width_AcceptsRangeAndAuto
+
+              - id: HelpCards-Integration-CliArgumentParser-Repeats
+                title: >-
+                  The parser shall reject an option that is given twice, except that the tag and the source options
+                  repeat and keep every value.
+                justification: |
+                  A repeated option is almost always a mistake, except where a list is meant.
+                tests:
+                  - CliArgumentParser_Parse_RepeatedOption_IsAnError
+                  - CliArgumentParser_Parse_RepeatedTagAndSource_KeepEveryValue
+
+              - id: HelpCards-Integration-CliArgumentParser-Modes
+                title: >-
+                  The parser shall choose the mode from the options and the path: the index, a card, the examples of
+                  a card, one example, a search that may be restricted by tag and source, or the cards that have a
+                  tag.
+                justification: |
+                  Each mode answers one question, and the choice must follow one table.
+                tests:
+                  - CliArgumentParser_Parse_OptionsAndPath_ChooseTheMode
+
+              - id: HelpCards-Integration-CliArgumentParser-Conflicts
+                title: >-
+                  The parser shall reject these option pairs: any two of the examples, example, and search options;
+                  the examples or example option with the tag option; the examples, example, or search option with
+                  the all option; and the tag option with the all option (an addition to the option table of the
+                  specification). It shall accept a search together with the tag and source options. It shall also
+                  reject the examples and example options without a card path, the tag, source, and all options with
+                  a card path, and a search with a card path or extra words, which gets a hint to quote the query.
+                justification: |
+                  A combination that has no meaning must not silently drop an option.
+                tests:
+                  - CliArgumentParser_Parse_ConflictingOptions_AreUsageErrors
+                  - CliArgumentParser_Parse_SearchWithTagAndSource_IsAccepted
+                  - CliArgumentParser_Parse_PathRules_AreUsageErrors
+
+              - id: HelpCards-Integration-CliArgumentParser-Language
+                title: >-
+                  The parser shall accept the language option only when it is enabled, as a culture name of two or
+                  three letters followed by subtags of two to eight letters or digits, accept a well-formed name that
+                  the platform does not know without a usage error, and report any other name as a usage error.
+                justification: |
+                  Tools without translations must not accept an option that does nothing, and a well-formed language
+                  without files falls back to the neutral files whatever the platform knows.
+                tests:
+                  - CliArgumentParser_Parse_Language_ReadsWellFormedCultureNamesOnlyWhenEnabled
+                  - CliArgumentParser_Parse_Language_WellFormedUnknownCulture_IsAccepted
+
+              - id: HelpCards-Integration-CliArgumentParser-JsonRequested
+                title: >-
+                  The parser shall say whether the arguments ask for JSON before a double hyphen, whatever the first
+                  error is, so that the error can be written as JSON.
+                justification: |
+                  A script that asks for JSON must get JSON even for a mistake.
+                tests:
+                  - CliArgumentParser_Parse_JsonRequested_FollowsTheArguments
+
+              - id: HelpCards-Integration-CliArgumentParser-Arguments
+                title: >-
+                  The parser shall reject a null list of arguments and a null argument with an argument null
+                  exception.
+                justification: |
+                  Programming mistakes must fail loudly.
+                tests:
+                  - CliArgumentParser_Parse_NullArguments_Throw

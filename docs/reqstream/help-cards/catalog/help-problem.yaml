@@ -1,0 +1,73 @@
+---
+# HelpProblem Unit Requirements
+#
+# Requirements for the HelpProblem unit of the Catalog subsystem: the problem model (HelpProblem, HelpSeverity,
+# HelpCatalogException, and the rule identifiers) that every other part of the library reports defects with.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: HelpProblem Requirements
+            requirements:
+              - id: HelpCards-Catalog-HelpProblem-Fields
+                title: >-
+                  A problem shall carry its severity, rule identifier, source name, file, line, and message, and
+                  two problems with the same fields shall be equal.
+                justification: |
+                  Problems are collected, sorted, filtered, and compared by callers and tests; a plain value
+                  with all six fields makes each of those straightforward.
+                tests:
+                  - HelpProblem_Constructor_AllFields_ExposesFields
+                  - HelpProblem_Equality_SameFields_AreEqual
+                  - HelpProblem_Equality_DifferentLine_AreNotEqual
+                  - HelpProblem_CreateError_GivenFields_CreatesErrorProblem
+
+              - id: HelpCards-Catalog-HelpProblem-Severity
+                title: >-
+                  Severities shall be ordered from informational through warning to error.
+                justification: |
+                  Callers decide what to do with a problem by comparing severities, so the order is part of the
+                  contract.
+                tests:
+                  - HelpSeverity_Values_AreOrderedInfoWarningError
+
+              - id: HelpCards-Catalog-HelpProblem-RuleIds
+                title: >-
+                  Every rule of the failure model shall have a distinct lower-case dashed identifier.
+                justification: |
+                  Tests and adopters match on rule identifiers, so they must be stable, unique, and complete.
+                tests:
+                  - RuleIds_Constants_AreDistinctKebabCaseNames
+                  - RuleIds_Constants_CoverSpecifiedErrorRules
+                  - RuleIds_Constants_CoverInfoAndWarningRules
+
+              - id: HelpCards-Catalog-HelpProblem-InfoFactory
+                title: >-
+                  An informational problem shall be creatable with the same fields as an error, with the severity
+                  informational.
+                justification: |
+                  Deliberate degradations are reported as notes that never fail anything.
+                tests:
+                  - HelpProblem_CreateInfo_GivenFields_CreatesInfoProblem
+
+              - id: HelpCards-Catalog-HelpProblem-DisplayText
+                title: >-
+                  A problem shall be printable as one sentence that names the file, the source, and the line when
+                  there is one, and ends with exactly one sentence-ending mark.
+                justification: |
+                  Authors read problems in console output and exception messages.
+                tests:
+                  - HelpProblem_ToDisplayText_Fields_WritesOneSentence
+
+              - id: HelpCards-Catalog-HelpProblem-Exception
+                title: >-
+                  The catalog exception shall carry every error as a read-only list, write a message with the
+                  display text of the first error and the number of further errors, derive from the invalid
+                  operation exception, and refuse to be created without an error.
+                justification: |
+                  One exception for all defects of a source lets callers show everything at once.
+                tests:
+                  - HelpCatalogException_Constructor_Problems_ExposesThemAndWritesMessage
+                  - HelpCatalogException_Constructor_NoProblems_ThrowsArgumentException

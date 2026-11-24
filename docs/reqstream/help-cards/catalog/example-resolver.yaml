@@ -1,0 +1,33 @@
+---
+# ExampleResolver Unit Requirements
+#
+# Requirements for the ExampleResolver unit of the Catalog subsystem, which finds examples by name.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Catalog Requirements
+        sections:
+          - title: ExampleResolver Requirements
+            requirements:
+              - id: HelpCards-Catalog-ExampleResolver-Subtree
+                title: >-
+                  The resolver shall find the first example of a name in a card and the cards below it, searched
+                  depth first with the children it is given, ignoring case, and find nothing in other trees.
+                justification: |
+                  Composition and views use different children, so the walk takes them as input.
+                tests:
+                  - ExampleResolver_FindInSubtree_OwnExample_IsFoundIgnoringCase
+                  - ExampleResolver_FindInSubtree_Children_AreSearchedAndOtherTreesAreNot
+                  - ExampleResolver_FindInSubtree_ChildrenFunction_DecidesWhatIsSearched
+
+              - id: HelpCards-Catalog-ExampleResolver-Search
+                title: >-
+                  The resolver shall find every example of a name in a view in depth-first order, limit the search
+                  with the card form or a scope card by intersection, and find nothing for an unknown or hidden card.
+                justification: |
+                  Tools list the examples of a topic and print one by name.
+                tests:
+                  - ExampleResolver_FindAll_NameOnly_ReturnsEveryMatchInOrder
+                  - ExampleResolver_FindAll_CardFormAndScope_RestrictByIntersection
+                  - ExampleResolver_FindAll_HiddenCards_ContributeNothing

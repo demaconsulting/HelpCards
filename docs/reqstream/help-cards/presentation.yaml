@@ -1,0 +1,153 @@
+---
+# Presentation Subsystem Requirements
+#
+# Requirements for the Presentation subsystem: the options of a rendering, the three link styles, the text and Markdown
+# renderer, the JSON writer of contract version 1, wrapping, and the English chrome. Each requirement decomposes a
+# system requirement and is decomposed further by the requirements of the units of the subsystem.
+
+sections:
+  - title: HelpCards Requirements
+    sections:
+      - title: Presentation Requirements
+        requirements:
+          - id: HelpCards-Presentation-Text
+            title: >-
+              The subsystem shall render a card, an index, and a list of cards as plain text with a fixed layout of
+              sections that are left out when empty, with LF line endings, no trailing line feed, and the same
+              result on every machine.
+            justification: |
+              People read help in a terminal; the layout must be stable so that it can be learned and tested.
+            children:
+              - HelpCards-Presentation-TextRenderer-Card
+              - HelpCards-Presentation-TextRenderer-Output
+              - HelpCards-Presentation-TextRenderer-ExampleContent
+              - HelpCards-Presentation-TextRenderer-Arguments
+              - HelpCards-Presentation-HelpStrings-Chrome
+            tests:
+              - Presentation_Text_SimpleFixture_RendersGoldenCardAndIndex
+
+          - id: HelpCards-Presentation-Markdown
+            title: >-
+              The subsystem shall render Markdown with the layout of the text format, bold labels, and no wrapping.
+            justification: |
+              Markdown output is pasted into documents and must not be reflowed.
+            children:
+              - HelpCards-Presentation-TextRenderer-Markdown
+            tests:
+              - Presentation_Markdown_SimpleFixture_RendersGoldenAndDoesNotWrap
+
+          - id: HelpCards-Presentation-Json
+            title: >-
+              The subsystem shall render a card, an index, examples, one example, search results, and a list of
+              cards as JSON documents of contract version 1 with the keys in the specified order, optional
+              values left out, and the culture and the links of a card.
+            justification: |
+              Tools and agents parse the JSON; the documents must follow the frozen contract exactly.
+            children:
+              - HelpCards-Presentation-JsonDocumentWriter-Documents
+              - HelpCards-Presentation-JsonDocumentWriter-GoldenFiles
+              - HelpCards-Presentation-JsonDocumentWriter-KeyOrder
+              - HelpCards-Presentation-JsonDocumentWriter-OptionalKeys
+              - HelpCards-Presentation-JsonDocumentWriter-Links
+              - HelpCards-Presentation-JsonDocumentWriter-Envelope
+            tests:
+              - Presentation_Json_SimpleFixture_RendersGoldenDocuments
+
+          - id: HelpCards-Presentation-JsonContract
+            title: >-
+              The subsystem shall write every JSON document on one line of ASCII with the contract version, without
+              any null, with the error codes of the contract, and with a top-level object that the caller can
+              replace.
+            justification: |
+              These rules are what makes the documents safe to stream, pipe, and parse.
+            children:
+              - HelpCards-Presentation-JsonDocumentWriter-NoNull
+              - HelpCards-Presentation-JsonDocumentWriter-Ascii
+              - HelpCards-Presentation-JsonDocumentWriter-Errors
+              - HelpCards-Presentation-JsonDocumentWriter-Arguments
+            tests:
+              - Presentation_JsonContract_AllKinds_AreOneAsciiLineWithoutNull
+
+          - id: HelpCards-Presentation-LinkStyles
+            title: >-
+              The subsystem shall write links in bodies and lists in the plain, command, and Markdown styles or
+              through a callback, only for visible targets, with a configurable command template.
+            justification: |
+              The same card is read in a terminal, in a document, and inside a tool with its own links.
+            children:
+              - HelpCards-Presentation-LinkFormatter-Plain
+              - HelpCards-Presentation-LinkFormatter-Command
+              - HelpCards-Presentation-LinkFormatter-Markdown
+              - HelpCards-Presentation-LinkFormatter-LocalExamples
+              - HelpCards-Presentation-LinkFormatter-Callback
+              - HelpCards-Presentation-LinkFormatter-Labels
+              - HelpCards-Presentation-LinkFormatter-Body
+              - HelpCards-Presentation-LinkFormatter-Arguments
+              - HelpCards-Presentation-TextRenderer-LinkStyles
+            tests:
+              - Presentation_LinkStyles_GuideCard_WriteLinksAndLists
+
+          - id: HelpCards-Presentation-Examples
+            title: >-
+              The subsystem shall print the examples of a card in full, only list the examples of the cards below
+              it, and print one example alone as exactly its content.
+            justification: |
+              Examples are saved to files and run, so they must come out unchanged.
+            children:
+              - HelpCards-Presentation-TextRenderer-ExamplesDocument
+              - HelpCards-Presentation-TextRenderer-Example
+            tests:
+              - Presentation_Examples_GuideCard_PrintsOwnExamplesAndListsDescendants
+
+          - id: HelpCards-Presentation-Lists
+            title: >-
+              The subsystem shall render the index down to a depth, a list of cards, and search results as one line
+              per entry with aligned labels and wrapped summaries.
+            justification: |
+              Listings are how readers find the card they need.
+            children:
+              - HelpCards-Presentation-TextRenderer-Index
+              - HelpCards-Presentation-TextRenderer-Lists
+            tests:
+              - Presentation_Lists_IndexCardListAndSearch_RenderEntries
+
+          - id: HelpCards-Presentation-Wrapping
+            title: >-
+              The subsystem shall wrap only the lines it generates at the configured width with a hanging indent,
+              never split a word, and never reflow an authored body.
+            justification: |
+              Authors control their text; the library controls only the chrome around it.
+            children:
+              - HelpCards-Presentation-TextWrapper-Wrap
+              - HelpCards-Presentation-TextWrapper-LongWords
+              - HelpCards-Presentation-TextWrapper-Lines
+              - HelpCards-Presentation-TextWrapper-Arguments
+              - HelpCards-Presentation-TextRenderer-Wrapping
+            tests:
+              - Presentation_Wrapping_Width_WrapsGeneratedLinesOnly
+
+          - id: HelpCards-Presentation-Options
+            title: >-
+              The subsystem shall take its settings from one immutable options object with documented defaults,
+              reject invalid values where they are set, and resolve them with the catalog view of each call.
+            justification: |
+              A rendering is a pure function of the catalog view and its options.
+            children:
+              - HelpCards-Presentation-HelpRenderOptions-Defaults
+              - HelpCards-Presentation-HelpRenderOptions-Validation
+              - HelpCards-Presentation-HelpRenderOptions-Context
+              - HelpCards-Presentation-HelpRenderOptions-Walks
+            tests:
+              - Presentation_Options_DefaultsAndValidation_FollowTheContract
+
+          - id: HelpCards-Presentation-Determinism
+            title: >-
+              The subsystem shall produce the same output for the same catalog and options whatever the current
+              culture of the machine is, without caching any rendered output.
+            justification: |
+              Help output must be byte-identical on every machine.
+            children:
+              - HelpCards-Presentation-HelpStrings-CultureIndependence
+              - HelpCards-Presentation-JsonDocumentWriter-Determinism
+            tests:
+              - Presentation_Determinism_CultureAndRepeat_GiveIdenticalOutput
