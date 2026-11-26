@@ -196,9 +196,9 @@ which is prose for the card being read, writes the short ``the example `run` ``.
 ## Tokens
 
 A token is a name in double braces, such as `{{tool}}` or `{{version}}`. The library replaces tokens with text when it
-reads a file, in the title, the summary, the descriptions and contents of examples, and the body, including code
-blocks and code spans. Token names are letters and digits and are case-sensitive; an unknown token is the error
-`token-unknown` at its line.
+reads a file, in the title, the summary, the descriptions, contents, and `expect` fragments of examples, the data files
+of examples, and the body, including code blocks and code spans. Token names are letters and digits and are
+case-sensitive; an unknown token is the error `token-unknown` at its line.
 
 Two tokens always exist: `tool` and `version`. They come from the builder, `ToolName` and `ToolVersion`; the tool
 name defaults to the name of the first source and the version to nothing. Further tokens belong to one source and are
@@ -212,6 +212,33 @@ var source = HelpSource.FromAssembly(typeof(MyLibHelp).Assembly)
 The cards of that source write `{{maxItems}}`. A source sees only its own tokens, the tokens of the sources it imports,
 and the two built-in tokens. A name defined twice in that scope is the error `token-redefined`, and the built-in names
 cannot be redefined.
+
+### Writing a Literal `{{`
+
+To show double braces that are not a token, write the escape `\{{`. The library drops the backslash and keeps the
+braces, and it does not read the text after the escape as a token, so `\{{Package}}` shows as `{{Package}}` and is never
+`token-unknown`. This works wherever tokens are replaced: the title, the summary, the descriptions, contents and
+`expect` of examples, the data files of examples, and the body. For example, a Mermaid hexagon node in a data file:
+
+```text
+graph TD
+  pkg\{{Package}}
+```
+
+shows as `pkg{{Package}}`. An unknown `{{token}}` that is not escaped is still the error `token-unknown`. Every other
+backslash is kept as written (`C:\dir` is unchanged). In `\\{{tool}}` the first backslash is literal and the second one
+escapes, so the result is `\{{tool}}`; there is no way to put a backslash directly before a replaced token. The
+validator does not check for stray backslashes.
+
+In a double-quoted front-matter value the only escapes are `\\` and `\"`, so `"\{{x}}"` is a syntax error there. Write
+`"\\{{x}}"`, or use a single-quoted value (`'\{{x}}'`), a plain value, or a literal block, where a backslash needs no
+escape.
+
+**Beta note.** Before 0.1.0-beta.4 there was no escape: `\{{tool}}` was a backslash followed by the value of `tool`.
+Remove such a backslash, or write the text another way, when you upgrade.
+
+To keep a whole example free of tokens and escapes, use the example key `tokens: false` (see *Examples* below) instead
+of escaping every occurrence.
 
 ## Examples
 
@@ -228,6 +255,7 @@ An example is a named, ready-to-use piece of text attached to a card. Each item 
 | `content` | The text itself, a single line or a literal block |
 | `exit` | A `command` only: the exit code the command is expected to end with, from 0 to 255 (default 0) |
 | `expect` | A `command` only: text that the output must contain, a single line or a literal block |
+| `tokens` | `true` (default) or `false` to take `content` or the data file without replacing tokens |
 
 The kinds differ in how they use `file`, `save-as`, and `content` (schema 2):
 
@@ -253,8 +281,8 @@ segment of `file`). The schema belongs to one source, so a library migrates on i
 The data file of a `source` or `snippet` without `content` is read from the folder of the card and must exist and be
 valid, otherwise the catalog reports `example-file-missing` or `example-invalid`. File names use letters, digits,
 dots, hyphens, and underscores, `/` separates folders, and `..`, a leading `/`, and a drive are not allowed. The text
-of an example is normalized: CRLF becomes LF, a trailing line feed is removed, tokens are replaced, and a file is read
-as UTF-8.
+of an example is normalized: CRLF becomes LF, a trailing line feed is removed, tokens are replaced (unless the example
+has `tokens: false`), and a file is read as UTF-8.
 
 An example name is unique within its *card*, counting examples that overlays add: two examples of one card with the
 same name are the error `duplicate-example`, while different cards, including a parent and its children, may use the
@@ -312,6 +340,30 @@ examples document of the card prints the result after the example (the line `Exp
 `Expected output contains: ...` per fragment), the JSON documents add `exitCode` and `expect` when they are stated, and
 printing one example alone still prints exactly its content. HelpCards never starts a process: your own test runs the
 command and compares the result.
+
+### Examples Without Tokens
+
+An example that contains many literal double braces, such as a template, is easier to write with the key
+`tokens: false`. The `content` of the example, or its data file, is then copied as written: tokens are not replaced and
+`\{{` is not an escape. Line endings still become LF, a trailing line feed is still removed, and the content must still
+not be empty.
+
+```yaml
+examples:
+  - name: template
+    kind: snippet
+    language: mermaid
+    file: template.mmd
+    tokens: false
+    description: A diagram with hexagon nodes.
+```
+
+The key covers only the `content` and the data file; the `description` and the `expect` of the example still have their
+tokens replaced, and the escape still works there. A data file that several examples name is read once, so one example
+can turn tokens off and another can leave them on. The value must be `true` or `false`; anything else is the error
+`value-invalid`. The key is additive, is allowed for every kind, in cards and overlays, and needs no schema change.
+The validator reads whole files, so a token that only appears inside such an example still counts as used for
+`unused-token`.
 
 ## Cultures
 

@@ -325,6 +325,38 @@ public class HelpCardsTests
     }
 
     /// <summary>
+    ///     Proves that an escape and a per-example opt-out show literal braces end to end, while a real unknown token
+    ///     still fails.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Tokens_EscapeAndOptOut_ShowLiteralBraces()
+    {
+        // Arrange: data files with an escaped name and with tokens turned off, and an escape in the body
+        var catalog = CatalogBuilding.FromFiles(
+            ("card.md", SourceReading.Card(
+                extraFrontMatter: "examples:\n"
+                    + "  - name: escaped\n    kind: snippet\n    language: mermaid\n    file: escaped.mmd\n    description: D.\n"
+                    + "  - name: raw\n    kind: snippet\n    language: mermaid\n    file: raw.mmd\n    tokens: false\n    description: D.\n",
+                body: "Write \\{{Package}} for a literal.")),
+            ("escaped.mmd", "graph TD\n  pkg\\{{Package}}\n"),
+            ("raw.mmd", "graph TD\n  pkg{{Package}}\n"));
+
+        // Act
+        var card = catalog.Find("card")!;
+        var escaped = catalog.FindExample(card, "escaped");
+        var raw = catalog.FindExample(card, "raw");
+
+        // Assert: both examples and the body show the braces
+        Assert.Equal("graph TD\n  pkg{{Package}}", escaped?.Example.Content);
+        Assert.Equal("graph TD\n  pkg{{Package}}", raw?.Example.Content);
+        Assert.Equal("Write {{Package}} for a literal.", card.Body);
+
+        // Assert: a real unknown token is still an error
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(("card.md", SourceReading.Card(body: "\\{{a}} {{nope}}"))));
+        Assert.Equal("token-unknown", Assert.Single(exception.Problems).RuleId);
+    }
+
+    /// <summary>
     ///     Proves that translations are chosen per file with fallback to less specific cultures and the neutral file.
     /// </summary>
     [Fact]
@@ -1077,7 +1109,9 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Integration.HelpAgentTools: Create",
             "DemaConsulting.HelpCards.Integration.HelpCli: Create, Footer, Run, TryRun",
             "DemaConsulting.HelpCards.Integration.HelpCliAnswer: .ctor, ExitCode, Text",
-            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, ConfigureCatalog, DefaultWidth, EnableLanguageOption, Error, ErrorProvider, FallbackResolver, GetCatalogConfiguration, IndexPreamble, IndexSections, Output, OutputProvider, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
+            "DemaConsulting.HelpCards.Integration.HelpCliError: .ctor, Candidates, Code, Hint, Message",
+            "DemaConsulting.HelpCards.Integration.HelpCliExitCodes: .ctor, InternalError, Success, UsageError",
+            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, ConfigureCatalog, DefaultWidth, EnableLanguageOption, Error, ErrorProvider, ExitCodes, FallbackResolver, GetCatalogConfiguration, IndexPreamble, IndexSections, JsonEnvelope, JsonError, Output, OutputProvider, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
             "DemaConsulting.HelpCards.Integration.HelpCliSection: .ctor, Heading, Lines",
             "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromFiles, Imports, WithName, WithTokens",
             "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
@@ -1091,7 +1125,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Testing.HelpExampleRunReport: AssertSucceeded, CommandsRun, Problems, Succeeded",
             "DemaConsulting.HelpCards.Testing.HelpExampleRunner: Materialize, Run",
             "DemaConsulting.HelpCards.Testing.HelpExamples: Enumerate",
-            "DemaConsulting.HelpCards.Testing.HelpValidationOptions: .ctor, MaxCardChars, MaxLineLength, MaxRootIndexChars, MaxRootSummaryChars, MaxSummaryChars, RequireExternalSources, Rules, WarningsAreErrors",
+            "DemaConsulting.HelpCards.Testing.HelpValidationOptions: .ctor, MaxCardChars, MaxFenceLineLength, MaxLineLength, MaxRootIndexChars, MaxRootSummaryChars, MaxSummaryChars, RequireExternalSources, Rules, WarningsAreErrors",
             "DemaConsulting.HelpCards.Testing.IHelpCardRule: Check"
         ];
 
@@ -1174,12 +1208,15 @@ public class HelpCardsTests
             SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]].")), ("b.md", SourceReading.Card(summary: new string('x', 90)))),
             "test");
         var longSummary = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card(summary: new string('x', 90)))), "test");
+        var wide = HelpSource.FromFiles(SourceReading.Files(("c.md", SourceReading.Card(body: $"```text\n{new string('c', 100)}\n```"))), "test");
 
         // Act
         var validProblems = HelpCardValidator.Validate(valid);
         var errors = HelpCardValidator.Validate(broken);
         var warnings = HelpCardValidator.Validate(longSummary);
         var exception = Assert.Throws<HelpCatalogException>(() => HelpCardValidator.AssertValid(broken));
+        var proseLimitOnly = HelpCardValidator.Validate(wide, new HelpValidationOptions { MaxLineLength = 40 });
+        var withFenceLimit = HelpCardValidator.Validate(wide, new HelpValidationOptions { MaxLineLength = 40, MaxFenceLineLength = 120 });
 
         // Assert
         Assert.Empty(validProblems);
@@ -1187,6 +1224,10 @@ public class HelpCardsTests
         Assert.Equal(HelpSeverity.Warning, Assert.Single(warnings).Severity);
         Assert.Equal(errors, exception.Problems);
         HelpCardValidator.AssertValid(CatalogBuilding.Create(longSummary));
+
+        // A long line of a fenced block is a warning of the line limit and is accepted with a fence limit of its own
+        Assert.Equal("line-length", Assert.Single(proseLimitOnly).RuleId);
+        Assert.Empty(withFenceLimit);
     }
 
     /// <summary>
@@ -1566,6 +1607,75 @@ public class HelpCardsTests
             ConfigureCatalog = options.ConfigureCatalog,
             CatalogFactory = _ => CatalogBuilding.Simple(),
         }));
+    }
+
+    /// <summary>
+    ///     Proves that a tool with an established JSON contract uses the help command end to end: its envelope wraps every
+    ///     document, its error shape is written inside that envelope, its exit code is used for every failure, and the
+    ///     answers still go to the writers the host gave.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_ToolContract_EnvelopeErrorBodyAndExitCodesFollowTheTool()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var errors = new StringWriter();
+        var cli = HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = "tool",
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            OutputProvider = () => output,
+            ErrorProvider = () => errors,
+            JsonEnvelope = ToolContract.Envelope,
+            JsonError = ToolContract.ErrorBody,
+            ExitCodes = ToolContract.ExitCodes,
+        });
+
+        // Act
+        var handledCard = cli.TryRun(["help", "guide", "--json"], out var cardCode);
+        var cardDocument = output.ToString();
+        output.GetStringBuilder().Clear();
+        var handledUsage = cli.TryRun(["help", "--json", "--search", "a", "--examples"], out var usageCode);
+        var usageDocument = output.ToString();
+        var handledText = cli.TryRun(["help", "nothing"], out var textCode);
+
+        // Assert
+        Assert.True(handledCard && handledUsage && handledText);
+        Assert.Equal((0, 1, 1), (cardCode, usageCode, textCode));
+        Assert.StartsWith("{\"schemaVersion\":2,\"ok\":true,\"command\":\"help\",\"kind\":\"card\",", cardDocument, StringComparison.Ordinal);
+        Assert.Equal(
+            "{\"schemaVersion\":2,\"ok\":false,\"command\":\"help\",\"kind\":\"error\","
+                + "\"error\":{\"code\":\"usage-error\",\"message\":\"options '--examples' and '--search' cannot be combined.\"}}\n",
+            usageDocument);
+        Assert.StartsWith("Error: Unknown help card 'nothing'.", errors.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the help command of a tool that sets none of the contract settings keeps the default envelope,
+    ///     the default error body, and the exit codes 0, 2, and 70.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_ToolContract_UnsetKeepsTheDefaultDocumentsAndExitCodes()
+    {
+        // Arrange
+        var broken = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]]."))), "test");
+        var harness = new CliHarness(CatalogBuilding.Simple());
+        var defective = new CliHarness(factory: _ => CatalogBuilding.Create(broken));
+
+        // Act
+        var success = harness.Run("guide", "--json");
+        var usage = harness.Run("--json", "--search", "a", "--examples");
+        var internalError = defective.Run("--json");
+
+        // Assert
+        Assert.Equal((0, 2, 70), (success, usage, internalError));
+        Assert.StartsWith("{\"helpSchemaVersion\":1,\"ok\":true,\"kind\":\"card\",", harness.Output.ToString(), StringComparison.Ordinal);
+        Assert.Contains(
+            "{\"helpSchemaVersion\":1,\"ok\":false,\"kind\":\"error\",\"code\":\"usage-error\",\"message\":\"options '--examples' and '--search' cannot be combined.\"}\n",
+            harness.Output.ToString(),
+            StringComparison.Ordinal);
+        Assert.StartsWith("{\"helpSchemaVersion\":1,\"ok\":false,\"kind\":\"error\",\"code\":\"catalog-error\"", defective.Output.ToString(), StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -30,5 +30,13 @@ exit code of the contract.
 - **Sources**: the index restricted by source, an unknown source, and the filter of the JSON tag listing.
 - **Failures and channels**: usage errors in text and JSON, a defective catalog, a factory that returns nothing, and
   line feeds only.
+- **Tool contract** (`CliDispatcherTests.Contract.cs`): an envelope of the tool wraps the index, card, examples,
+  example, search, and tag documents; an error body of the tool is written inside the envelope for a usage error and
+  for a name that is not found, and receives the code, message, hint, and candidates of every kind of failure (usage
+  error, unknown card, unknown example, ambiguous example name, unknown source, unknown tag, and a missing catalog);
+  `--format json` asks for the contract of the tool like `--json`; the envelope and the error body work independently;
+  text errors are unchanged; the exit codes of the tool apply to usage errors, names that are not found, and a defective
+  or missing catalog, success and the other codes are mapped independently, and the exit code of a fallback answer is
+  kept; with nothing set the documents and exit codes are those of the contract of the helper.
 - **Extensions**: the fallback answer before the catalog is created, no answer, the language, the default and explicit
   widths, `auto` with and without a console, and the command template.

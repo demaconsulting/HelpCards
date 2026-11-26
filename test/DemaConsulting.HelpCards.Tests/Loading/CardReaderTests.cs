@@ -618,6 +618,41 @@ public partial class CardReaderTests
     }
 
     /// <summary>
+    ///     Proves that an escape renders literal braces in the title, summary, and body without a problem.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_EscapedBracesInTitleSummaryAndBody_RenderLiteral()
+    {
+        // Arrange
+        var files = SourceReading.Files(("a.md", "---\ntitle: Use \\{{name}}\nsummary: Max \\{{maxDpi}} dpi.\n---\nWrite \\{{x}} and run {{tool}}."));
+
+        // Act
+        var source = SourceReading.Read(files);
+
+        // Assert
+        var card = Assert.Single(source.Cards);
+        Assert.Empty(source.Problems);
+        Assert.Equal("Use {{name}}", card.Title);
+        Assert.Equal("Max {{maxDpi}} dpi.", card.Summary);
+        Assert.Equal("Write {{x}} and run demo.", Assert.Single(card.Body).Text);
+    }
+
+    /// <summary>
+    ///     Proves that an unknown token beside an escape reports its line and keeps the card.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_UnknownTokenBesideEscape_ReportsLineAndKeepsCard()
+    {
+        // Arrange: an escape on the first body line and an unknown token on the second, file line 6
+        var source = Read(("a.md", SourceReading.Card(body: "first \\{{x}}\nuse {{nope}} here")));
+
+        // Act / Assert
+        AssertProblem(Assert.Single(source.Problems), RuleIds.TokenUnknown, "a.md", 6);
+        Assert.Single(source.Cards);
+        Assert.Empty(source.FailedIds);
+    }
+
+    /// <summary>
     ///     Proves that an unknown token in the summary reports the line of the summary.
     /// </summary>
     [Fact]

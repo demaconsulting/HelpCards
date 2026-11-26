@@ -5,7 +5,8 @@ namespace DemaConsulting.HelpCards.Loading;
 /// </summary>
 /// <remarks>
 ///     A definition is the loader's finished product for one card file. It still uses local ids and
-///     unresolved links; composition turns definitions into the immutable catalog. Tokens are replaced and
+///     unresolved links; composition turns definitions into the immutable catalog. Tokens are replaced (except
+///     in the content of an example that sets <c>tokens: false</c>) and
 ///     the body is split into text and link parts.
 /// </remarks>
 /// <param name="SourceName">The name of the source the card belongs to.</param>

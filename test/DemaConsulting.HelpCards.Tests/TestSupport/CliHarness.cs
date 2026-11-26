@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Integration;
 
@@ -27,6 +28,9 @@ internal sealed class CliHarness
     /// <param name="width">The console width the provider reports, or <see langword="null"/> for no provider.</param>
     /// <param name="defaultWidth">The default width, or <see langword="null"/> for the default of the options.</param>
     /// <param name="template">The command template, or <see langword="null"/>.</param>
+    /// <param name="jsonEnvelope">The JSON envelope callback, or <see langword="null"/> for the default envelope.</param>
+    /// <param name="jsonError">The JSON error body callback, or <see langword="null"/> for the default body.</param>
+    /// <param name="exitCodes">The exit codes, or <see langword="null"/> for the defaults.</param>
     public CliHarness(
         HelpCatalog? catalog = null,
         Func<CultureInfo?, HelpCatalog>? factory = null,
@@ -38,7 +42,10 @@ internal sealed class CliHarness
         Func<IReadOnlyList<string>, HelpCliAnswer?>? fallback = null,
         Func<int?>? width = null,
         int? defaultWidth = null,
-        string? template = null)
+        string? template = null,
+        Func<string, Action<Utf8JsonWriter>, string>? jsonEnvelope = null,
+        Action<Utf8JsonWriter, HelpCliError>? jsonError = null,
+        HelpCliExitCodes? exitCodes = null)
     {
         Func<CultureInfo?, HelpCatalog> inner = factory ?? (_ => catalog!);
         var options = new HelpCliOptions
@@ -62,6 +69,9 @@ internal sealed class CliHarness
             OutputWidthProvider = width,
             CommandTemplate = template,
             DefaultWidth = defaultWidth ?? 78,
+            JsonEnvelope = jsonEnvelope,
+            JsonError = jsonError,
+            ExitCodes = exitCodes ?? new HelpCliExitCodes(),
         };
         Cli = HelpCli.Create(options);
     }

@@ -101,6 +101,59 @@ public class TestingTests
     }
 
     /// <summary>
+    ///     Proves that a separate limit inside fenced blocks applies to the opening, body, and closing lines of a fence
+    ///     and that the line limit keeps applying to prose, through the whole subsystem.
+    /// </summary>
+    [Fact]
+    public void Testing_QualityRules_FenceLineLimit_AppliesInsideFencesAndKeepsTheLineLimitForProse()
+    {
+        // Arrange: prose limit 40, fence limit 100; body lines 1 and 6 are prose, 2 to 5 are one fence
+        var body = string.Join(
+            "\n",
+            new string('p', 50),
+            "```text",
+            new string('c', 100),
+            new string('c', 101),
+            new string('`', 101),
+            new string('p', 41));
+        var source = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(body: body))), "demo");
+        var options = new HelpValidationOptions { MaxLineLength = 40, MaxFenceLineLength = 100 };
+
+        // Act
+        var problems = HelpCardValidator.Validate(source, options);
+
+        // Assert: the first body line is file line 5
+        var lengths = problems.Where(problem => problem.RuleId == RuleIds.LineLength).ToList();
+        Assert.Equal([5, 8, 9, 10], lengths.Select(problem => problem.Line));
+        Assert.Contains("wrap it at 40", lengths[0].Message, StringComparison.Ordinal);
+        Assert.Contains("wrap it at 100", lengths[1].Message, StringComparison.Ordinal);
+        Assert.Contains("wrap it at 100", lengths[2].Message, StringComparison.Ordinal);
+        Assert.Contains("wrap it at 40", lengths[3].Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that a command example that cannot be run is reported with the reason that names the character and
+    ///     its column.
+    /// </summary>
+    [Fact]
+    public void Testing_QualityRules_CommandExampleWithShellCharacter_NamesCharacterAndColumn()
+    {
+        // Arrange
+        var examples = "examples:\n"
+            + "  - name: braced\n    kind: command\n    language: shell\n    content: 'demo run {a}'\n    description: Braced.\n";
+        var source = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(extraFrontMatter: examples))), "demo");
+
+        // Act
+        var problems = HelpCardValidator.Validate(source);
+
+        // Assert
+        var problem = Assert.Single(problems);
+        Assert.Equal(RuleIds.CommandParse, problem.RuleId);
+        Assert.Contains("shell expansion character '{'", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("(column 10)", problem.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that a product rule, the option for external sources, and warnings that fail the assertion each
     ///     change the result of the validation.
     /// </summary>

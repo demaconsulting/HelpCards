@@ -33,5 +33,7 @@ All tests in the two files pass; the contract documents are equal to the specifi
   file from the `i18n` fixture.
 - **Envelope**: a callback replaces the top-level object and receives the kind; non-ASCII text it writes is escaped.
 - **Errors**: candidates only for `not-found` and `ambiguous`, the optional hint, unknown codes, and null arguments.
+- **Error body**: a body callback replaces the default members inside the default envelope and inside a callback
+  envelope, and an unknown code is still rejected.
 - **Determinism and arguments**: equal documents under two cultures; null arguments throw; an envelope callback that
   returns null gives an argument error that names the callback.

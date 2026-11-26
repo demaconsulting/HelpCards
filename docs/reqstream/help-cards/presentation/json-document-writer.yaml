@@ -111,6 +111,17 @@ sections:
                   - JsonDocumentWriter_WriteError_Codes_ControlCandidatesAndHint
                   - JsonDocumentWriter_WriteError_InvalidArguments_Throw
 
+              - id: HelpCards-Presentation-JsonDocumentWriter-ErrorBody
+                title: >-
+                  The writer shall write the members of an error through a callback of the caller, in place of the
+                  default members and inside the envelope in effect, when one is given, and shall still reject a code
+                  that is not one of the contract.
+                justification: |
+                  A tool with a contract of its own writes the error in its own shape and keeps the envelope it
+                  chose.
+                tests:
+                  - JsonDocumentWriter_WriteError_WithBody_ReplacesTheMembersInsideTheEnvelope
+
               - id: HelpCards-Presentation-JsonDocumentWriter-Determinism
                 title: >-
                   The writer shall write the same documents whatever the current culture of the thread is.

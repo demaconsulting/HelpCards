@@ -279,6 +279,242 @@ public partial class CardReaderTests
     }
 
     /// <summary>
+    ///     Proves that an escape in a data file renders literal braces without a problem.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleFileWithEscapedBraces_LoadsLiteralBraces()
+    {
+        // Arrange: a Mermaid hexagon whose braces would otherwise be read as a token
+        var source = Read(
+            ("a.md", ExampleCard("  - name: x\n    kind: source\n    language: mermaid\n    file: chart.mmd\n    description: D.\n")),
+            ("chart.mmd", "graph TD\n  pkg\\{{Package}}\n"));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert
+        Assert.Empty(source.Problems);
+        Assert.Equal("graph TD\n  pkg{{Package}}", example.Content);
+    }
+
+    /// <summary>
+    ///     Proves that a real unknown token in a data file is still reported next to an escape.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_UnknownTokenInExampleFile_StillReportsTokenUnknown()
+    {
+        // Arrange: an escape on the first line and an unknown token on the second
+        var source = Read(
+            ("a.md", ExampleCard("  - name: x\n    kind: source\n    language: shell\n    file: run.sh\n    description: D.\n")),
+            ("run.sh", "\\{{a}}\n{{nope}}\n"));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert
+        AssertProblem(Assert.Single(source.Problems), RuleIds.TokenUnknown, "run.sh", 2);
+        Assert.Equal("{{a}}\n{{nope}}", example.Content);
+    }
+
+    /// <summary>
+    ///     Proves that <c>tokens: false</c> takes a data file as written, with no replacement and no escape.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensFalse_DataFileIsVerbatim()
+    {
+        // Arrange: a data file with an unknown token, an escape and a known token
+        var source = Read(
+            ("a.md", ExampleCard("  - name: x\n    kind: snippet\n    language: mermaid\n    file: chart.mmd\n    tokens: false\n    description: D.\n")),
+            ("chart.mmd", "pkg{{Package}}\n\\{{x}}\n{{tool}}\n"));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert: nothing is replaced, escaped or reported
+        Assert.Empty(source.Problems);
+        Assert.Equal("pkg{{Package}}\n\\{{x}}\n{{tool}}", example.Content);
+    }
+
+    /// <summary>
+    ///     Proves that <c>tokens: false</c> keeps inline content as written but still normalizes line endings.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensFalse_InlineContentIsVerbatim()
+    {
+        // Arrange: schema 2, a command and a snippet, the snippet as a CRLF block
+        var source = Read(SchemaTwo, ("a.md", ExampleCard(
+            "  - name: run\r\n    kind: command\r\n    language: shell\r\n    content: '{{tool}} run {{x}}'\r\n    tokens: false\r\n    description: D.\r\n"
+            + "  - name: tpl\r\n    kind: snippet\r\n    language: yaml\r\n    content: |\r\n      a: {{tool}}\r\n      b: \\{{y}}\r\n    save-as: t.yaml\r\n    tokens: false\r\n    description: D.\r\n")));
+
+        // Act
+        var examples = Assert.Single(source.Cards).Examples;
+
+        // Assert: braces untouched, line endings LF, trailing line feed removed
+        Assert.Empty(source.Problems);
+        Assert.Equal(["{{tool}} run {{x}}", "a: {{tool}}\nb: \\{{y}}"], examples.Select(example => example.Content));
+    }
+
+    /// <summary>
+    ///     Proves that one data file can be verbatim for one example and replaced for another.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensFalse_SharedDataFileStaysReplacedForOtherExample()
+    {
+        // Arrange: two examples name one data file and only the first turns tokens off
+        var source = Read(
+            ("a.md", ExampleCard(
+                "  - name: raw\n    kind: snippet\n    language: shell\n    file: run.sh\n    tokens: false\n    description: D.\n"
+                + "  - name: cooked\n    kind: snippet\n    language: shell\n    file: run.sh\n    description: D.\n")),
+            ("run.sh", "{{tool}} go\n"));
+
+        // Act
+        var examples = Assert.Single(source.Cards).Examples;
+
+        // Assert
+        Assert.Empty(source.Problems);
+        Assert.Equal(["{{tool}} go", "demo go"], examples.Select(example => example.Content));
+    }
+
+    /// <summary>
+    ///     Proves that <c>tokens: true</c> replaces tokens like the default.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensTrue_ReplacesLikeDefault()
+    {
+        // Arrange
+        var source = Read(("a.md", ExampleCard(
+            "  - name: run\n    kind: command\n    language: shell\n    content: '{{tool}} run'\n    tokens: true\n    description: D.\n")));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert
+        Assert.Empty(source.Problems);
+        Assert.Equal("demo run", example.Content);
+    }
+
+    /// <summary>
+    ///     Proves that <c>tokens: false</c> does not affect the description and the expected output.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensFalse_DescriptionAndExpectStillReplaced()
+    {
+        // Arrange
+        var source = Read(("a.md", ExampleCard(
+            "  - name: run\n    kind: command\n    language: shell\n    content: '{{tool}} run'\n    tokens: false\n    expect: Ran \\{{tool}} {{tool}}\n    description: Run {{tool}}.\n")));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert: content verbatim, description and expect replaced (and the escape still works)
+        Assert.Empty(source.Problems);
+        Assert.Equal("{{tool}} run", example.Content);
+        Assert.Equal("Run demo.", example.Description);
+        Assert.Equal(["Ran {{tool}} demo"], example.Expect);
+    }
+
+    /// <summary>
+    ///     Proves that a <c>tokens</c> value other than <c>true</c> or <c>false</c> is reported at its line.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensInvalid_IsValueInvalid()
+    {
+        // Arrange: not a boolean, a different case, and empty
+        string[] values = ["maybe", "True", "''"];
+
+        foreach (var value in values)
+        {
+            var source = Read(("a.md", ExampleCard(
+                $"  - name: run\n    kind: command\n    language: shell\n    content: run\n    tokens: {value}\n    description: D.\n")));
+
+            // Act
+            var problem = Assert.Single(source.Problems);
+
+            // Assert
+            AssertProblem(problem, RuleIds.ValueInvalid, "a.md", 9);
+            Assert.Contains("'tokens'", problem.Message, StringComparison.Ordinal);
+        }
+    }
+
+    /// <summary>
+    ///     Proves that <c>tokens: false</c> works on an example of an overlay like on an example of a card.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensFalse_OnOverlayExampleIsVerbatim()
+    {
+        // Arrange: an overlay with one verbatim and one replaced example that share the folder of the overlay
+        var source = Read(
+            (
+                "extra/ov.md",
+                "---\nextends: a\nexamples:\n"
+                + "  - name: raw\n    kind: snippet\n    language: yaml\n    file: raw.yaml\n    tokens: false\n    description: D.\n"
+                + "  - name: cooked\n    kind: snippet\n    language: yaml\n    file: cooked.yaml\n    description: D.\n---\n"),
+            ("extra/raw.yaml", "k: {{tool}} \\{{x}}"),
+            ("extra/cooked.yaml", "k: {{tool}}"));
+
+        // Act
+        var examples = Assert.Single(source.Overlays).Examples;
+
+        // Assert
+        Assert.Empty(source.Problems);
+        Assert.Equal(["k: {{tool}} \\{{x}}", "k: demo"], examples.Select(example => example.Content));
+    }
+
+    /// <summary>
+    ///     Proves that <c>tokens</c> is not a key of a translated example: it is reported as a translation key and the
+    ///     neutral example keeps replacing its tokens.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensInTranslation_ReportsTranslationKey()
+    {
+        // Arrange: the neutral example replaces tokens and the translation tries to turn that off
+        var source = ReadFor(
+            "de",
+            ("a.md", "---\ntitle: Title\nsummary: Summary.\nexamples:\n  - name: render\n    kind: command\n    language: shell\n    content: '{{tool}} run'\n    description: Render.\n---\nText."),
+            ("a.de.md", "---\nexamples:\n  - name: render\n    description: D.\n    tokens: false\n---\nText."));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert: the key is rejected at its line and has no effect on the content
+        AssertProblem(Assert.Single(source.Problems), RuleIds.TranslationKey, "a.de.md", 5);
+        Assert.Equal("demo run", example.Content);
+    }
+
+    /// <summary>
+    ///     Proves that a card with an invalid <c>tokens</c> value is dropped and listed as failed, like a card with any
+    ///     other structural error in an example.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensInvalid_DropsTheCard()
+    {
+        // Arrange: one valid example and one with a value that is not a boolean
+        var source = Read(("a.md", ExampleCard(
+            "  - name: good\n    kind: command\n    language: shell\n    content: run\n    description: D.\n"
+            + "  - name: bad\n    kind: command\n    language: shell\n    content: run\n    tokens: maybe\n    description: D.\n")));
+
+        // Act / Assert
+        AssertProblem(Assert.Single(source.Problems), RuleIds.ValueInvalid, "a.md", 14);
+        Assert.Empty(source.Cards);
+        Assert.Equal(["a"], source.FailedIds);
+    }
+
+    /// <summary>
+    ///     Proves that content with tokens turned off is still checked for being empty.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensFalse_StillChecksEmptyContent()
+    {
+        // Arrange: an empty data file
+        var source = Read(
+            ("a.md", ExampleCard("  - name: x\n    kind: snippet\n    language: shell\n    file: run.sh\n    tokens: false\n    description: D.\n")),
+            ("run.sh", string.Empty));
+
+        // Act / Assert
+        AssertProblem(Assert.Single(source.Problems), RuleIds.ExampleInvalid, "run.sh", 1);
+    }
+
+    /// <summary>
     ///     Proves that a source or snippet example needs a file.
     /// </summary>
     [Fact]
@@ -438,7 +674,7 @@ public partial class CardReaderTests
 
         // Assert
         AssertProblem(problem, RuleIds.KeyUnknown, "a.md", 10);
-        Assert.Contains("name, kind, language, description, file, content, exit, expect", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("name, kind, language, description, file, content, exit, expect, tokens", problem.Message, StringComparison.Ordinal);
     }
 
     /// <summary>

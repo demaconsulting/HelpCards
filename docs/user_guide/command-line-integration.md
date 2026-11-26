@@ -99,6 +99,9 @@ output writer. The exit codes are:
 | 2 | Usage error, or a card, example, tag, or source that is not found or not unique |
 | 70 | The catalog could not be built: a defect in a source |
 
+These are the defaults; a tool with exit codes of its own maps them with `HelpCliOptions.ExitCodes` (see [A Tool with
+a JSON Contract of Its Own](#a-tool-with-a-json-contract-of-its-own)).
+
 The index is the usage lines, a blank line, the preamble, the sections, the `Help topics:` list, a blank line, and
 the footer:
 
@@ -151,6 +154,9 @@ exits with 2; use `card#name`.
 | `FallbackResolver` | Offered the path words of a card command before the catalog is searched |
 | `Output`, `Error` | The writers; the defaults are the console |
 | `OutputProvider`, `ErrorProvider` | Return the writer when a command writes; `null` is the console |
+| `JsonEnvelope` | The top-level object of every JSON document, errors included |
+| `JsonError` | The members of a JSON error, from a `HelpCliError` |
+| `ExitCodes` | `HelpCliExitCodes`: `Success`, `UsageError`, `InternalError`; 0, 2, 70 by default |
 | `CommandTemplate` | The template for command links, `{tool}` and `{path}`; the default is `{tool} help {path}` |
 | `DefaultWidth` | The wrapping width, 78 by default |
 | `EnableLanguageOption` | Adds `--lang` |
@@ -163,10 +169,18 @@ A `FallbackResolver` lets a tool keep answers that are not cards. It receives th
 and answers with a not-found error. The options object is kept by the helper, not copied; do not change it after you
 create a helper from it.
 
+The text of a `HelpCliAnswer` is written to the output as it is, also with `--json`: an answer of the fallback resolver
+bypasses `JsonEnvelope` and `JsonError`, so a tool that needs JSON for its own subjects returns that JSON itself. The
+exit code of the answer is kept as it is and is not mapped by `ExitCodes`.
+
 A provider is the way to follow an option that the tool reads after it created the helper, such as `--silent`:
 `OutputProvider = () => silent ? TextWriter.Null : null`, with `ErrorProvider` likewise, is evaluated each time a
-command writes. A provider counts as a writer that is not the console, so `--width auto` uses `OutputWidthProvider`
-or 78.
+command writes. A provider counts as a writer that is not the console, so `--width auto` uses
+`OutputWidthProvider` or 78. The routing settings are `Output`, `OutputProvider`, `Error`, and `ErrorProvider`.
+Providers are also how help goes through the writers or the logger of a host application: return a `TextWriter` that
+forwards to them, and every answer, JSON documents and JSON errors included, is written there. A forwarding writer must
+be given to `ErrorProvider` (or `Error`) as well as to `OutputProvider` (or `Output`), because text and Markdown errors
+are written to the error writer. The helper does not catch what a provider throws.
 
 To prove in a test that the cards of the tool are valid in the composition that users get, pass the same
 configuration to the validator:
@@ -228,6 +242,70 @@ A tool that must keep an existing JSON envelope sets `HelpRenderOptions.JsonEnve
 kind (not `ok`) and a function that writes the fields, and returns the whole document. The callback replaces the
 default envelope, so `helpSchemaVersion`, `ok`, and `kind` appear only if it writes them. HelpCards then writes the
 fields of the document after the members that the callback wrote itself.
+
+## A Tool with a JSON Contract of Its Own
+
+A tool whose `--json` output already has a contract can use `HelpCli` end to end by setting three options, all
+optional and independent. With none of them set, the documents and the exit codes are exactly those described above.
+
+- `JsonEnvelope` has the shape and the meaning of `HelpRenderOptions.JsonEnvelope` and is used for every JSON document
+  that the helper writes: cards, examples, the index, search and tag results, and errors.
+- `JsonError` receives the writer and a `HelpCliError` (`Code`, `Message`, `Hint`, and `Candidates`, which is empty for
+  the codes that have none) and writes the members of the error in the shape of the tool. They are written inside the
+  envelope in effect, so the two options combine; without `JsonError` the members are `code`, `message`, `hint`, and
+  `candidates`.
+- `ExitCodes` is a `HelpCliExitCodes`. `Success` (default 0) is the code of an answered command, `UsageError`
+  (default 2) that of wrong arguments and of a card, example, tag, or source that is not found or not unique, and
+  `InternalError` (default 70) that of a catalog that is defective or could not be created. Each must be from 0 to 255,
+  and the exit code of a `HelpCliAnswer` of the fallback resolver is never changed.
+
+A tool whose documents look like `{"schemaVersion":2,"ok":true,"command":"help","kind":"card",...}`, whose errors are
+`{"schemaVersion":2,"ok":false,"command":"help","kind":"error","error":{"code":...,"message":...,"hint":...}}`, and that
+exits with 1 for every failure sets:
+
+```csharp
+var help = HelpCli.Create(new HelpCliOptions
+{
+    ToolName = "tool",
+    ConfigureCatalog = (builder, culture) => builder.AddSource(Cards),
+    JsonEnvelope = (kind, writeFields) =>
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }))
+        {
+            writer.WriteStartObject();
+            writer.WriteNumber("schemaVersion", 2);
+            writer.WriteBoolean("ok", kind != "error");
+            writer.WriteString("command", "help");
+            writer.WriteString("kind", kind);
+            writeFields(writer);
+            writer.WriteEndObject();
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
+    },
+    JsonError = (writer, error) =>
+    {
+        writer.WriteStartObject("error");
+        writer.WriteString("code", error.Code);
+        writer.WriteString("message", error.Message);
+        if (error.Hint is not null)
+        {
+            writer.WriteString("hint", error.Hint);
+        }
+
+        writer.WriteEndObject();
+    },
+    ExitCodes = new HelpCliExitCodes { UsageError = 1, InternalError = 1 },
+});
+```
+
+The helper makes the result ASCII, as it does for the default envelope. Text and Markdown errors are not JSON, so
+`JsonError` does not change them. The helper does not catch what the callbacks throw: an exception from `JsonEnvelope`,
+`JsonError`, a provider, or the fallback resolver, and the `ArgumentException` for an envelope that returns `null`,
+propagates out of `Run` and `TryRun`, so the tool decides how it fails. To send everything through the writers or the
+logger of the host, give `OutputProvider` and `ErrorProvider` (see [Customizing the Helper](#customizing-the-helper)).
+The agent tool does not read any of these options.
 
 ## Rendering Without the Helper
 

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using DemaConsulting.HelpCards.Catalog;
 using DemaConsulting.HelpCards.Composition;
 
@@ -24,6 +25,11 @@ namespace DemaConsulting.HelpCards.Integration;
 /// </remarks>
 public sealed class HelpCliOptions
 {
+    /// <summary>
+    ///     The exit codes, checked when set.
+    /// </summary>
+    private readonly HelpCliExitCodes _exitCodes = new();
+
     /// <summary>
     ///     Gets the name of the tool as the user types it; it appears in usage text, hints, and commands.
     /// </summary>
@@ -101,6 +107,12 @@ public sealed class HelpCliOptions
     ///     <see langword="null"/>. It returns an answer for a subject that the tool owns, and <see langword="null"/> to
     ///     let the catalog answer.
     /// </summary>
+    /// <remarks>
+    ///     The text of an answer is written to the output writer as it is, also with <c>--json</c>: it bypasses
+    ///     <see cref="JsonEnvelope"/> and <see cref="JsonError"/>, so a tool that needs JSON for its own subjects
+    ///     returns that JSON itself. The exit code of the answer is kept as it is and is not mapped by
+    ///     <see cref="ExitCodes"/>. The helper does not catch what the function throws.
+    /// </remarks>
     public Func<IReadOnlyList<string>, HelpCliAnswer?>? FallbackResolver { get; init; }
 
     /// <summary>
@@ -118,6 +130,13 @@ public sealed class HelpCliOptions
     ///     state of the tool at that moment, for example <c>OutputProvider = () => silent ? TextWriter.Null : null</c>.
     ///     A <see langword="null"/> result means the console output at that time. A provider counts as a writer that is
     ///     not the console for <c>--width auto</c>; give <see cref="OutputWidthProvider"/> to report a width.
+    ///     This is the intended way to route help through the writers or the logger of a host application: return a
+    ///     writer that forwards to them (for example a <see cref="TextWriter"/> that logs each line), and the helper
+    ///     writes every answer, including JSON documents and JSON errors, to it. The routing settings are
+    ///     <see cref="Output"/>, <see cref="OutputProvider"/>, <see cref="Error"/>, and <see cref="ErrorProvider"/>; a
+    ///     forwarding writer must be given to <see cref="ErrorProvider"/> or <see cref="Error"/> as well, because text
+    ///     and Markdown errors use the error writer. The helper does not catch what the provider throws: an exception
+    ///     propagates out of <see cref="HelpCli.Run"/> and <see cref="HelpCli.TryRun"/>.
     /// </remarks>
     public Func<TextWriter?>? OutputProvider { get; init; }
 
@@ -133,9 +152,82 @@ public sealed class HelpCliOptions
     /// </summary>
     /// <remarks>
     ///     The function is called each time the helper writes (once for an error); a <see langword="null"/> result means
-    ///     the console error at that time. JSON errors are documents and go to the output writer.
+    ///     the console error at that time. JSON errors are documents and go to the output writer. Like
+    ///     <see cref="OutputProvider"/>, this is the intended way to route the text and Markdown errors through the
+    ///     writers or the logger of a host application, and the helper does not catch what the provider throws: an
+    ///     exception propagates out of <see cref="HelpCli.Run"/> and <see cref="HelpCli.TryRun"/>.
     /// </remarks>
     public Func<TextWriter?>? ErrorProvider { get; init; }
+
+    /// <summary>
+    ///     Gets a callback that writes the top-level JSON object around the fields of every JSON document of the helper,
+    ///     or <see langword="null"/> for the default envelope.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         It has the shape and the meaning of <c>HelpRenderOptions.JsonEnvelope</c>: it receives the kind of the
+    ///         document (<c>index</c>, <c>card</c>, <c>examples</c>, <c>example</c>, <c>search</c>, <c>cards</c>, or
+    ///         <c>error</c>) and an action that writes the fields of that kind into the open object, and returns the
+    ///         complete document. It replaces the whole default envelope
+    ///         <c>{"helpSchemaVersion":1,"ok":...,"kind":"..."}</c>, so a tool that has its own JSON contract writes
+    ///         its members first and then calls the action. It is used for every document that the helper writes with
+    ///         <c>--json</c>, including errors, and its result is made ASCII by the helper.
+    ///     </para>
+    ///     <para>
+    ///         For example, a tool whose documents start with <c>{"schemaVersion":2,"ok":true,"command":"help","kind":"card"</c>
+    ///         writes those four members and calls the action. The callback runs on the calling thread, may be called
+    ///         concurrently, and must be thread-safe.
+    ///     </para>
+    ///     <para>
+    ///         The helper does not catch what the callback throws: an exception propagates out of
+    ///         <see cref="HelpCli.Run"/> and <see cref="HelpCli.TryRun"/>, and so does the <see cref="ArgumentException"/>
+    ///         that the helper throws when the callback returns <see langword="null"/>. The callback does not apply to
+    ///         the answer of <see cref="FallbackResolver"/>, which is written as it is.
+    ///     </para>
+    /// </remarks>
+    public Func<string, Action<Utf8JsonWriter>, string>? JsonEnvelope { get; init; }
+
+    /// <summary>
+    ///     Gets a callback that writes the body of a JSON error document in the shape of the tool, or
+    ///     <see langword="null"/> for the default body.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         The callback receives the writer, positioned inside the open object of the document, and the
+    ///         <see cref="HelpCliError"/> to report. It writes the members of the error, and the helper wraps them in the
+    ///         envelope that is in effect (<see cref="JsonEnvelope"/>, else the default one), so the two settings
+    ///         combine. A tool whose contract nests the error writes
+    ///         <c>writer.WriteStartObject("error"); writer.WriteString("code", error.Code); ... writer.WriteEndObject();</c>.
+    ///         When it is not set, the default body is written: <c>code</c>, <c>message</c>, <c>hint</c> when there is one,
+    ///         and <c>candidates</c> for the codes <c>not-found</c> and <c>ambiguous</c>.
+    ///     </para>
+    ///     <para>
+    ///         It applies to the JSON errors of the helper only; text and Markdown errors are not JSON. The callback runs
+    ///         on the calling thread and must be thread-safe. The helper does not catch what it throws: an exception
+    ///         propagates out of <see cref="HelpCli.Run"/> and <see cref="HelpCli.TryRun"/>.
+    ///     </para>
+    /// </remarks>
+    public Action<Utf8JsonWriter, HelpCliError>? JsonError { get; init; }
+
+    /// <summary>
+    ///     Gets the exit codes of the helper; 0 for success, 2 for a usage error or a name that is not found, and 70 for
+    ///     a defective catalog unless set.
+    /// </summary>
+    /// <remarks>
+    ///     A tool whose contract exits with 1 for every failure sets
+    ///     <c>ExitCodes = new HelpCliExitCodes { UsageError = 1, InternalError = 1 }</c>. The mapping does not change the
+    ///     exit code of a <see cref="HelpCliAnswer"/> from <see cref="FallbackResolver"/>.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown on initialization with <see langword="null"/>.</exception>
+    public HelpCliExitCodes ExitCodes
+    {
+        get => _exitCodes;
+        init
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            _exitCodes = value;
+        }
+    }
 
     /// <summary>
     ///     Gets the template of the command that prints a card, such as <c>{tool} help {path}</c>, or
@@ -161,7 +253,7 @@ public sealed class HelpCliOptions
     /// </summary>
     /// <remarks>
     ///     When it is <see langword="false"/>, <c>--lang</c> is rejected like any unknown option (usage error, exit code
-    ///     2) and the catalog is built without a culture from the option. When it is <see langword="true"/>,
+    ///     2 unless <see cref="ExitCodes"/> says otherwise) and the catalog is built without a culture from the option. When it is <see langword="true"/>,
     ///     <c>--lang de-DE</c> passes that culture to <see cref="ConfigureCatalog"/> or <see cref="CatalogFactory"/>.
     /// </remarks>
     public bool EnableLanguageOption { get; init; }

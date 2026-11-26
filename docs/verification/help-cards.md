@@ -98,10 +98,14 @@ that the schema is 1, one with schema 2 and asserts that the schema is 2, and on
 
 ### Tokens: Replacement and Unknown Tokens
 
-**Tests**: `HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced`, `HelpCards_Tokens_UnknownToken_ReportsFileAndLine`
+**Tests**: `HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced`, `HelpCards_Tokens_UnknownToken_ReportsFileAndLine`,
+`HelpCards_Tokens_EscapeAndOptOut_ShowLiteralBraces`
 
 Reads cards that use the built-in tokens and a token of the source, and a card with an unknown token on its
-second body line; asserts the replaced text and the exact file and line of the problem.
+second body line; asserts the replaced text and the exact file and line of the problem. Creates a catalog from files
+whose card has an example with an escaped data file (`pkg\{{Package}}`), one with `tokens: false` and a data file
+`pkg{{Package}}`, and an escape in the body; asserts with `FindExample` that both examples give `pkg{{Package}}` and
+that the body shows `{{`, and that a real unknown token next to an escape still fails with `token-unknown`.
 
 ### Cultures: Per-File Selection With Fallback
 
@@ -297,8 +301,10 @@ region translation, a language translation, and a card without translation.
 
 Validates the embedded `simple` fixture and gets no problem, validates a source with a broken link and gets the error
 without an exception, validates a source with a long summary and gets one warning, and asserts that `AssertValid` throws
-one exception with the same error and accepts a catalog that only has a warning. The other quality warnings of
-the\nrequirement are verified by the scenarios of the Testing subsystem (`docs/verification/help-cards/testing.md`).
+one exception with the same error and accepts a catalog that only has a warning. It also validates a card with a long
+line inside a fenced block with a line limit only and gets one `line-length` warning, and with a fence limit as well and
+gets none. The other quality warnings of the requirement are verified by the scenarios of the Testing subsystem
+(`docs/verification/help-cards/testing.md`).
 
 ### Validation: Running the Examples
 
@@ -374,6 +380,17 @@ the commands of the links, and the JSON index show the one name and the one vers
 catalog of `GetCatalogConfiguration`, and that options with both a configuration and a factory are rejected. Creates a
 helper with writer providers, runs a card and an unknown card, switches a flag that makes the providers return a silent
 writer, runs two more commands, and asserts that the silent ones wrote nothing.
+
+### Command Line: Tool Contract
+
+**Tests**: `HelpCards_Cli_ToolContract_EnvelopeErrorBodyAndExitCodesFollowTheTool`,
+`HelpCards_Cli_ToolContract_UnsetKeepsTheDefaultDocumentsAndExitCodes`
+
+Creates a helper whose options hold an envelope, an error body, and the exit code 1 for every failure, as a tool with an
+established JSON contract sets them, and routes the writes through providers. Runs a card as JSON, a usage error as
+JSON, and an unknown card as text, and asserts the envelope of the tool, the error shape of the tool written inside it
+character for character, the exit codes 0, 1, and 1, and the text error on the error writer. Runs a helper that sets
+none of the three and asserts the default envelope, the default error body, and the exit codes 0, 2, and 70.
 
 ### Agent Tool: Calls, Schema, and Resilience
 

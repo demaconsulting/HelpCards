@@ -372,6 +372,48 @@ public partial class JsonDocumentWriterTests
     }
 
     /// <summary>
+    ///     Proves that a body callback replaces the default members of an error document, inside the default envelope
+    ///     and inside a custom envelope, and that the code is still checked.
+    /// </summary>
+    [Fact]
+    public void JsonDocumentWriter_WriteError_WithBody_ReplacesTheMembersInsideTheEnvelope()
+    {
+        // Arrange
+        static void Body(Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject("error");
+            writer.WriteString("code", "mine");
+            writer.WriteEndObject();
+        }
+
+        var custom = new HelpRenderOptions
+        {
+            JsonEnvelope = (kind, writeFields) =>
+            {
+                using var stream = new MemoryStream();
+                using (var writer = new Utf8JsonWriter(stream))
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("kind", kind);
+                    writeFields(writer);
+                    writer.WriteEndObject();
+                }
+
+                return Encoding.UTF8.GetString(stream.ToArray());
+            },
+        };
+
+        // Act
+        var plain = JsonDocumentWriter.WriteError(null, "not-found", "m", "h", ["a"], Body);
+        var wrapped = JsonDocumentWriter.WriteError(custom, "usage-error", "m", null, null, Body);
+
+        // Assert
+        Assert.Equal("{\"helpSchemaVersion\":1,\"ok\":false,\"kind\":\"error\",\"error\":{\"code\":\"mine\"}}", plain);
+        Assert.Equal("{\"kind\":\"error\",\"error\":{\"code\":\"mine\"}}", wrapped);
+        Assert.Throws<ArgumentException>(() => JsonDocumentWriter.WriteError(null, "oops", "m", null, null, Body));
+    }
+
+    /// <summary>
     ///     Proves that an unknown error code and null arguments are rejected.
     /// </summary>
     [Fact]

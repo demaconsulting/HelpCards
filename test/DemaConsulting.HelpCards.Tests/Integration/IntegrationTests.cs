@@ -172,6 +172,47 @@ public class IntegrationTests
     }
 
     /// <summary>
+    ///     Proves that the helper, its parser, and its dispatcher apply the contract settings of the tool together: the
+    ///     envelope and the error shape of the tool for a usage error, a name that is not found, and a catalog that
+    ///     cannot be created, with the exit code of the tool, and the default behavior when nothing is set.
+    /// </summary>
+    [Fact]
+    public void Integration_Cli_ToolContract_AppliesToEveryFailureOfTheHelper()
+    {
+        // Arrange
+        var tool = new CliHarness(
+            CatalogBuilding.Simple(),
+            jsonEnvelope: ToolContract.Envelope,
+            jsonError: ToolContract.ErrorBody,
+            exitCodes: ToolContract.ExitCodes);
+        var unavailable = new CliHarness(
+            factory: _ => null!,
+            jsonEnvelope: ToolContract.Envelope,
+            jsonError: ToolContract.ErrorBody,
+            exitCodes: ToolContract.ExitCodes);
+        var plain = new CliHarness(CatalogBuilding.Simple());
+
+        // Act
+        var usage = tool.Run("--json", "--bogus");
+        var notFound = tool.Run("nothing", "--json");
+        var noCatalog = unavailable.Run("--json");
+        var success = tool.Run("--search", "guide", "--json");
+        var plainUsage = plain.Run("--json", "--bogus");
+
+        // Assert
+        Assert.Equal((1, 1, 1, 0, 2), (usage, notFound, noCatalog, success, plainUsage));
+        var documents = tool.Output.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        Assert.StartsWith("{\"schemaVersion\":2,\"ok\":false,\"command\":\"help\",\"kind\":\"error\",\"error\":{\"code\":\"usage-error\"", documents[0], StringComparison.Ordinal);
+        Assert.StartsWith("{\"schemaVersion\":2,\"ok\":false,\"command\":\"help\",\"kind\":\"error\",\"error\":{\"code\":\"not-found\"", documents[1], StringComparison.Ordinal);
+        Assert.StartsWith("{\"schemaVersion\":2,\"ok\":true,\"command\":\"help\",\"kind\":\"search\"", documents[2], StringComparison.Ordinal);
+        Assert.Equal(
+            "{\"schemaVersion\":2,\"ok\":false,\"command\":\"help\",\"kind\":\"error\","
+                + "\"error\":{\"code\":\"catalog-error\",\"message\":\"Help is unavailable: the tool created no catalog.\"}}\n",
+            unavailable.Output.ToString());
+        Assert.StartsWith("{\"helpSchemaVersion\":1,\"ok\":false,\"kind\":\"error\",\"code\":\"usage-error\"", plain.Output.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Proves that the providers choose the writers when a command writes, so a quiet mode that is read after the
     ///     helper was created silences help, and that an error still reaches the error provider.
     /// </summary>

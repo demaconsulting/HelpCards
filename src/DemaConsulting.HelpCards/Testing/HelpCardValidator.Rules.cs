@@ -240,15 +240,7 @@ public static partial class HelpCardValidator
                     "A fenced code block names no language; write the language after the opening fence, such as ```text."));
             }
 
-            if (options.MaxLineLength is { } max && line.Text.Length > max)
-            {
-                problems.Add(Warning(
-                    RuleIds.LineLength,
-                    card.SourceName,
-                    card.BodyFile,
-                    fileLine,
-                    $"The line has {line.Text.Length} characters; wrap it at {max}."));
-            }
+            CheckLineLength(card, line, fileLine, options, problems);
         }
 
         if (unclosedLine > 0)
@@ -260,6 +252,34 @@ public static partial class HelpCardValidator
                 card.BodyLine + unclosedLine - 1,
                 "The fenced code block is never closed; add a closing fence with at least as many characters."));
         }
+    }
+
+    /// <summary>
+    ///     Checks that a line is within the limit that applies to it: the fence limit inside a fenced code block when
+    ///     it is set, otherwise the line limit.
+    /// </summary>
+    /// <param name="card">The card.</param>
+    /// <param name="line">The line.</param>
+    /// <param name="fileLine">The line number in the file.</param>
+    /// <param name="options">The limits.</param>
+    /// <param name="problems">Receives the warning.</param>
+    private static void CheckLineLength(HelpCard card, MarkdownLine line, int fileLine, HelpValidationOptions options, List<HelpProblem> problems)
+    {
+        // The fence kinds come from the same scan as fence-language and fence-unclosed, so all three rules agree on what is code
+        var fenceLimit = line.Kind == MarkdownLineKind.Text ? null : options.MaxFenceLineLength;
+        var limit = fenceLimit ?? options.MaxLineLength;
+        if (limit is not { } max || line.Text.Length <= max)
+        {
+            return;
+        }
+
+        var place = fenceLimit is null ? "The line" : "The line in a fenced code block";
+        problems.Add(Warning(
+            RuleIds.LineLength,
+            card.SourceName,
+            card.BodyFile,
+            fileLine,
+            $"{place} has {line.Text.Length} characters; wrap it at {max}."));
     }
 
     /// <summary>

@@ -16,8 +16,12 @@ their lines and left in the text, and redefinitions are reported at scope creati
 
 #### Test Scenarios
 
-- **Syntax**: valid and invalid token names, case sensitivity, malformed lookalikes left alone, no escape,
+- **Syntax**: valid and invalid token names, case sensitivity, malformed lookalikes left alone,
   replacement inside code, text without tokens unchanged.
+- **Escape**: `\{{tool}}` renders `{{tool}}`; an escaped undefined name is not reported; an unknown token beside an
+  escape is still reported at its line; `a\{{ b` loses only the backslash and other backslashes stay; `\\{{tool}}`
+  gives `\{{tool}}`; an escape at the end of the text, an escape inside what looks like a token (`{{na\{{me}}`),
+  and CRLF line endings follow the same rule, with an unknown token after CRLF reported at the right line.
 - **Scope**: built-in tokens, own tokens, imported tokens, tokens of a source that is not imported are unknown,
   an empty version.
 - **Redefinition**: own and imported with the same name, two imports with the same name, built-in names; the
@@ -25,4 +29,4 @@ their lines and left in the text, and redefinitions are reported at scope creati
 - **Unknown tokens**: a token on the third line of a text that starts on line 10 is reported at line 12 with
   file and source; several unknown tokens are all reported.
 - **Names**: the distinct names of a text in order of first use, and no names for text that only looks like a
-  token or has none.
+  token, has an escaped token only, or has none.

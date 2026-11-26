@@ -11,7 +11,7 @@ namespace DemaConsulting.HelpCards.Tests.Integration;
 ///     Unit tests for <see cref="HelpCli"/>: creation, the verb gate, the footer, and the factory that is never called
 ///     for anything that is not a help command.
 /// </summary>
-public class HelpCliTests
+public partial class HelpCliTests
 {
     /// <summary>
     ///     Creates a harness whose factory fails the test when it is called.

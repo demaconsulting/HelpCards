@@ -27,12 +27,21 @@ The `schema` key of `_source.md` is the major version of the card format. Omitti
   `file` did). An unknown key without the prefix `x-` is an error inside a schema, so a library
   that uses a key introduced in a later release must reference at least that release of HelpCards in its package
   reference. The README lists the release that introduced each key.
+- **Beta note (0.1.0-beta.4).** Before this release there was no escape for a literal `{{`: `\{{tool}}` was a backslash
+  followed by the value of `tool`. Since 0.1.0-beta.4 the text `\{{` is the escape: the backslash is dropped, the braces
+  are kept, and the text after it is not read as a token. A card that has a backslash directly before `{{` changes
+  meaning, so remove the backslash (or write the text another way) when you upgrade. See *Writing a Literal `{{`* in the
+  guide to writing cards.
 
 ## JSON Compatibility
 
-The JSON documents carry `helpSchemaVersion`, now 1. Within version 1, new keys appear only at the end of an object
-and keys are never removed or reordered. A reader should ignore keys it does not know. The documents of the command-line
-helper and of the catalog are the same contract.
+The JSON documents carry `helpSchemaVersion`, now 1. Within version 1, new keys appear only at the end of an object and
+keys are never removed or reordered. A reader should ignore keys it does not know. With the default settings the
+documents of the command-line helper and of the catalog are the same contract. A tool that sets
+`HelpCliOptions.JsonEnvelope` or `JsonError` (0.1.0-beta.4) replaces the top-level object or the body of the errors of
+the helper with its own contract; the documents of such a helper follow the contract of the tool, not
+`helpSchemaVersion`, and differ from the documents that the catalog renders. The helper then also maps the exit codes
+with `HelpCliOptions.ExitCodes`.
 
 ## Output Compatibility
 

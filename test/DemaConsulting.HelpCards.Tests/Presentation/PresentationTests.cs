@@ -336,6 +336,50 @@ public class PresentationTests
     }
 
     /// <summary>
+    ///     Proves that the caller can replace the members of an error document, inside the default envelope and inside
+    ///     the envelope that the options give, while the document stays one line of ASCII.
+    /// </summary>
+    [Fact]
+    public void Presentation_JsonContract_ErrorBody_ReplacesTheMembersInsideTheEnvelope()
+    {
+        // Arrange: a body that nests the error and holds a non-ASCII text, and an envelope of the tool
+        static void Body(Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject("error");
+            writer.WriteString("text", $"Unknown {Umlaut}.");
+            writer.WriteEndObject();
+        }
+
+        var enveloped = new HelpRenderOptions
+        {
+            Format = HelpFormat.Json,
+            JsonEnvelope = (kind, writeFields) =>
+            {
+                using var stream = new MemoryStream();
+                using (var writer = new Utf8JsonWriter(stream))
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("type", kind);
+                    writeFields(writer);
+                    writer.WriteEndObject();
+                }
+
+                return System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            },
+        };
+
+        // Act
+        var plain = JsonDocumentWriter.WriteError(null, JsonDocumentWriter.NotFoundCode, "m", "h", ["a"], Body);
+        var wrapped = JsonDocumentWriter.WriteError(enveloped, JsonDocumentWriter.UsageErrorCode, "m", null, null, Body);
+
+        // Assert: the default members are not written, the envelope is the one in effect, and the text is ASCII
+        Assert.Equal("{\"helpSchemaVersion\":1,\"ok\":false,\"kind\":\"error\",\"error\":{\"text\":\"Unknown \\u00FC.\"}}", plain, ignoreCase: true);
+        Assert.Equal("{\"type\":\"error\",\"error\":{\"text\":\"Unknown \\u00FC.\"}}", wrapped, ignoreCase: true);
+        Assert.All(plain + wrapped, character => Assert.True(character < 0x80));
+        Assert.Throws<ArgumentException>(() => JsonDocumentWriter.WriteError(null, "oops", "m", null, null, Body));
+    }
+
+    /// <summary>
     ///     Determines whether a JSON value holds a null anywhere.
     /// </summary>
     /// <param name="element">The value.</param>

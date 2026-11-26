@@ -127,17 +127,19 @@ sections:
       - id: HelpCards-Tokens-Substitution
         title: >-
           Text of cards shall be able to use tokens that are replaced with the values of the source and the
-          built-in tool name and version, and an unknown token shall be an error that names the file and the
-          line.
+          built-in tool name and version, an unknown token shall be an error that names the file and the
+          line, and an author shall be able to write a literal token with an escape or by turning token
+          replacement off for an example.
         tags: [system]
         justification: |
           Tokens keep values such as limits and tool names in one place so that help stays correct when
-          they change.
+          they change, and examples that show double braces must still be writable.
         children:
           - HelpCards-Loading-Tokens
         tests:
           - HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced
           - HelpCards_Tokens_UnknownToken_ReportsFileAndLine
+          - HelpCards_Tokens_EscapeAndOptOut_ShowLiteralBraces
 
       - id: HelpCards-Cultures-Fallback
         title: >-
@@ -401,8 +403,9 @@ sections:
         title: >-
           A product shall be able to validate its help sources and catalogs in its own tests and get every defect
           as a problem list, with quality warnings for long summaries, large cards, reserved headings, fenced blocks
-          without a language or never closed, unused tokens, long lines, and commands that cannot be run, and to
-          fail a test with one exception for the errors.
+          without a language or never closed, unused tokens, long lines (with a limit of their own inside fenced
+          blocks), and commands that cannot be run with the reason, and to fail a test with one exception for the
+          errors.
         tags: [system]
         justification: |
           Help is content that ships with the product; a test that checks it keeps broken or unreadable cards from
@@ -542,8 +545,9 @@ sections:
 
       - id: HelpCards-Cli-ExitCodes
         title: >-
-          The help command shall exit with 0 on success, 2 for wrong arguments and unknown names, and 70 for a defective
-          catalog, and write an error to the error output as text, or to the output as a JSON error document.
+          The help command shall exit by default with 0 on success, 2 for wrong arguments and unknown names, and 70 for
+          a defective catalog, with codes that a tool can set differently, and write an error to the error output as
+          text, or to the output as a JSON error document.
         tags: [system]
         justification: |
           Scripts depend on exit codes and on where a message is written.
@@ -591,6 +595,25 @@ sections:
           - HelpCards-Integration-CliExtensions
         tests:
           - HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime
+
+      - id: HelpCards-Cli-ToolContract
+        title: >-
+          A tool that has an established JSON contract and exit codes of its own shall be able to use the help command
+          end to end: it shall choose the top-level object of every JSON document, the shape of the error inside it, and
+          the exit codes of success, usage errors, and internal errors, and a tool that chooses none of them shall get
+          the documents and exit codes of the help command unchanged.
+        tags: [system]
+        justification: |
+          A tool cannot change the contract that its scripts and agents already parse, so the help command has to speak
+          that contract instead of its own.
+        children:
+          - HelpCards-Integration-CliContract
+          - HelpCards-Integration-CliContractError
+          - HelpCards-Integration-CliContractExitCodes
+          - HelpCards-Integration-CliContractDefaults
+        tests:
+          - HelpCards_Cli_ToolContract_EnvelopeErrorBodyAndExitCodesFollowTheTool
+          - HelpCards_Cli_ToolContract_UnsetKeepsTheDefaultDocumentsAndExitCodes
 
       - id: HelpCards-AgentTool-Knowledge
         title: >-

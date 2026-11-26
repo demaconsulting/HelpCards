@@ -68,7 +68,21 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         the composition that users get. <c>Output</c> and <c>Error</c> are fixed writers; <c>OutputProvider</c> and
 ///         <c>ErrorProvider</c> are functions that are called each time the helper writes, so the writer can depend on
 ///         the state of the tool at that moment (for example <c>OutputProvider = () => silent ? TextWriter.Null : null</c>;
-///         <c>null</c> means the console). A writer and its provider are not combined.
+///         <c>null</c> means the console). A writer and its provider are not combined. The providers are the intended
+///         way to route help through the writers or the logger of a host application: return a writer that forwards to
+///         them, and every answer, JSON documents and JSON errors included, goes there; there is no other routing
+///         setting.
+///     </para>
+///     <para>
+///         <b>A tool with its own JSON contract and exit codes.</b> Three settings of <c>HelpCliOptions</c> let a tool
+///         use the helper end to end without changing its contract. <c>JsonEnvelope</c> (the same callback as
+///         <c>HelpRenderOptions.JsonEnvelope</c>) writes the top-level object of every JSON document of the helper,
+///         errors included. <c>JsonError</c> receives the writer and a <c>HelpCliError</c> (code, message, hint,
+///         candidates) and writes the body of an error in the shape of the tool, inside that envelope.
+///         <c>ExitCodes</c>, a <c>HelpCliExitCodes</c> with <c>Success</c>, <c>UsageError</c> (usage errors and names
+///         that match nothing or several things) and <c>InternalError</c> (a defective catalog), each from 0 to 255,
+///         replaces 0, 2, and 70; a tool that exits with 1 for every failure sets both error codes to 1. Unset, the
+///         output and the exit codes are exactly the documented defaults.
 ///     </para>
 ///     <para>
 ///         Key rules: <c>TryRun</c> answers only when the first argument equals the verb (<c>help</c> by default,
@@ -77,7 +91,7 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         writes usage errors to the error writer; if building the catalog throws a <c>HelpCatalogException</c>, it
 ///         prints <c>Help is unavailable</c> and exits with 70 (the usual cause is a card defect, for example a source
 ///         without a name: every source needs a <c>name:</c> in its <c>_source.md</c>, or <c>HelpSource.WithName</c>, or the
-///         rule <c>source-invalid</c> fails the catalog). Exit codes: 0 success, 2 wrong arguments or a name that
+///         rule <c>source-invalid</c> fails the catalog). Exit codes (the defaults of <c>ExitCodes</c>): 0 success, 2 wrong arguments or a name that
 ///         matches nothing, 70 defective catalog. <c>HelpAgentTool.Invoke</c> never throws for bad
 ///         arguments or a defective catalog: every failure is a plain-text answer that says what to send instead, and
 ///         answers are cut to <c>MaxOutputChars</c>. An option outside its range is an <c>ArgumentException</c> when

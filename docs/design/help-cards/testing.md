@@ -53,7 +53,8 @@ wrapped in a catalog and every visible card is checked.
 
 **Quality rules.** Each rule is a small private method that adds warnings: the summary against its limit (shorter
 for a root), the length of the text rendering against the card limit (the index limit for a root with children),
-the lines of the body for reserved headings, fences without a language, an unclosed fence, and long lines, and the
+the lines of the body for reserved headings, fences without a language, an unclosed fence, and long lines (with a
+separate limit inside fenced blocks), and the
 command examples against `ExampleCommandLine` with the tool name of the catalog. The line numbers are the line of
 the first body line in the file that supplied the body plus the offset in the body, which holds because links never
 change the number of lines. Front-matter findings (summary, size, command) name the file and no line. The rule for
@@ -62,7 +63,8 @@ holds the source or the builder.
 
 **Code and tokens like the loader.** `HelpCardMarkdown.Scan` classifies every line with the fence rule of
 `BodyParser` and `TokenResolver.FindNames` finds the tokens with the pattern of the resolver, so the validator never
-disagrees with the loader about what is code or what is a token.
+disagrees with the loader about what is code or what is a token. The line-length limit of each line is chosen from the
+same classification: the fence limit for the fence lines, the line limit for the others.
 
 **Ordering.** All problems are sorted by severity (errors first), then by the registration index of the source, the
 file (ordinal), the line, and the rule (ordinal); the sort is stable.

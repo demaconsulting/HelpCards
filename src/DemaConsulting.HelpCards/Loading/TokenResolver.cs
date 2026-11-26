@@ -16,8 +16,12 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     </para>
 ///     <para>
 ///         An unknown token is reported as <c>token-unknown</c> at its line and left in the text. Text that
-///         only looks like a token (<c>{{ x }}</c>, <c>{{a-b}}</c>) is not a token and is left alone. There is
-///         no escape for a literal token. A resolver is immutable after creation and safe for concurrent use.
+///         only looks like a token (<c>{{ x }}</c>, <c>{{a-b}}</c>) is not a token and is left alone. A
+///         literal <c>{{</c> is written as the escape <c>\{{</c>: the backslash is dropped, the braces are kept,
+///         and the text after the escape is not scanned as a token, so <c>\{{name}}</c> renders as
+///         <c>{{name}}</c> and is never reported. Every other backslash is kept, and two backslashes before the
+///         braces leave one backslash and still escape, so a backslash cannot directly precede a replaced token.
+///         A resolver is immutable after creation and safe for concurrent use.
 ///     </para>
 /// </remarks>
 internal sealed partial class TokenResolver
@@ -127,7 +131,8 @@ internal sealed partial class TokenResolver
     }
 
     /// <summary>
-    ///     Replaces every known token in a text and reports every unknown one.
+    ///     Replaces every known token in a text, turns every escape <c>\{{</c> into a literal <c>{{</c>, and
+    ///     reports every unknown token.
     /// </summary>
     /// <param name="text">The text, such as a title, a summary, an example, or a body.</param>
     /// <param name="file">The path of the file the text came from, for problems.</param>
@@ -144,6 +149,12 @@ internal sealed partial class TokenResolver
 
         return TokenPattern().Replace(text, match =>
         {
+            // An escape drops its backslash and keeps the braces; the text after it is not scanned as a token
+            if (!match.Groups["name"].Success)
+            {
+                return "{{";
+            }
+
             var name = match.Groups["name"].Value;
             if (_values.TryGetValue(name, out var value))
             {
@@ -157,7 +168,7 @@ internal sealed partial class TokenResolver
                 _sourceName,
                 file,
                 line,
-                $"The token '{match.Value}' is not defined; define '{name}' with HelpSource.WithTokens or correct the name."));
+                $"The token '{match.Value}' is not defined; define '{name}' with HelpSource.WithTokens, correct the name, or write '\\{{{{' for literal braces."));
             return match.Value;
         });
     }
@@ -167,22 +178,25 @@ internal sealed partial class TokenResolver
     /// </summary>
     /// <remarks>
     ///     The validator uses this to find tokens that a source defines but no file uses. Built-in and unknown
-    ///     names are listed like any other.
+    ///     names are listed like any other; an escaped <c>\{{name}}</c> is not a token and is not listed.
     /// </remarks>
     /// <param name="text">The text to scan.</param>
     /// <returns>The distinct token names in the text.</returns>
     public static IEnumerable<string> FindNames(string text)
     {
         return text.Contains("{{", StringComparison.Ordinal)
-            ? TokenPattern().Matches(text).Select(match => match.Groups["name"].Value).Distinct(StringComparer.Ordinal)
+            ? TokenPattern().Matches(text)
+                .Where(match => match.Groups["name"].Success)
+                .Select(match => match.Groups["name"].Value)
+                .Distinct(StringComparer.Ordinal)
             : [];
     }
 
     /// <summary>
-    ///     Matches a well-formed token.
+    ///     Matches an escape <c>\{{</c> or a well-formed token; only a token has the <c>name</c> group.
     /// </summary>
     /// <returns>The pattern.</returns>
-    [GeneratedRegex(@"\{\{(?<name>[A-Za-z0-9]+)\}\}", RegexOptions.CultureInvariant, 1000)]
+    [GeneratedRegex(@"\\\{\{|\{\{(?<name>[A-Za-z0-9]+)\}\}", RegexOptions.CultureInvariant, 1000)]
     private static partial Regex TokenPattern();
 
     /// <summary>

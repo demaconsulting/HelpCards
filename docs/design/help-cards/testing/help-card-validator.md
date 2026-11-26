@@ -17,7 +17,8 @@ of the adopting product).
 | `MaxCardChars` | Longest text rendering of a card; 6000 by default |
 | `MaxRootIndexChars` | Longest text rendering of a root card that has cards below it; 3500 by default |
 | `MaxSummaryChars`, `MaxRootSummaryChars` | Longest summary of a card and of a root card; 100 and 80 by default |
-| `MaxLineLength` | Longest body line, or null for no limit (the default) |
+| `MaxLineLength` | Longest body line (outside fences when a fence limit is set), or null for none (the default) |
+| `MaxFenceLineLength` | Longest fenced line, or null to use `MaxLineLength` there too; alone, only fences are checked |
 | `Rules` | The rules of the product, `IHelpCardRule`, applied to every card; none by default |
 | `RequireExternalSources` | Turns every absent external source into an error; off by default |
 | `WarningsAreErrors` | Makes warnings fail `AssertValid`; off by default |
@@ -33,12 +34,13 @@ of the adopting product).
   imports), so a source with imports does not report `import-missing`; a callback adds exactly what it adds.
 - **Quality rules** (private, in the `Rules` part): summary length, card size (the length of
   `HelpCatalog.Render(card)`), reserved headings (level one, and level two `Cards`, `Examples`, and `See also`), fences
-  without a language, an unclosed fence, long lines, unused tokens (every file of the source is scanned for `{{name}}`;
-  a file that cannot be listed or read is reported as a `source-read` error with its path, the scan continues, and no
-  token is reported as unused while a file is unreadable), command examples (parsed with `ExampleCommandLine` for the
-  tool name of the builder, else the name of the first source), two source examples of one card that are saved under the
-  same name (`save-as-duplicate`, at the card file, because the example runner would keep only the last one), and the
-  rules of the options.
+  without a language, an unclosed fence, long lines (checked against the fence limit for the fence kinds of the shared
+  `HelpCardMarkdown.Scan`, and against the line limit for the others), unused tokens (every file of the source is
+  scanned for `{{name}}`; a file that cannot be listed or read is reported as a `source-read` error with its path, the
+  scan continues, and no token is reported as unused while a file is unreadable), command examples (parsed with
+  `ExampleCommandLine` for the tool name of the builder, else the name of the first source), two source examples of one
+  card that are saved under the same name (`save-as-duplicate`, at the card file, because the example runner would keep
+  only the last one), and the rules of the options.
 - **`Order`** sorts by severity descending, source index, file, line, and rule, with a stable sort.
 - **`AssertValid(...)`** validates and throws `HelpCatalogException` with the errors, plus the warnings when
   `WarningsAreErrors` is set.

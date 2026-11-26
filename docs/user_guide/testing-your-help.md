@@ -50,7 +50,8 @@ defect of a card. `AssertValid` fails on errors, and also on warnings when `Warn
 | `MaxRootIndexChars` | 3500 | The longest rendered text of the index of the roots |
 | `MaxSummaryChars` | 100 | The longest summary |
 | `MaxRootSummaryChars` | 80 | The longest summary of a root card (two lines of the topic index) |
-| `MaxLineLength` | Off | The longest line of a body |
+| `MaxLineLength` | Off | The longest line of a body (inside fences too, unless `MaxFenceLineLength` is set) |
+| `MaxFenceLineLength` | Off | The longest line in a fenced block; alone, only fenced lines are checked |
 | `Rules` | None | Your own `IHelpCardRule` objects |
 | `RequireExternalSources` | `false` | Turns each absent external source into the error `external-source-missing` |
 | `WarningsAreErrors` | `false` | Makes warnings fail `AssertValid` |
@@ -65,10 +66,18 @@ The quality rules, each reported as a warning with the rule id, are:
 | `fence-language` | A fenced block without a language |
 | `fence-unclosed` | A fenced block that never ends |
 | `unused-token` | A token that is defined but never used |
-| `line-length` | A body line that is longer than `MaxLineLength` |
-| `command-parse` | A `command` example that `ExampleCommandLine` cannot parse |
+| `line-length` | A body line over `MaxLineLength`, or a fenced line over `MaxFenceLineLength` |
+| `command-parse` | A `command` example that `ExampleCommandLine` cannot parse; names the character and column |
 | `save-as-duplicate` | Two `source` examples of one card that are saved under the same name |
 | `resources-mismatch` | A file that exists on disk or in the assembly but not on the other side |
+
+Code and command samples are usually wider than prose, so the two limits can differ:
+
+```csharp
+var options = new HelpValidationOptions { MaxLineLength = 80, MaxFenceLineLength = 120 };
+```
+
+With these options prose may have 80 characters and the lines of fenced code 120.
 
 A domain rule implements `IHelpCardRule`, which has one method that receives a `HelpCard` and returns problems. A
 library whose cards must not contain command-line text can check that with a rule, and put it in the options:
@@ -165,7 +174,14 @@ grammar. The first word must be the tool name, and the remaining words are the a
 characters, single-quoted text without escapes, and double-quoted text in which only a backslash and a quote can be
 escaped. Unquoted characters exclude the space, the quotes, and ``| & ; < > ( ) $ ` * ? [ ] { } ~ ! # \ %``. Pipes,
 redirections, variables, wildcards, comments, and line continuations are therefore rejected with a message that names
-the character and the column, for example `shell operator '|' is not allowed in an example command`.
+the character and the column, for example `shell operator '|' is not allowed in an example command (column 10)` for
+`tool run | more`. The
+`command-parse` warning of the validator wraps this message with the example and the card, and ends it with a period.
+For an example `load` of the card `getting-started` whose command is `tool load {a}`, the whole message reads:
+
+```text
+The command example 'load' of 'getting-started' cannot be run as written: shell expansion character '{' is not allowed in an example command (column 11); quote it with single quotes if it is meant literally.
+```
 
 ## Testing Documentation Against Cards
 

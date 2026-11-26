@@ -30,6 +30,11 @@ line of the defect, and the helpers must agree with the loader on code and token
 - **Quality rules**: one defective card reports every rule once: a long summary, a large card, a reserved heading with
   its file line, a fence without a language, an unclosed fence with its line, a long line, a command that redirects, and
   an unused token.
+- **Fence line limit**: with a line limit of 40 and a fence limit of 100, a prose line of 50 and one of 41 are reported
+  at the line limit, and the lines of a fence are reported only above 100, including the closing fence line, with the
+  limit that applied in the message.
+- **Command reason**: a command example with an unquoted `{` is reported as `command-parse` with the character and its
+  column in the message.
 - **Options**: a rule of the product adds its problem, required external sources give errors for absent links, and
   warnings that fail make the assertion throw for the problem of the rule.
 - **Examples**: the commands of the `simple` fixture are enumerated with their cards and parse into arguments.

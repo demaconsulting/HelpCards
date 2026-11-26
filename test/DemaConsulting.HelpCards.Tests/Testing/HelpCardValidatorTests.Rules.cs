@@ -250,6 +250,149 @@ public partial class HelpCardValidatorTests
     }
 
     /// <summary>
+    ///     Proves that a fence limit replaces the line limit inside fenced blocks only, with the fence delimited by
+    ///     the same scan as the other fence rules.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_FenceLineLimit_UsesSeparateLimitInsideFences()
+    {
+        // Arrange
+        var body = string.Join(
+            "\n",
+            new string('p', 80),
+            new string('p', 81),
+            "```text",
+            new string('c', 100),
+            new string('c', 120),
+            new string('c', 121),
+            "```",
+            new string('p', 81));
+        var options = new HelpValidationOptions { MaxLineLength = 80, MaxFenceLineLength = 120 };
+
+        // Act
+        var problems = ValidateFiles(options, ("a.md", SourceReading.Card(body: body)));
+
+        // Assert: the prose limit applies before and after the fence and the fence limit applies inside it
+        Assert.Equal([FirstBodyLine + 1, FirstBodyLine + 5, FirstBodyLine + 7], problems.Select(problem => problem.Line));
+        Assert.All(problems, problem => Assert.Equal(RuleIds.LineLength, problem.RuleId));
+        Assert.Contains("81 characters", problems[0].Message);
+        Assert.Contains("wrap it at 80", problems[0].Message);
+        Assert.DoesNotContain("fenced code block", problems[0].Message);
+        Assert.Contains("121 characters", problems[1].Message);
+        Assert.Contains("The line in a fenced code block", problems[1].Message);
+        Assert.Contains("wrap it at 120", problems[1].Message);
+        Assert.Contains("81 characters", problems[2].Message);
+        Assert.DoesNotContain("fenced code block", problems[2].Message);
+    }
+
+    /// <summary>
+    ///     Proves that setting only the fence limit checks the lines of fenced blocks, including a block that is
+    ///     never closed, and does not check prose.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_OnlyFenceLineLimit_ChecksFenceLinesAndNotProse()
+    {
+        // Arrange
+        var body = string.Join(
+            "\n",
+            new string('p', 200),
+            "```text",
+            new string('c', 30),
+            new string('c', 31),
+            "```",
+            "~~~text",
+            new string('u', 31));
+
+        // Act
+        var problems = ValidateFiles(
+            new HelpValidationOptions { MaxFenceLineLength = 30 },
+            ("a.md", SourceReading.Card(body: body)));
+
+        // Assert: only the two fence lines of 31 characters are reported
+        var lengths = problems.Where(problem => problem.RuleId == RuleIds.LineLength).ToList();
+        Assert.Equal([FirstBodyLine + 3, FirstBodyLine + 6], lengths.Select(problem => problem.Line));
+        Assert.All(lengths, problem => Assert.Contains("The line in a fenced code block has 31 characters; wrap it at 30.", problem.Message));
+    }
+
+    /// <summary>
+    ///     Gets the bodies for the fence delimiter test, each with the body lines (one-based) that a fence limit of
+    ///     20 must report. Prose is never reported because no line limit is set.
+    /// </summary>
+    public static TheoryData<string, int[]> FenceDelimiterLines => new()
+    {
+        // An over-limit opening line, through its info string, with a closing line at the limit
+        { string.Join("\n", "```text " + new string('i', 20), "ok", "```"), new[] { 1 } },
+
+        // An over-limit closing line: a longer closing fence is still a closing fence
+        { string.Join("\n", "```text", "ok", new string('`', 21)), new[] { 3 } },
+
+        // A longer closing fence within the limit is not reported
+        { string.Join("\n", "```text", "ok", new string('`', 20)), Array.Empty<int>() },
+
+        // Tilde fences: opening, body, and closing lines are all checked
+        { string.Join("\n", "~~~text " + new string('i', 20), new string('c', 21), new string('~', 21)), new[] { 1, 2, 3 } },
+        { string.Join("\n", "~~~text", new string('c', 20), "~~~"), Array.Empty<int>() },
+
+        // The indent of a fence counts toward the length of every line of it
+        { string.Join("\n", "  ```text", "  " + new string('c', 19), "  ```"), new[] { 2 } },
+        { string.Join("\n", "  ```text", "  " + new string('c', 18), "  ```"), Array.Empty<int>() },
+
+        // A fence that is never closed has its opening line and its lines checked
+        { string.Join("\n", "```text " + new string('i', 20), new string('c', 21)), new[] { 1, 2 } },
+
+        // A shorter fence inside a longer one is body, so it is checked as body and does not close the block
+        { string.Join("\n", "````text", "```" + new string('x', 18), "````"), new[] { 2 } },
+    };
+
+    /// <summary>
+    ///     Proves that the fence limit applies to the opening and closing fence lines as well as to the lines between
+    ///     them, for backtick and tilde fences, for a closing fence that is longer than the opening one, for an
+    ///     indented fence, for an info string, and for a fence that is never closed.
+    /// </summary>
+    /// <param name="body">The body of the card.</param>
+    /// <param name="expectedLines">The one-based body lines that must be reported.</param>
+    [Theory]
+    [MemberData(nameof(FenceDelimiterLines))]
+    public void HelpCardValidator_Validate_FenceLimit_AppliesToDelimiterLinesOfEveryFenceKind(string body, int[] expectedLines)
+    {
+        // Arrange: only the fence limit is set, so prose lines are never checked
+        var options = new HelpValidationOptions { MaxFenceLineLength = 20 };
+
+        // Act
+        var problems = ValidateFiles(options, ("a.md", SourceReading.Card(body: body)));
+
+        // Assert
+        var lengths = problems.Where(problem => problem.RuleId == RuleIds.LineLength).ToList();
+        Assert.Equal(expectedLines.Select(line => FirstBodyLine + line - 1), lengths.Select(problem => problem.Line));
+        Assert.All(lengths, problem => Assert.Contains("wrap it at 20", problem.Message, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    ///     Proves that a command example with an unquoted shell character is reported with the character and its column.
+    /// </summary>
+    [Fact]
+    public void HelpCardValidator_Validate_CommandWithUnquotedBrace_NamesCharacterAndColumn()
+    {
+        // Arrange
+        var examples = "examples:\n"
+            + "  - name: braced\n    kind: command\n    language: shell\n    content: 'helper run {a}'\n    description: Braced.\n";
+        var source = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(extraFrontMatter: examples))), "test");
+
+        // Act
+        var problems = HelpCardValidator.Validate(builder => builder.AddSource(source).ToolName("helper"));
+
+        // Assert
+        var problem = Assert.Single(problems);
+        Assert.Equal(RuleIds.CommandParse, problem.RuleId);
+        Assert.Equal(HelpSeverity.Warning, problem.Severity);
+        Assert.Equal("a.md", problem.File);
+        Assert.Equal(0, problem.Line);
+        Assert.Contains("'braced'", problem.Message);
+        Assert.Contains("shell expansion character '{'", problem.Message);
+        Assert.Contains("(column 12)", problem.Message);
+    }
+
+    /// <summary>
     ///     Proves that a command example that cannot be parsed, or does not start with the tool name, is reported.
     /// </summary>
     [Fact]

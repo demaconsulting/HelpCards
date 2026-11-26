@@ -157,19 +157,138 @@ public class TokenResolverTests
     }
 
     /// <summary>
-    ///     Proves that there is no escape: a backslash does not protect a token.
+    ///     Proves that a backslash before the braces escapes a token: it renders as literal braces.
     /// </summary>
     [Fact]
-    public void TokenResolver_Substitute_BackslashBeforeToken_DoesNotEscape()
+    public void TokenResolver_Substitute_BackslashBeforeToken_RendersLiteralBraces()
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act
+        var text = resolver.Substitute("\\{{tool}}", "a.md", 1, problems);
+
+        // Assert: the backslash is dropped and the token is not replaced
+        Assert.Equal("{{tool}}", text);
+        Assert.Empty(problems);
+    }
+
+    /// <summary>
+    ///     Proves that an escaped name that is not defined is not reported.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_Substitute_EscapedUnknownName_IsNotReported()
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act
+        var text = resolver.Substitute("pkg\\{{Package}}", "a.md", 1, problems);
+
+        // Assert
+        Assert.Equal("pkg{{Package}}", text);
+        Assert.Empty(problems);
+    }
+
+    /// <summary>
+    ///     Proves that an escape does not hide a real unknown token beside it.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_Substitute_EscapeBesideUnknownToken_StillReportsUnknown()
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act: the unknown token is on the second line, which is file line 5
+        var text = resolver.Substitute("\\{{a}}\n{{nope}} {{tool}}", "a.md", 4, problems);
+
+        // Assert: the escape is rendered, the unknown token stays and is reported, the known one is replaced
+        Assert.Equal("{{a}}\n{{nope}} demo", text);
+        var problem = Assert.Single(problems);
+        Assert.Equal(RuleIds.TokenUnknown, problem.RuleId);
+        Assert.Equal(5, problem.Line);
+    }
+
+    /// <summary>
+    ///     Proves that an escape needs no name after it and that other backslashes are kept.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_Substitute_EscapeWithoutName_RemovesBackslash()
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act
+        var text = resolver.Substitute("a\\{{ b C:\\dir \\{x}", "a.md", 1, problems);
+
+        // Assert: only the backslash before two braces is dropped
+        Assert.Equal("a{{ b C:\\dir \\{x}", text);
+        Assert.Empty(problems);
+    }
+
+    /// <summary>
+    ///     Proves that with two backslashes the first stays and the second escapes.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_Substitute_DoubleBackslash_EscapesOnlyTheLast()
     {
         // Arrange
         var resolver = Create();
 
         // Act
-        var text = resolver.Substitute("\\{{tool}}", "a.md", 1, new List<HelpProblem>());
+        var text = resolver.Substitute("\\\\{{tool}}", "a.md", 1, new List<HelpProblem>());
 
-        // Assert: the token is replaced and the backslash stays
-        Assert.Equal("\\demo", text);
+        // Assert: one backslash stays and the token is not replaced
+        Assert.Equal("\\{{tool}}", text);
+    }
+
+    /// <summary>
+    ///     Proves that an escape at the end of the input, inside what looks like a token, and across CRLF line endings
+    ///     renders as literal braces and leaves the rest of the text as the escape rule says.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <param name="expected">The text after substitution.</param>
+    [Theory]
+    [InlineData("abc\\{{", "abc{{")]
+    [InlineData("\\{{", "{{")]
+    [InlineData("{{na\\{{me}}", "{{na{{me}}")]
+    [InlineData("\\{{a}}\r\n{{tool}}\r\n\\{{b}}\r\n", "{{a}}\r\ndemo\r\n{{b}}\r\n")]
+    public void TokenResolver_Substitute_EscapeAtEndInsideTokenAndCrLf_FollowsTheEscapeRule(string text, string expected)
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act
+        var result = resolver.Substitute(text, "a.md", 1, problems);
+
+        // Assert: the backslash is dropped, nothing is reported, and the line endings are untouched
+        Assert.Equal(expected, result);
+        Assert.Empty(problems);
+    }
+
+    /// <summary>
+    ///     Proves that an unknown token after CRLF line endings is reported at the right line.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_Substitute_UnknownTokenAfterCrLf_ReportsItsLine()
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act: the unknown token is on the third line, which is file line 12
+        var text = resolver.Substitute("\\{{a}}\r\n{{tool}}\r\n{{nope}}", "a.md", 10, problems);
+
+        // Assert
+        Assert.Equal("{{a}}\r\ndemo\r\n{{nope}}", text);
+        var problem = Assert.Single(problems);
+        Assert.Equal(RuleIds.TokenUnknown, problem.RuleId);
+        Assert.Equal(12, problem.Line);
     }
 
     /// <summary>
@@ -323,5 +442,18 @@ public class TokenResolverTests
         // Assert
         Assert.Equal(["b", "a"], names);
         Assert.Empty(none);
+    }
+
+    /// <summary>
+    ///     Proves that an escaped token is not a token and is not listed.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_FindNames_EscapedToken_IsNotListed()
+    {
+        // Act
+        var names = TokenResolver.FindNames("\\{{a}} {{b}}");
+
+        // Assert: only the real token is listed
+        Assert.Equal(["b"], names);
     }
 }

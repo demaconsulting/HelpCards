@@ -205,7 +205,27 @@ public partial class CardReaderTests
 
         // Assert
         AssertProblem(problem, RuleIds.KeyUnknown, "a.md", 10);
-        Assert.Contains("file, content, save-as, exit, expect", problem.Message, StringComparison.Ordinal);
+        Assert.Contains("file, content, save-as, exit, expect, tokens", problem.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the key <c>tokens</c> is accepted in schema 1 and schema 2 without a schema change.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_Schema1AndSchema2ExampleTokens_AreAccepted()
+    {
+        // Arrange: the same command example with tokens off, in a schema 1 source and a schema 2 source
+        var card = ("a.md", ExampleCard("  - name: x\n    kind: command\n    language: shell\n    content: '{{tool}} {{a}}'\n    tokens: false\n    description: D.\n"));
+
+        // Act
+        var schema1 = Read(card);
+        var schema2 = Read(SchemaTwo, card);
+
+        // Assert: no problem in either schema and the content is verbatim
+        Assert.Empty(schema1.Problems);
+        Assert.Empty(schema2.Problems);
+        Assert.Equal("{{tool}} {{a}}", Assert.Single(Assert.Single(schema1.Cards).Examples).Content);
+        Assert.Equal("{{tool}} {{a}}", Assert.Single(Assert.Single(schema2.Cards).Examples).Content);
     }
 
     /// <summary>

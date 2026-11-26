@@ -14,19 +14,34 @@ sections:
               - id: HelpCards-Loading-TokenResolver-Syntax
                 title: >-
                   The resolver shall treat only "{{name}}" with a name of ASCII letters and digits as a token,
-                  match names case-sensitively, replace tokens inside code spans and blocks, offer no escape,
-                  and leave text that only looks like a token unchanged.
+                  match names case-sensitively, replace tokens inside code spans and blocks, and leave text
+                  that only looks like a token unchanged.
                 justification: |
-                  Cards document command lines and code that contain braces; a precise, escape-free token
-                  grammar makes the replacement predictable for authors and reviewers.
+                  Cards document command lines and code that contain braces; a precise token grammar makes the
+                  replacement predictable for authors and reviewers.
                 tests:
                   - TokenResolver_IsValidTokenName_LettersAndDigits_ReturnsTrueOtherwiseFalse
                   - TokenResolver_Substitute_DifferentCase_IsUnknown
                   - TokenResolver_Substitute_MalformedTokenLookalikes_AreLeftAlone
-                  - TokenResolver_Substitute_BackslashBeforeToken_DoesNotEscape
                   - TokenResolver_Substitute_InsideCode_AreReplaced
                   - TokenResolver_Substitute_NoTokens_ReturnsTextUnchanged
 
+              - id: HelpCards-Loading-TokenResolver-Escape
+                title: >-
+                  The resolver shall replace the escape "\{{" with a literal "{{" without treating the text
+                  after it as a token and without a problem, keep every other backslash, and still report an
+                  unknown token beside an escape as "token-unknown".
+                justification: |
+                  Cards sometimes need literal double braces, such as a Mermaid hexagon node or a template; an
+                  escape lets an author write them while a misspelled real token still fails.
+                tests:
+                  - TokenResolver_Substitute_BackslashBeforeToken_RendersLiteralBraces
+                  - TokenResolver_Substitute_EscapedUnknownName_IsNotReported
+                  - TokenResolver_Substitute_EscapeBesideUnknownToken_StillReportsUnknown
+                  - TokenResolver_Substitute_EscapeWithoutName_RemovesBackslash
+                  - TokenResolver_Substitute_DoubleBackslash_EscapesOnlyTheLast
+                  - TokenResolver_Substitute_EscapeAtEndInsideTokenAndCrLf_FollowsTheEscapeRule
+                  - TokenResolver_Substitute_UnknownTokenAfterCrLf_ReportsItsLine
               - id: HelpCards-Loading-TokenResolver-Scope
                 title: >-
                   The scope of a source shall be its own tokens, the tokens of every source it imports, and the
@@ -67,9 +82,10 @@ sections:
               - id: HelpCards-Loading-TokenResolver-Names
                 title: >-
                   The resolver shall list the distinct names of the well-formed tokens that a text uses, in the
-                  order of first use, and list nothing for a text without tokens or with text that only looks like
-                  a token.
+                  order of first use, and list nothing for a text without tokens, with text that only looks like
+                  a token, or with an escaped token.
                 justification: |
                   Validators need to know which tokens a source really uses without replacing them.
                 tests:
                   - TokenResolver_FindNames_Text_ListsDistinctWellFormedNames
+                  - TokenResolver_FindNames_EscapedToken_IsNotListed

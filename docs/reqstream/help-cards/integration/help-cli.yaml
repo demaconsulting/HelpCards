@@ -85,3 +85,30 @@ sections:
                   - HelpCli_TryRun_OutputProvider_IsCalledAtCommandTime
                   - HelpCli_TryRun_ProviderReturnsNull_UsesConsole
                   - HelpCli_TryRun_ProviderAndAutoWidth_IsNotTheConsoleWidth
+
+              - id: HelpCards-Integration-HelpCli-Contract
+                title: >-
+                  The options shall offer the envelope callback, the error body callback, and the exit codes of success,
+                  usage errors, and internal errors for a tool with a contract of its own, and return what is set.
+                justification: |
+                  A tool with a JSON contract and exit codes of its own adopts the helper without changing them.
+                tests:
+                  - HelpCliOptions_ContractSettings_AreReturnedAsSet
+
+              - id: HelpCards-Integration-HelpCli-ContractDefaults
+                title: >-
+                  The options shall default to no envelope callback, no error body callback, and the exit codes 0, 2,
+                  and 70.
+                justification: |
+                  The defaults keep the contract of the helper for a tool that sets none of the settings.
+                tests:
+                  - HelpCliOptions_Defaults_AreTheContractOfTheHelper
+
+              - id: HelpCards-Integration-HelpCli-ExitCodeRange
+                title: >-
+                  The exit codes shall accept values from 0 to 255 only, and the options shall reject a null set of
+                  exit codes.
+                justification: |
+                  An exit code outside the range of the operating system cannot be reported faithfully.
+                tests:
+                  - HelpCliExitCodes_Init_OutOfRangeOrNull_Throws

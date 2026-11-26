@@ -62,6 +62,11 @@ public sealed class HelpValidationOptions
     private readonly int? _maxLineLength;
 
     /// <summary>
+    ///     The backing store of <see cref="MaxFenceLineLength"/>.
+    /// </summary>
+    private readonly int? _maxFenceLineLength;
+
+    /// <summary>
     ///     The backing store of <see cref="Rules"/>.
     /// </summary>
     private readonly IReadOnlyList<IHelpCardRule> _rules = [];
@@ -113,12 +118,38 @@ public sealed class HelpValidationOptions
 
     /// <summary>
     ///     Gets the most characters a line of a card body may have, or <see langword="null"/> (the default) for no limit.
+    ///     Lines inside fenced code blocks use <see cref="MaxFenceLineLength"/> when it is set.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is not null and not positive.</exception>
     public int? MaxLineLength
     {
         get => _maxLineLength;
         init => _maxLineLength = value is null ? null : RequirePositive(value.Value, nameof(MaxLineLength));
+    }
+
+    /// <summary>
+    ///     Gets the most characters a line inside a fenced code block may have, or <see langword="null"/> (the default)
+    ///     to check those lines against <see cref="MaxLineLength"/> like every other line.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         A line is inside a fence when it opens the fence, is between the fences, or closes the fence, which is the
+    ///         same classification that the <c>fence-language</c> and <c>fence-unclosed</c> rules use; the lines of an
+    ///         unclosed fence up to the end of the body count as inside it. When this limit is set, it replaces
+    ///         <see cref="MaxLineLength"/> for those lines; every other line is still checked against
+    ///         <see cref="MaxLineLength"/>. Violations are reported under the <c>line-length</c> rule.
+    ///     </para>
+    ///     <para>
+    ///         Code and command samples are usually wider than prose, so a typical setting is <c>MaxLineLength = 80</c>
+    ///         with <c>MaxFenceLineLength = 120</c>. When only this option is set, the lines inside fences are checked and
+    ///         the lines outside fences are not.
+    ///     </para>
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is not null and not positive.</exception>
+    public int? MaxFenceLineLength
+    {
+        get => _maxFenceLineLength;
+        init => _maxFenceLineLength = value is null ? null : RequirePositive(value.Value, nameof(MaxFenceLineLength));
     }
 
     /// <summary>

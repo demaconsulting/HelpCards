@@ -19,7 +19,7 @@ The subsystem contains these units:
 - **FrontMatterDecoder** decodes the restricted subset of YAML front matter and splits off the body.
 - **CardReader** classifies the files of a source and reads cards, overlays, translations, examples, and
   `_source.md` into definitions, using the units below.
-- **TokenResolver** replaces `{{name}}` tokens in the scope of a source.
+- **TokenResolver** replaces `{{name}}` tokens in the scope of a source and turns the escape `\{{` into a literal `{{`.
 - **CultureSelector** chooses the culture variant of a file for a requested culture.
 - **BodyParser** splits a body into text parts and link parts.
 
