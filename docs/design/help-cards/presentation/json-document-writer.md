@@ -36,7 +36,9 @@ list documents. Documents are written with `Utf8JsonWriter` into a buffer.
   and `expect` (an array of strings, only when not empty), so documents of examples that state no result are unchanged.
 - **`WriteLinks`** lists the visible link targets of the body with `cardId`, `exampleName`, `exampleCardId`, and `text`,
   each only when present.
-- **`WriteError`** accepts only the codes `usage-error`, `not-found`, `ambiguous`, and `catalog-error`.
+- **`WriteError`** accepts only the codes `usage-error`, `not-found`, `ambiguous`, and `catalog-error`. A caller may
+  give a body callback, which writes the members of the error in place of the default ones inside the envelope in effect
+  (used by the command-line helper for the `JsonError` option of a tool).
 
 The examples of a JSON card always carry their content, because a JSON reader asks for data; `IncludeTags` and
 `IncludeExampleContent` shape only the text formats.

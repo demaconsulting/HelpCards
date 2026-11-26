@@ -379,6 +379,17 @@ catalog of `GetCatalogConfiguration`, and that options with both a configuration
 helper with writer providers, runs a card and an unknown card, switches a flag that makes the providers return a silent
 writer, runs two more commands, and asserts that the silent ones wrote nothing.
 
+### Command Line: Tool Contract
+
+**Tests**: `HelpCards_Cli_ToolContract_EnvelopeErrorBodyAndExitCodesFollowTheTool`,
+`HelpCards_Cli_ToolContract_UnsetKeepsTheDefaultDocumentsAndExitCodes`
+
+Creates a helper whose options hold an envelope, an error body, and the exit code 1 for every failure, as a tool with an
+established JSON contract sets them, and routes the writes through providers. Runs a card as JSON, a usage error as
+JSON, and an unknown card as text, and asserts the envelope of the tool, the error shape of the tool written inside it
+character for character, the exit codes 0, 1, and 1, and the text error on the error writer. Runs a helper that sets
+none of the three and asserts the default envelope, the default error body, and the exit codes 0, 2, and 70.
+
 ### Agent Tool: Calls, Schema, and Resilience
 
 **Tests**: `HelpCards_AgentTool_Calls_AnswerIndexCardExampleAndSearch`,

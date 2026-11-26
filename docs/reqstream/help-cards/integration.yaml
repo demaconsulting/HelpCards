@@ -102,6 +102,19 @@ sections:
               - Integration_Cli_ConfigureCatalog_AppliesToolNameVersionAndCulture
               - Integration_Cli_Writers_ProvidersChooseTheWriterWhenACommandWrites
 
+          - id: HelpCards-Integration-CliContract
+            title: >-
+              The subsystem shall let a tool choose the top-level object of every JSON document of the help command,
+              the body of its JSON errors, and the exit codes of success, usage errors, and internal errors, with the
+              documents and the exit codes 0, 2, and 70 of the help command when it chooses none.
+            justification: |
+              A tool with a JSON contract and exit codes of its own adopts the helper without changing them.
+            children:
+              - HelpCards-Integration-CliDispatcher-Contract
+              - HelpCards-Integration-HelpCli-Contract
+            tests:
+              - Integration_Cli_ToolContract_AppliesToEveryFailureOfTheHelper
+
           - id: HelpCards-Integration-AgentTool
             title: >-
               The subsystem shall create one knowledge tool for a whole catalog with a name that matches the pattern

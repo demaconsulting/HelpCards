@@ -1,3 +1,5 @@
+using DemaConsulting.HelpCards.Presentation;
+
 namespace DemaConsulting.HelpCards.Integration;
 
 /// <summary>
@@ -5,8 +7,9 @@ namespace DemaConsulting.HelpCards.Integration;
 ///     been meant.
 /// </summary>
 /// <remarks>
-///     The record is immutable. Usage errors, unknown names, and ambiguous names exit with 2, and a defective catalog
-///     with 70.
+///     The record is immutable. Usage errors, unknown names, and ambiguous names are usage failures and a defective
+///     catalog is an internal failure; the exit codes of the two come from <see cref="HelpCliExitCodes"/>, which are 2
+///     and 70 unless the tool sets them.
 /// </remarks>
 /// <param name="Code">One of <c>usage-error</c>, <c>not-found</c>, <c>ambiguous</c>, or <c>catalog-error</c>.</param>
 /// <param name="Message">The message.</param>
@@ -15,17 +18,12 @@ namespace DemaConsulting.HelpCards.Integration;
 internal sealed record CliFailure(string Code, string Message, string? Hint, IReadOnlyList<string>? Candidates)
 {
     /// <summary>
-    ///     The exit code of a command that failed because the catalog could not be created.
+    ///     Gets the exit code of the failure under a mapping of exit codes.
     /// </summary>
-    public const int CatalogErrorExitCode = 70;
-
-    /// <summary>
-    ///     The exit code of a command that failed because of its arguments.
-    /// </summary>
-    public const int UsageExitCode = 2;
-
-    /// <summary>
-    ///     Gets the exit code of the failure.
-    /// </summary>
-    public int ExitCode => Code == "catalog-error" ? CatalogErrorExitCode : UsageExitCode;
+    /// <param name="exitCodes">The exit codes of the helper.</param>
+    /// <returns>The internal error code for a catalog error, else the usage error code.</returns>
+    public int GetExitCode(HelpCliExitCodes exitCodes)
+    {
+        return Code == JsonDocumentWriter.CatalogErrorCode ? exitCodes.InternalError : exitCodes.UsageError;
+    }
 }

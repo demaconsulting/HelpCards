@@ -67,6 +67,10 @@ internal static partial class JsonDocumentWriter
     /// <param name="message">The message. Must not be null.</param>
     /// <param name="hint">A hint for the reader, or <see langword="null"/> to leave it out.</param>
     /// <param name="candidates">The global ids that could have been meant, or <see langword="null"/> for none.</param>
+    /// <param name="writeBody">
+    ///     Writes the body of the error in place of the default one (the same <paramref name="code"/>, message, hint,
+    ///     and candidates) into the open object, or <see langword="null"/> for the default body.
+    /// </param>
     /// <returns>The document.</returns>
     /// <exception cref="ArgumentException">
     ///     Thrown when <paramref name="code"/> is not a defined error code, or when the <c>JsonEnvelope</c> callback of
@@ -78,7 +82,8 @@ internal static partial class JsonDocumentWriter
         string code,
         string message,
         string? hint = null,
-        IReadOnlyList<string>? candidates = null)
+        IReadOnlyList<string>? candidates = null,
+        Action<Utf8JsonWriter>? writeBody = null)
     {
         ArgumentNullException.ThrowIfNull(code);
         ArgumentNullException.ThrowIfNull(message);
@@ -87,6 +92,12 @@ internal static partial class JsonDocumentWriter
         if (code is not (UsageErrorCode or NotFoundCode or AmbiguousCode or CatalogErrorCode))
         {
             throw new ArgumentException($"'{code}' is not a help error code.", nameof(code));
+        }
+
+        // A tool with its own error shape writes the body itself; the envelope stays the one of the options
+        if (writeBody is not null)
+        {
+            return WriteDocument(options ?? new HelpRenderOptions(), "error", false, writeBody);
         }
 
         return WriteDocument(options ?? new HelpRenderOptions(), "error", false, writer =>

@@ -32,6 +32,7 @@ All tests in the two files pass; the contract documents are equal to the specifi
 - **Links and culture**: the link targets of the guide body in order with their optional parts; the culture of the body
   file from the `i18n` fixture.
 - **Envelope**: a callback replaces the top-level object and receives the kind; non-ASCII text it writes is escaped.
-- **Errors**: candidates only for `not-found` and `ambiguous`, the optional hint, unknown codes, and null arguments.
+- **Errors**: candidates only for `not-found` and `ambiguous`, the optional hint, unknown codes, and null arguments; a
+  body callback replaces the members inside the default envelope and inside a callback envelope.
 - **Determinism and arguments**: equal documents under two cultures; null arguments throw; an envelope callback that
   returns null gives an argument error that names the callback.

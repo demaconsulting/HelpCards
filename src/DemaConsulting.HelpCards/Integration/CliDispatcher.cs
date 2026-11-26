@@ -70,7 +70,9 @@ internal sealed partial class CliDispatcher
     ///     Runs a help command.
     /// </summary>
     /// <param name="arguments">The arguments that follow the verb. Must not be null or contain null.</param>
-    /// <returns>The exit code: 0 for success, 2 for wrong arguments or unknown names, 70 for a defective catalog.</returns>
+    /// <returns>
+    ///     The exit code: by default 0 for success, 2 for wrong arguments or unknown names, 70 for a defective catalog.
+    /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="arguments"/> is null or contains null.</exception>
     public int Run(IReadOnlyList<string> arguments)
     {
@@ -98,7 +100,7 @@ internal sealed partial class CliDispatcher
         }
 
         Write(Output, outcome.Text!);
-        return 0;
+        return _options.ExitCodes.Success;
     }
 
     /// <summary>
@@ -154,16 +156,42 @@ internal sealed partial class CliDispatcher
     {
         if (format == HelpFormat.Json)
         {
-            Write(
-                Output,
-                JsonDocumentWriter.WriteError(null, failure.Code, failure.Message, failure.Hint, failure.Candidates));
+            Write(Output, WriteJsonError(failure));
         }
         else
         {
             Write(Error, $"Error: {failure.Message}" + (failure.Hint is null ? string.Empty : $"\n{failure.Hint}"));
         }
 
-        return failure.ExitCode;
+        return failure.GetExitCode(_options.ExitCodes);
+    }
+
+    /// <summary>
+    ///     Writes the error document of a failure inside the envelope of the tool, with the body of the tool when it has one.
+    /// </summary>
+    /// <param name="failure">The failure.</param>
+    /// <returns>The document.</returns>
+    private string WriteJsonError(CliFailure failure)
+    {
+        var options = new HelpRenderOptions { JsonEnvelope = _options.JsonEnvelope };
+        var body = _options.JsonError;
+        if (body is null)
+        {
+            return JsonDocumentWriter.WriteError(options, failure.Code, failure.Message, failure.Hint, failure.Candidates);
+        }
+
+        // The candidates belong to the codes that name something; every other code has none, as in the default body
+        IReadOnlyList<string> candidates = failure.Code is JsonDocumentWriter.NotFoundCode or JsonDocumentWriter.AmbiguousCode
+            ? failure.Candidates ?? []
+            : [];
+        var error = new HelpCliError(failure.Code, failure.Message, failure.Hint, candidates);
+        return JsonDocumentWriter.WriteError(
+            options,
+            failure.Code,
+            failure.Message,
+            failure.Hint,
+            failure.Candidates,
+            writer => body(writer, error));
     }
 
     /// <summary>
@@ -189,6 +217,7 @@ internal sealed partial class CliDispatcher
             Format = request.Format,
             LinkStyle = HelpLinkStyle.Command,
             CommandTemplate = _commandTemplate,
+            JsonEnvelope = _options.JsonEnvelope,
             Width = request.AutoWidth ? ResolveAutoWidth() : request.Width ?? _options.DefaultWidth,
         };
     }

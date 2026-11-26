@@ -48,7 +48,7 @@ below) are part of the NuGet package and run in the consuming project's build, n
 | `HelpCatalog` lookup, views, `Render*` | Outbound | Immutable model and strings | Thread-safe; LF only |
 | `HelpCatalog.Search`, `Suggest` | Outbound | Ranked results and names | Thread-safe; ordinal order |
 | `HelpRenderOptions` | Inbound | Options object | `Width` 0 or 20 to 500 |
-| `HelpCli` | Inbound | Command-line arguments | Factory called only for the help verb; exit codes 0, 2, 70 |
+| `HelpCli` | Inbound | Command-line arguments | Factory only for the help verb; exit codes 0, 2, 70 (mappable) |
 | `HelpAgentTools`, `HelpAgentTool` | Inbound | JSON arguments, text answers | Exact schema; never throws for input |
 | `HelpCardValidator` and helpers | Outbound | Problem lists and values | No test-framework reference |
 | Packaged props and targets | Inbound | MSBuild properties | `HelpCardsEnabled`, `HelpCardsDirectory` |

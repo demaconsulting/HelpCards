@@ -18,9 +18,18 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         The command is <c>{tool} {verb} [PATH...] [OPTIONS]</c> with the options <c>--json</c>, <c>--format</c>,
 ///         <c>--examples</c>, <c>--example</c>, <c>--search</c>, <c>--tag</c>, <c>--source</c>, <c>--all</c>,
 ///         <c>--width</c>, and, when enabled, <c>--lang</c>. Success exits with 0 and writes to the output; wrong
-///         arguments and names that match nothing exit with 2; a defective catalog exits with 70. In text and Markdown
+///         arguments and names that match nothing exit with 2; a defective catalog exits with 70 (these are the
+///         defaults of <see cref="HelpCliOptions.ExitCodes"/>). In text and Markdown
 ///         an error goes to the error writer as <c>Error: {message}</c> and an optional hint line; in JSON it is the
 ///         error document on the output.
+///     </para>
+///     <para>
+///         A tool that has a JSON contract of its own adopts the helper end to end: <see cref="HelpCliOptions.JsonEnvelope"/>
+///         replaces the top-level object of every JSON document, <see cref="HelpCliOptions.JsonError"/> writes the body
+///         of an error in the shape of the tool, and <see cref="HelpCliOptions.ExitCodes"/> maps the exit codes.
+///         <see cref="HelpCliOptions.OutputProvider"/> and <see cref="HelpCliOptions.ErrorProvider"/> route the output
+///         through the writers or the logger of the host. With none of these set the output and the exit codes are
+///         those described here.
 ///     </para>
 ///     <para>
 ///         A helper is immutable and safe for concurrent use as far as its writers, writer providers, and catalog
@@ -250,8 +259,8 @@ public sealed class HelpCli
     /// </remarks>
     /// <param name="args">The arguments of the tool. Must not be null.</param>
     /// <param name="exitCode">
-    ///     Receives the exit code when the command was a help command (0 success, 2 wrong arguments or a name that matches
-    ///     nothing, 70 defective catalog); otherwise 0.
+    ///     Receives the exit code when the command was a help command (by default 0 success, 2 wrong arguments or a name
+    ///     that matches nothing, 70 defective catalog; see <see cref="HelpCliOptions.ExitCodes"/>); otherwise 0.
     /// </param>
     /// <returns><see langword="true"/> when the arguments were a help command and have been answered.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="args"/> is null.</exception>
@@ -272,7 +281,10 @@ public sealed class HelpCli
     ///     Runs a help command whose verb is already removed.
     /// </summary>
     /// <param name="helpArguments">The arguments after the verb. Must not be null or contain null.</param>
-    /// <returns>The exit code: 0 for success, 2 for wrong arguments or unknown names, 70 for a defective catalog.</returns>
+    /// <returns>
+    ///     The exit code: by default 0 for success, 2 for wrong arguments or unknown names, 70 for a defective catalog
+    ///     (see <see cref="HelpCliOptions.ExitCodes"/>).
+    /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="helpArguments"/> is null or contains null.</exception>
     public int Run(IReadOnlyList<string> helpArguments)
     {

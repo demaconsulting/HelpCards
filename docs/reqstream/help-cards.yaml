@@ -594,6 +594,22 @@ sections:
         tests:
           - HelpCards_Cli_Writers_ProvidersRouteOutputAtCommandTime
 
+      - id: HelpCards-Cli-ToolContract
+        title: >-
+          A tool that has an established JSON contract and exit codes of its own shall be able to use the help command
+          end to end: it shall choose the top-level object of every JSON document, the shape of the error inside it, and
+          the exit codes of success, usage errors, and internal errors, and a tool that chooses none of them shall get
+          the documents and exit codes of the help command unchanged.
+        tags: [system]
+        justification: |
+          A tool cannot change the contract that its scripts and agents already parse, so the help command has to speak
+          that contract instead of its own.
+        children:
+          - HelpCards-Integration-CliContract
+        tests:
+          - HelpCards_Cli_ToolContract_EnvelopeErrorBodyAndExitCodesFollowTheTool
+          - HelpCards_Cli_ToolContract_UnsetKeepsTheDefaultDocumentsAndExitCodes
+
       - id: HelpCards-AgentTool-Knowledge
         title: >-
           A catalog shall be available to an AI agent as one provider-neutral tool that answers the index, a card with

@@ -147,7 +147,8 @@ public static int Main(string[] args)
 The tool name and the version are set once: the helper gives them (and the culture of `--lang`) to the catalog builder.
 In your tests, `options.GetCatalogConfiguration()` returns the same configuration for `HelpCardValidator`, so the
 cards are validated in the composition that users get. `OutputProvider` and `ErrorProvider` choose the writers when a
-command writes, for example to silence help.
+command writes, for example to silence help or to route it through the writers or the logger of the host. A tool that
+has its own JSON contract sets `JsonEnvelope`, `JsonError`, and `ExitCodes` to use the helper end to end.
 
 Then `tool help` prints the topics, `tool help getting-started` prints a card, `tool help --search install`
 searches, and `tool help getting-started --json` writes the card as JSON.
@@ -296,6 +297,7 @@ release must reference at least that version in its `PackageReference`.
 | `save-as` (examples), with `schema: 2` | 0.1.0-beta.3 |
 | Same example name in several cards of one source (per-card names) | 0.1.0-beta.3 |
 | `HelpCliOptions.ConfigureCatalog`, `GetCatalogConfiguration`, `OutputProvider`, `ErrorProvider` (API) | 0.1.0-beta.3 |
+| `HelpCliOptions.JsonEnvelope`, `JsonError`, `ExitCodes`, `HelpCliError`, `HelpCliExitCodes` (API) | 0.1.0-beta.4 |
 | `tokens` (examples) | 0.1.0-beta.4 |
 | The escape `\{{` for a literal `{{` | 0.1.0-beta.4 |
 

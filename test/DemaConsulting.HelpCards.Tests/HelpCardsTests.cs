@@ -1109,7 +1109,9 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Integration.HelpAgentTools: Create",
             "DemaConsulting.HelpCards.Integration.HelpCli: Create, Footer, Run, TryRun",
             "DemaConsulting.HelpCards.Integration.HelpCliAnswer: .ctor, ExitCode, Text",
-            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, ConfigureCatalog, DefaultWidth, EnableLanguageOption, Error, ErrorProvider, FallbackResolver, GetCatalogConfiguration, IndexPreamble, IndexSections, Output, OutputProvider, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
+            "DemaConsulting.HelpCards.Integration.HelpCliError: .ctor, Candidates, Code, Hint, Message",
+            "DemaConsulting.HelpCards.Integration.HelpCliExitCodes: .ctor, InternalError, Success, UsageError",
+            "DemaConsulting.HelpCards.Integration.HelpCliOptions: .ctor, CatalogFactory, CommandTemplate, ConfigureCatalog, DefaultWidth, EnableLanguageOption, Error, ErrorProvider, ExitCodes, FallbackResolver, GetCatalogConfiguration, IndexPreamble, IndexSections, JsonEnvelope, JsonError, Output, OutputProvider, OutputWidthProvider, ToolName, UsageLines, Verb, Version",
             "DemaConsulting.HelpCards.Integration.HelpCliSection: .ctor, Heading, Lines",
             "DemaConsulting.HelpCards.Loading.HelpSource: FromAssembly, FromFiles, Imports, WithName, WithTokens",
             "DemaConsulting.HelpCards.Presentation.HelpFormat: Json, Markdown, Text",
@@ -1598,6 +1600,75 @@ public class HelpCardsTests
             ConfigureCatalog = options.ConfigureCatalog,
             CatalogFactory = _ => CatalogBuilding.Simple(),
         }));
+    }
+
+    /// <summary>
+    ///     Proves that a tool with an established JSON contract uses the help command end to end: its envelope wraps every
+    ///     document, its error shape is written inside that envelope, its exit code is used for every failure, and the
+    ///     answers still go to the writers the host gave.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_ToolContract_EnvelopeErrorBodyAndExitCodesFollowTheTool()
+    {
+        // Arrange
+        var output = new StringWriter();
+        var errors = new StringWriter();
+        var cli = HelpCli.Create(new HelpCliOptions
+        {
+            ToolName = "tool",
+            ConfigureCatalog = (builder, culture) => builder.AddSource(
+                CatalogBuilding.Fixture("simple", new Dictionary<string, string> { ["limit"] = "42" })),
+            OutputProvider = () => output,
+            ErrorProvider = () => errors,
+            JsonEnvelope = ToolContract.Envelope,
+            JsonError = ToolContract.ErrorBody,
+            ExitCodes = ToolContract.ExitCodes,
+        });
+
+        // Act
+        var handledCard = cli.TryRun(["help", "guide", "--json"], out var cardCode);
+        var cardDocument = output.ToString();
+        output.GetStringBuilder().Clear();
+        var handledUsage = cli.TryRun(["help", "--json", "--search", "a", "--examples"], out var usageCode);
+        var usageDocument = output.ToString();
+        var handledText = cli.TryRun(["help", "nothing"], out var textCode);
+
+        // Assert
+        Assert.True(handledCard && handledUsage && handledText);
+        Assert.Equal((0, 1, 1), (cardCode, usageCode, textCode));
+        Assert.StartsWith("{\"schemaVersion\":2,\"ok\":true,\"command\":\"help\",\"kind\":\"card\",", cardDocument, StringComparison.Ordinal);
+        Assert.Equal(
+            "{\"schemaVersion\":2,\"ok\":false,\"command\":\"help\",\"kind\":\"error\","
+                + "\"error\":{\"code\":\"usage-error\",\"message\":\"options '--examples' and '--search' cannot be combined.\"}}\n",
+            usageDocument);
+        Assert.StartsWith("Error: Unknown help card 'nothing'.", errors.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the help command of a tool that sets none of the contract settings keeps the default envelope,
+    ///     the default error body, and the exit codes 0, 2, and 70.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Cli_ToolContract_UnsetKeepsTheDefaultDocumentsAndExitCodes()
+    {
+        // Arrange
+        var broken = HelpSource.FromFiles(SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]]."))), "test");
+        var harness = new CliHarness(CatalogBuilding.Simple());
+        var defective = new CliHarness(factory: _ => CatalogBuilding.Create(broken));
+
+        // Act
+        var success = harness.Run("guide", "--json");
+        var usage = harness.Run("--json", "--search", "a", "--examples");
+        var internalError = defective.Run("--json");
+
+        // Assert
+        Assert.Equal((0, 2, 70), (success, usage, internalError));
+        Assert.StartsWith("{\"helpSchemaVersion\":1,\"ok\":true,\"kind\":\"card\",", harness.Output.ToString(), StringComparison.Ordinal);
+        Assert.Contains(
+            "{\"helpSchemaVersion\":1,\"ok\":false,\"kind\":\"error\",\"code\":\"usage-error\",\"message\":\"options '--examples' and '--search' cannot be combined.\"}\n",
+            harness.Output.ToString(),
+            StringComparison.Ordinal);
+        Assert.StartsWith("{\"helpSchemaVersion\":1,\"ok\":false,\"kind\":\"error\",\"code\":\"catalog-error\"", defective.Output.ToString(), StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -14,7 +14,11 @@ An immutable object holding the verb and a `CliDispatcher` created from the chec
 are `HelpCliOptions` (tool name and version, verb, the catalog configuration action or, instead of it, a catalog
 factory, usage lines, preamble, index sections, fallback resolver, output and error writers or the providers that return
 them when a command writes, command template, default width, language option, and width provider), `HelpCliSection` (a
-heading and lines), and `HelpCliAnswer` (text and exit code). The helper keeps the options object by reference; the
+heading and lines), `HelpCliAnswer` (text and exit code), `HelpCliError` (the code, message, hint, and candidates of a
+failure, handed to `JsonError`), and `HelpCliExitCodes` (the exit codes of success, usage errors, and internal errors,
+each from 0 to 255, default 0, 2, and 70). `HelpCliOptions` also holds the contract settings of a tool with a JSON
+contract of its own: `JsonEnvelope` (the callback of `HelpRenderOptions.JsonEnvelope`), `JsonError` (writes the members
+of a JSON error inside the envelope), and `ExitCodes`. The helper keeps the options object by reference; the
 checks are made at `Create`, and the writers, usage lines, sections, fallback, and other settings are read from the
 object each time a command runs.
 
@@ -34,6 +38,9 @@ themselves and then set the name and the version on their own builder; exactly o
   the catalog and does no I/O.
 - **`HelpCliOptions.GetCatalogConfiguration(culture)`** returns the builder action that the helper itself applies (name,
   version, culture, then `ConfigureCatalog`) and throws `InvalidOperationException` when `ConfigureCatalog` is not set.
+- **`HelpCliExitCodes`** checks each of its three codes when it is set and throws `ArgumentOutOfRangeException` for a
+  value outside 0 to 255; `HelpCliOptions.ExitCodes` rejects null. Routing of the output stays with `OutputProvider` and
+  `ErrorProvider`, the way to send help through the writers or the logger of a host.
 - **`TryRun(args, out exitCode)`** returns false with exit code 0 unless there is a first argument that equals the verb,
   ignoring case; otherwise it runs the remaining arguments and returns true.
 - **`Run(helpArguments)`** runs a help command whose verb is already removed.
@@ -41,8 +48,9 @@ themselves and then set the name and the version on their own builder; exactly o
 
 #### Error Handling
 
-Programming mistakes throw `ArgumentException` or `ArgumentNullException`. Help commands never throw for their input; a
-defective catalog is exit code 70.
+Programming mistakes throw `ArgumentException`, `ArgumentNullException`, or, for an exit code outside 0 to 255,
+`ArgumentOutOfRangeException`. Help commands never throw for their input; a defective catalog is, by default, exit code
+70.
 
 #### Dependencies
 
