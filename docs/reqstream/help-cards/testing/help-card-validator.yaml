@@ -106,29 +106,60 @@ sections:
                 title: >-
                   The validator shall check the lines of a fenced code block, including its opening and closing
                   fence lines and the lines of a fence that is never closed, against the fence line limit instead of
-                  the line limit when a fence limit is set, shall keep checking every other line against the line
-                  limit, shall check only the lines of fenced blocks when only the fence limit is set, and shall
-                  name in the "line-length" message the limit that applied.
+                  the line limit when a fence limit is set, and shall keep checking every other line against the
+                  line limit.
                 justification: |
                   Code and command samples are usually wider than prose, so a product wants a longer limit inside
                   fences (for example 80 for prose and 120 for code) without giving up the limit for prose.
                 tests:
                   - HelpCardValidator_Validate_FenceLineLimit_UsesSeparateLimitInsideFences
+                  - HelpCardValidator_Validate_FenceLimit_AppliesToDelimiterLinesOfEveryFenceKind
+
+              - id: HelpCards-Testing-HelpCardValidator-FenceLineLengthOnly
+                title: >-
+                  The validator shall check only the lines of fenced code blocks, and not the other lines, when only
+                  the fence line limit is set.
+                justification: |
+                  A product may want to bound its code samples without limiting prose.
+                tests:
                   - HelpCardValidator_Validate_OnlyFenceLineLimit_ChecksFenceLinesAndNotProse
-                  - HelpCardValidator_Validate_LongLines_ReportLineLengthOnlyWithLimit
+
+              - id: HelpCards-Testing-HelpCardValidator-FenceLineLengthMessage
+                title: >-
+                  The validator shall name in the "line-length" message the limit that applied to the line and
+                  whether the line is in a fenced code block.
+                justification: |
+                  With two limits the author must see which one a line broke to know how far to wrap it.
+                tests:
+                  - HelpCardValidator_Validate_FenceLineLimit_UsesSeparateLimitInsideFences
+                  - HelpCardValidator_Validate_OnlyFenceLineLimit_ChecksFenceLinesAndNotProse
 
               - id: HelpCards-Testing-HelpCardValidator-CommandParse
                 title: >-
                   The validator shall report a "command-parse" warning for every command example that does not
-                  parse for the tool name of the catalog, which is the name set on the builder and otherwise the
-                  name of the first source, and shall not check examples of other kinds, and shall include in the
-                  message the reason that the command-line parser gives, which names the offending character and
-                  its one-based column in the command.
+                  parse for the tool name of the catalog, and shall not check examples of other kinds.
                 justification: |
                   A command example that no test can run is a defective example.
                 tests:
                   - HelpCardValidator_Validate_CommandExamples_ReportCommandParse
+
+              - id: HelpCards-Testing-HelpCardValidator-CommandParseTool
+                title: >-
+                  The validator shall check command examples for the tool name that is set on the builder and
+                  otherwise for the name of the first source.
+                justification: |
+                  Every command starts with the name of the tool, which the catalog already knows.
+                tests:
+                  - HelpCardValidator_Validate_CommandExamples_ReportCommandParse
                   - HelpCardValidator_Validate_CommandWithoutToolName_UsesSourceName
+
+              - id: HelpCards-Testing-HelpCardValidator-CommandParseReason
+                title: >-
+                  The validator shall include in the "command-parse" message the reason that the command-line parser
+                  gives, which names the offending character and its one-based column in the command.
+                justification: |
+                  An author must be able to find the character that makes the command impossible to run.
+                tests:
                   - HelpCardValidator_Validate_CommandWithUnquotedBrace_NamesCharacterAndColumn
 
               - id: HelpCards-Testing-HelpCardValidator-SaveAsDuplicate

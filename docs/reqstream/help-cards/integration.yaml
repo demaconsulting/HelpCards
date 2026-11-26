@@ -69,10 +69,10 @@ sections:
 
           - id: HelpCards-Integration-CliFailures
             title: >-
-              The subsystem shall exit with 0 on success, 2 for wrong arguments and names that match nothing, and 70
-              for a defective catalog, write text and Markdown errors to the error writer and JSON errors (not found
-              and ambiguous) to the output, write everything with line feeds only, and never create the catalog for a
-              usage error.
+              The subsystem shall exit by default with 0 on success, 2 for wrong arguments and names that match
+              nothing, and 70 for a defective catalog, with codes that a tool can set differently, write text and
+              Markdown errors to the error writer and JSON errors (not found and ambiguous) to the output, write
+              everything with line feeds only, and never create the catalog for a usage error.
             justification: |
               Scripts depend on exit codes and on where a message is written.
             children:
@@ -104,14 +104,48 @@ sections:
 
           - id: HelpCards-Integration-CliContract
             title: >-
-              The subsystem shall let a tool choose the top-level object of every JSON document of the help command,
-              the body of its JSON errors, and the exit codes of success, usage errors, and internal errors, with the
-              documents and the exit codes 0, 2, and 70 of the help command when it chooses none.
+              The subsystem shall let a tool choose the top-level object of every JSON document of the help command.
             justification: |
-              A tool with a JSON contract and exit codes of its own adopts the helper without changing them.
+              A tool with a JSON contract of its own adopts the helper without changing it.
             children:
               - HelpCards-Integration-CliDispatcher-Contract
               - HelpCards-Integration-HelpCli-Contract
+            tests:
+              - Integration_Cli_ToolContract_AppliesToEveryFailureOfTheHelper
+
+          - id: HelpCards-Integration-CliContractError
+            title: >-
+              The subsystem shall let a tool choose the body of the JSON errors of the help command.
+            justification: |
+              A tool writes its errors in its own shape, inside the envelope that it chose or the default one.
+            children:
+              - HelpCards-Integration-CliDispatcher-ErrorBody
+              - HelpCards-Integration-CliDispatcher-ErrorData
+            tests:
+              - Integration_Cli_ToolContract_AppliesToEveryFailureOfTheHelper
+
+          - id: HelpCards-Integration-CliContractExitCodes
+            title: >-
+              The subsystem shall let a tool choose the exit codes of success, usage errors, and internal errors of the
+              help command.
+            justification: |
+              A tool with exit codes of its own adopts the helper without changing them.
+            children:
+              - HelpCards-Integration-CliDispatcher-ExitCodes
+              - HelpCards-Integration-CliDispatcher-ExitCodesFallback
+              - HelpCards-Integration-HelpCli-ExitCodeRange
+            tests:
+              - Integration_Cli_ToolContract_AppliesToEveryFailureOfTheHelper
+
+          - id: HelpCards-Integration-CliContractDefaults
+            title: >-
+              The subsystem shall write the documents and use the exit codes 0, 2, and 70 of the help command when a
+              tool chooses none of the contract settings.
+            justification: |
+              A tool without a contract of its own sees no difference.
+            children:
+              - HelpCards-Integration-CliDispatcher-ContractDefaults
+              - HelpCards-Integration-HelpCli-ContractDefaults
             tests:
               - Integration_Cli_ToolContract_AppliesToEveryFailureOfTheHelper
 

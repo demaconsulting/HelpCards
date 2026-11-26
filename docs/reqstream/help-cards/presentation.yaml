@@ -56,17 +56,20 @@ sections:
           - id: HelpCards-Presentation-JsonContract
             title: >-
               The subsystem shall write every JSON document on one line of ASCII with the contract version, without
-              any null, with the error codes of the contract, and with a top-level object that the caller can
-              replace.
+              any null, with the error codes of the contract, with a top-level object that the caller can replace,
+              and with the members of an error that the caller can replace inside that object.
             justification: |
-              These rules are what makes the documents safe to stream, pipe, and parse.
+              These rules are what makes the documents safe to stream, pipe, and parse, and a tool with a JSON
+              contract of its own writes both the envelope and the error in its own shape.
             children:
               - HelpCards-Presentation-JsonDocumentWriter-NoNull
               - HelpCards-Presentation-JsonDocumentWriter-Ascii
               - HelpCards-Presentation-JsonDocumentWriter-Errors
+              - HelpCards-Presentation-JsonDocumentWriter-ErrorBody
               - HelpCards-Presentation-JsonDocumentWriter-Arguments
             tests:
               - Presentation_JsonContract_AllKinds_AreOneAsciiLineWithoutNull
+              - Presentation_JsonContract_ErrorBody_ReplacesTheMembersInsideTheEnvelope
 
           - id: HelpCards-Presentation-LinkStyles
             title: >-

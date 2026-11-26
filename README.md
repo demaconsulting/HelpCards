@@ -146,9 +146,11 @@ public static int Main(string[] args)
 
 The tool name and the version are set once: the helper gives them (and the culture of `--lang`) to the catalog builder.
 In your tests, `options.GetCatalogConfiguration()` returns the same configuration for `HelpCardValidator`, so the
-cards are validated in the composition that users get. `OutputProvider` and `ErrorProvider` choose the writers when a
-command writes, for example to silence help or to route it through the writers or the logger of the host. A tool that
-has its own JSON contract sets `JsonEnvelope`, `JsonError`, and `ExitCodes` to use the helper end to end.
+cards are validated in the composition that users get. `Output` and `Error` are fixed writers, and `OutputProvider` and
+`ErrorProvider` choose the writers when a command writes, for example to silence help or to route it through the
+writers or the logger of the host; a forwarding writer must go to the error writer too, because text and Markdown
+errors use it. A tool that has its own JSON contract sets `JsonEnvelope`, `JsonError`, and `ExitCodes` to use the helper
+end to end.
 
 Then `tool help` prints the topics, `tool help getting-started` prints a card, `tool help --search install`
 searches, and `tool help getting-started --json` writes the card as JSON.

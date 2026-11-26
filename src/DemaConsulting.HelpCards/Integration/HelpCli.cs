@@ -32,8 +32,11 @@ namespace DemaConsulting.HelpCards.Integration;
 ///         those described here.
 ///     </para>
 ///     <para>
-///         A helper is immutable and safe for concurrent use as far as its writers, writer providers, and catalog
-///         configuration are. The tool name and the version are set once, in the options: with
+///         A helper is immutable and safe for concurrent use as far as its writers, writer providers, the
+///         <see cref="HelpCliOptions.JsonEnvelope"/> and <see cref="HelpCliOptions.JsonError"/> callbacks, the
+///         <see cref="HelpCliOptions.FallbackResolver"/>, and its catalog configuration are: the helper calls each of
+///         them from the thread that runs the command, possibly from several threads at once, and does not
+///         synchronize them. The tool name and the version are set once, in the options: with
 ///         <see cref="HelpCliOptions.ConfigureCatalog"/> the helper gives both to the catalog builder, and
 ///         <see cref="HelpCliOptions.GetCatalogConfiguration"/> gives the same configuration to the tests.
 ///     </para>
@@ -255,7 +258,8 @@ public sealed class HelpCli
     /// </summary>
     /// <remarks>
     ///     The verb is compared ignoring case. When it does not match, or there are no arguments, the method returns
-    ///     <see langword="false"/> at once, without creating the catalog or touching any resource.
+    ///     <see langword="false"/> at once, without creating the catalog or touching any resource. Once the verb matches,
+    ///     an exception that a callback of the options throws propagates unchanged; see <see cref="Run"/>.
     /// </remarks>
     /// <param name="args">The arguments of the tool. Must not be null.</param>
     /// <param name="exitCode">
@@ -286,6 +290,16 @@ public sealed class HelpCli
     ///     (see <see cref="HelpCliOptions.ExitCodes"/>).
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="helpArguments"/> is null or contains null.</exception>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when the <see cref="HelpCliOptions.JsonEnvelope"/> callback returns <see langword="null"/>.
+    /// </exception>
+    /// <remarks>
+    ///     The helper catches only the catalog exception of the catalog configuration or factory. An exception that
+    ///     <see cref="HelpCliOptions.JsonEnvelope"/>, <see cref="HelpCliOptions.JsonError"/>,
+    ///     <see cref="HelpCliOptions.OutputProvider"/>, <see cref="HelpCliOptions.ErrorProvider"/>, or
+    ///     <see cref="HelpCliOptions.FallbackResolver"/> throws is not caught and propagates out of this method, so
+    ///     the tool decides how it fails.
+    /// </remarks>
     public int Run(IReadOnlyList<string> helpArguments)
     {
         return _dispatcher.Run(helpArguments);

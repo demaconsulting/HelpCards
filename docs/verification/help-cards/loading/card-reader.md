@@ -49,9 +49,12 @@ and no scenario depends on the machine's culture.
   problem, and a real unknown token next to an escape in a data file is still `token-unknown` at its line.
 - **Token opt-out (`tokens`)**: `tokens: false` keeps a data file and inline content (command and snippet, with CRLF
   line endings normalized) as written, with no replacement, escape, or problem; one data file shared by two examples is
-  verbatim for the one with `tokens: false` and replaced for the other; `tokens: true` replaces like the default;
-  `description` and `expect` are still replaced; values `maybe`, `True`, and empty are `value-invalid` at the
-  line of the key; empty content is still `example-invalid`; the key is accepted in schema 1 and schema 2.
+  verbatim for the one with `tokens: false` and replaced for the other; an example of an overlay with `tokens: false`
+  is verbatim and one beside it is replaced; `tokens: true` replaces like the default; `description` and `expect` are
+  still replaced; values `maybe`, `True`, and empty are `value-invalid` at the line of the key, and the card that holds
+  such an example is dropped and listed as failed; `tokens` in a translated example is a `translation-key`
+  problem at its line and does not change the neutral content; empty content is still `example-invalid`; the key is
+  accepted in schema 1 and schema 2.
 - **Links**: parsed links and a typo with the right line; an empty body.
 - **Cultures**: invariant ignores translations and the UI culture; translation applied; example descriptions;
   region falls back to language; specific preferred; no translation uses neutral; title fallback; empty

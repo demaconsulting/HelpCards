@@ -40,7 +40,8 @@ sections:
                   - TokenResolver_Substitute_EscapeBesideUnknownToken_StillReportsUnknown
                   - TokenResolver_Substitute_EscapeWithoutName_RemovesBackslash
                   - TokenResolver_Substitute_DoubleBackslash_EscapesOnlyTheLast
-
+                  - TokenResolver_Substitute_EscapeAtEndInsideTokenAndCrLf_FollowsTheEscapeRule
+                  - TokenResolver_Substitute_UnknownTokenAfterCrLf_ReportsItsLine
               - id: HelpCards-Loading-TokenResolver-Scope
                 title: >-
                   The scope of a source shall be its own tokens, the tokens of every source it imports, and the

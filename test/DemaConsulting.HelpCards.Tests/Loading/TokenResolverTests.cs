@@ -247,6 +247,51 @@ public class TokenResolverTests
     }
 
     /// <summary>
+    ///     Proves that an escape at the end of the input, inside what looks like a token, and across CRLF line endings
+    ///     renders as literal braces and leaves the rest of the text as the escape rule says.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <param name="expected">The text after substitution.</param>
+    [Theory]
+    [InlineData("abc\\{{", "abc{{")]
+    [InlineData("\\{{", "{{")]
+    [InlineData("{{na\\{{me}}", "{{na{{me}}")]
+    [InlineData("\\{{a}}\r\n{{tool}}\r\n\\{{b}}\r\n", "{{a}}\r\ndemo\r\n{{b}}\r\n")]
+    public void TokenResolver_Substitute_EscapeAtEndInsideTokenAndCrLf_FollowsTheEscapeRule(string text, string expected)
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act
+        var result = resolver.Substitute(text, "a.md", 1, problems);
+
+        // Assert: the backslash is dropped, nothing is reported, and the line endings are untouched
+        Assert.Equal(expected, result);
+        Assert.Empty(problems);
+    }
+
+    /// <summary>
+    ///     Proves that an unknown token after CRLF line endings is reported at the right line.
+    /// </summary>
+    [Fact]
+    public void TokenResolver_Substitute_UnknownTokenAfterCrLf_ReportsItsLine()
+    {
+        // Arrange
+        var resolver = Create();
+        var problems = new List<HelpProblem>();
+
+        // Act: the unknown token is on the third line, which is file line 12
+        var text = resolver.Substitute("\\{{a}}\r\n{{tool}}\r\n{{nope}}", "a.md", 10, problems);
+
+        // Assert
+        Assert.Equal("{{a}}\r\ndemo\r\n{{nope}}", text);
+        var problem = Assert.Single(problems);
+        Assert.Equal(RuleIds.TokenUnknown, problem.RuleId);
+        Assert.Equal(12, problem.Line);
+    }
+
+    /// <summary>
     ///     Proves that tokens are replaced inside code fences and spans, as in the body of a card.
     /// </summary>
     [Fact]

@@ -91,7 +91,7 @@ namespace DemaConsulting.HelpCards.Catalog;
 ///         <item><term><c>fence-language</c></term><description>Warning. A fenced code block names no language.</description></item>
 ///         <item><term><c>fence-unclosed</c></term><description>Warning. A fenced code block is never closed.</description></item>
 ///         <item><term><c>unused-token</c></term><description>Warning. A token set with <c>WithTokens</c> is used by no file.</description></item>
-///         <item><term><c>line-length</c></term><description>Warning. A body line is longer than <c>MaxLineLength</c>, or a line inside a fenced code block is longer than <c>MaxFenceLineLength</c> when that is set (both off unless set).</description></item>
+///         <item><term><c>line-length</c></term><description>Warning. A body line is longer than <c>MaxLineLength</c> (off unless set); a line of a fenced code block, including its opening and closing fence lines, uses <c>MaxFenceLineLength</c> when that is set and <c>MaxLineLength</c> otherwise.</description></item>
 ///         <item><term><c>command-parse</c></term><description>Warning. A <c>command</c> example cannot be split into arguments by <c>ExampleCommandLine</c>.</description></item>
 ///         <item><term><c>save-as-duplicate</c></term><description>Warning. Two <c>source</c> examples of one card are saved under the same name, so <c>HelpExampleRunner</c> would keep only the last one.</description></item>
 ///         <item><term><c>resources-mismatch</c></term><description>Warning. <c>CompareToDirectory</c> (a packaging check, not a unit test) found a file on only one side: on disk but not embedded, or embedded but not on disk.</description></item>

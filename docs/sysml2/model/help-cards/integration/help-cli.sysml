@@ -19,6 +19,7 @@ package HelpCards_HelpCli {
                 "test/DemaConsulting.HelpCards.Tests/Integration/HelpCliTests.cs",
                 "test/DemaConsulting.HelpCards.Tests/Integration/HelpCliTests.Contract.cs",
                 "test/DemaConsulting.HelpCards.Tests/TestSupport/CliHarness.cs",
+                "test/DemaConsulting.HelpCards.Tests/TestSupport/ToolContract.cs",
                 "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs",
                 "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"
             );

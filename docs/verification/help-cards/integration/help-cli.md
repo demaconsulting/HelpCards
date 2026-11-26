@@ -11,7 +11,7 @@ Standard xUnit v3 runner; the embedded `simple` fixture.
 
 #### Acceptance Criteria
 
-All tests in `HelpCliTests.cs` pass.
+All tests in `HelpCliTests.cs` and `HelpCliTests.Contract.cs` pass.
 
 #### Test Scenarios
 
@@ -28,5 +28,7 @@ All tests in `HelpCliTests.cs` pass.
 - **Writers**: a provider is called when the helper writes (not at creation), so the writer can change between commands;
   a provider that returns null writes to the console (the console writers are replaced for the test and restored); a
   provider is not the console for automatic width.
-- **Contract settings** (`HelpCliTests.Contract.cs`): the defaults of the options (no envelope, no error body, exit
-  codes 0, 2, and 70); an exit code outside 0 to 255 and a null set of exit codes are rejected.
+- **Contract settings** (`HelpCliTests.Contract.cs`): the envelope, the error body, and the exit codes are returned as
+  set; the defaults of the options (no envelope, no error body, exit codes 0, 2, and 70); an exit code outside 0 to 255
+  and a null set of exit codes are rejected; an exception of the error body or the envelope callback, and an envelope
+  that returns null, propagate out of `Run` and `TryRun`.

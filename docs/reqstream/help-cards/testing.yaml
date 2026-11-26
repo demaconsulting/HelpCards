@@ -36,11 +36,11 @@ sections:
             title: >-
               The subsystem shall report as warnings the summaries that are too long, the cards that render too
               large, the reserved headings, the fenced blocks that name no language or are not closed, the tokens
-              that no file uses, the lines that are too long, with a separate limit inside fenced blocks, the
-              command examples that cannot be parsed, and the source
-              examples of one card that are saved under the same name, each
-              at the file and line of the defect, apply the rules of the product to every card, and report an
-              absent external source as an error when the options require sources.
+              that no file uses, the lines that are too long, with a separate limit inside fenced blocks that
+              replaces the line limit for the lines of a fence, the command examples that cannot be parsed with the
+              reason that names the character and its column, and the source examples of one card that are saved
+              under the same name, each at the file and line of the defect, apply the rules of the product to every
+              card, and report an absent external source as an error when the options require sources.
             justification: |
               Help that is valid can still be too long, ambiguous for the renderer, or impossible to run; a
               product wants to catch that in its own tests.
@@ -52,12 +52,18 @@ sections:
               - HelpCards-Testing-HelpCardValidator-UnusedTokens
               - HelpCards-Testing-HelpCardValidator-LineLength
               - HelpCards-Testing-HelpCardValidator-FenceLineLength
+              - HelpCards-Testing-HelpCardValidator-FenceLineLengthOnly
+              - HelpCards-Testing-HelpCardValidator-FenceLineLengthMessage
               - HelpCards-Testing-HelpCardValidator-CommandParse
+              - HelpCards-Testing-HelpCardValidator-CommandParseTool
+              - HelpCards-Testing-HelpCardValidator-CommandParseReason
               - HelpCards-Testing-HelpCardValidator-SaveAsDuplicate
               - HelpCards-Testing-HelpCardValidator-Rules
               - HelpCards-Testing-HelpCardValidator-ExternalSources
             tests:
               - Testing_QualityRules_DefectiveCard_ReportsEveryRule
+              - Testing_QualityRules_FenceLineLimit_AppliesInsideFencesAndKeepsTheLineLimitForProse
+              - Testing_QualityRules_CommandExampleWithShellCharacter_NamesCharacterAndColumn
               - Testing_Options_RulesExternalSourcesAndWarnings_ChangeTheResult
 
           - id: HelpCards-Testing-Examples

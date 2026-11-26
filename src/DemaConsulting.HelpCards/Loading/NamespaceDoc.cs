@@ -275,7 +275,10 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <c>{{token}}</c> next to it is still <c>token-unknown</c>. Every other backslash is kept, and in
 ///         <c>\\{{tool}}</c> the first backslash is literal and the second escapes, so a backslash cannot directly
 ///         precede a replaced token. This changed in 0.1.0-beta.4: before it, <c>\{{tool}}</c> was a backslash
-///         followed by the value of <c>tool</c>. The validator does not check for stray backslashes. To keep a whole
+///         followed by the value of <c>tool</c>. In a double-quoted front-matter value the only escapes are
+///         <c>\\</c> and <c>\"</c>, so <c>"\{{x}}"</c> is a syntax error there: write <c>"\\{{x}}"</c>, or use a
+///         single-quoted (<c>'\{{x}}'</c>), plain, or block scalar, where the backslash needs no escape. The
+///         validator does not check for stray backslashes. To keep a whole
 ///         example free of tokens and escapes (a template that has many <c>{{...}}</c>), set the example key
 ///         <c>tokens: false</c>; see <em>Examples</em>.
 ///     </para>

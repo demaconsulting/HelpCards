@@ -171,35 +171,73 @@ sections:
 
               - id: HelpCards-Loading-CardReader-ExampleTokens
                 title: >-
-                  The reader shall read the key tokens of an example (true or false, true when absent, in every
-                  schema and for every kind) and, when it is false, take the content and the companion data file
-                  of the example without replacing tokens or processing escapes, and shall report any other value
-                  as value-invalid.
+                  The reader shall take the content and the companion data file of an example without replacing
+                  tokens or processing escapes when its key tokens is false, in an example of a card and of an
+                  overlay, and shall replace them when the key is true or absent.
                 justification: |
                   An example such as a template or a diagram can contain many literal double braces; one key lets
-                  the author keep it verbatim instead of escaping every occurrence, and a mistyped value must be
-                  an error when the card is read.
+                  the author keep it verbatim instead of escaping every occurrence.
                 tests:
                   - CardReader_Read_ExampleTokensFalse_DataFileIsVerbatim
                   - CardReader_Read_ExampleTokensFalse_InlineContentIsVerbatim
                   - CardReader_Read_ExampleTokensFalse_SharedDataFileStaysReplacedForOtherExample
+                  - CardReader_Read_ExampleTokensFalse_OnOverlayExampleIsVerbatim
                   - CardReader_Read_ExampleTokensTrue_ReplacesLikeDefault
-                  - CardReader_Read_ExampleTokensFalse_DescriptionAndExpectStillReplaced
-                  - CardReader_Read_ExampleTokensInvalid_IsValueInvalid
                   - CardReader_Read_ExampleTokensFalse_StillChecksEmptyContent
+
+              - id: HelpCards-Loading-CardReader-ExampleTokensSchemas
+                title: >-
+                  The reader shall accept the key tokens of an example in every schema and for every kind of
+                  example.
+                justification: |
+                  The key is additive, so a source of schema 1 can use it without a change of schema.
+                tests:
                   - CardReader_Read_Schema1AndSchema2ExampleTokens_AreAccepted
+                  - CardReader_Read_ExampleTokensFalse_InlineContentIsVerbatim
+
+              - id: HelpCards-Loading-CardReader-ExampleTokensText
+                title: >-
+                  The reader shall keep replacing tokens in the description and in the expected output of an
+                  example whose key tokens is false.
+                justification: |
+                  The key protects the content that an author writes in another notation; the sentences around it
+                  are still text of the card.
+                tests:
+                  - CardReader_Read_ExampleTokensFalse_DescriptionAndExpectStillReplaced
+
+              - id: HelpCards-Loading-CardReader-ExampleTokensInvalid
+                title: >-
+                  The reader shall report a value of the key tokens of an example that is not true or false as
+                  value-invalid at the line of the key, and, as for any other structural error of an example, shall
+                  drop the card that holds the example and list it as failed.
+                justification: |
+                  A mistyped value must be an error when the card is read, not a silent replacement or none.
+                tests:
+                  - CardReader_Read_ExampleTokensInvalid_IsValueInvalid
+                  - CardReader_Read_ExampleTokensInvalid_DropsTheCard
+
+              - id: HelpCards-Loading-CardReader-ExampleTokensTranslation
+                title: >-
+                  The reader shall report the key tokens in a translated example as a translation key and shall not
+                  apply it to the content of the neutral example.
+                justification: |
+                  A translation may change only the name and the description of an example, so it cannot change
+                  how the content is read.
+                tests:
+                  - CardReader_Read_ExampleTokensInTranslation_ReportsTranslationKey
 
               - id: HelpCards-Loading-CardReader-Tokens
                 title: >-
                   The reader shall replace tokens and process the escape for a literal "{{" in titles, summaries,
-                  example descriptions and content, and bodies, and report an unknown token at the line of the
-                  token in the file that contains it without dropping the card.
+                  example descriptions, content, and expected output, and bodies, and report an unknown token at
+                  the line of the token in the file that contains it without dropping the card.
                 justification: |
                   Tokens keep values such as limits in one place; an unknown token must be an error that points
                   at the exact text, and an author must be able to write literal braces.
                 tests:
                   - CardReader_Read_TokensInTitleSummaryAndBody_AreReplaced
                   - CardReader_Read_EscapedBracesInTitleSummaryAndBody_RenderLiteral
+                  - CardReader_Read_ExpectTokens_AreReplaced
                   - CardReader_Read_UnknownTokenInBody_ReportsLineAndKeepsCard
                   - CardReader_Read_UnknownTokenBesideEscape_ReportsLineAndKeepsCard
                   - CardReader_Read_UnknownTokenInSummary_ReportsSummaryLine

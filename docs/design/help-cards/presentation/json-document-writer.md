@@ -22,7 +22,7 @@ list documents. Documents are written with `Utf8JsonWriter` into a buffer.
 | `example` | `id`, `example` with `card` and the fields of an item of `examples` |
 | `search` | `query`, `results` with `id`, `title`, `summary`, `source`, `score`, `matchedOn`, `command` |
 | `cards` | `filter` with `tags` and `sources`, `cards` with `id`, `title`, `summary`, `tags`, `source`, `command` |
-| `error` | `code`, `message`, `hint` (optional), `candidates` (only for `not-found` and `ambiguous`) |
+| `error` | `code`, `message`, `hint` (optional), `candidates` (only for `not-found`, `ambiguous`); see `WriteError` |
 
 #### Key Methods
 
@@ -37,8 +37,10 @@ list documents. Documents are written with `Utf8JsonWriter` into a buffer.
 - **`WriteLinks`** lists the visible link targets of the body with `cardId`, `exampleName`, `exampleCardId`, and `text`,
   each only when present.
 - **`WriteError`** accepts only the codes `usage-error`, `not-found`, `ambiguous`, and `catalog-error`. A caller may
-  give a body callback, which writes the members of the error in place of the default ones inside the envelope in effect
-  (used by the command-line helper for the `JsonError` option of a tool).
+  give a body callback, which alone writes the members of the error in place of the default ones (`code`, `message`,
+  `hint`, `candidates`) inside the envelope in effect (used by the command-line helper for the `JsonError` option of a
+  tool). The message, hint, and candidates are not passed to the body callback by the writer, which only checks the
+  code; the helper closes over them in a `HelpCliError`.
 
 The examples of a JSON card always carry their content, because a JSON reader asks for data; `IncludeTags` and
 `IncludeExampleContent` shape only the text formats.

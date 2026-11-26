@@ -196,9 +196,9 @@ which is prose for the card being read, writes the short ``the example `run` ``.
 ## Tokens
 
 A token is a name in double braces, such as `{{tool}}` or `{{version}}`. The library replaces tokens with text when it
-reads a file, in the title, the summary, the descriptions and contents of examples, and the body, including code
-blocks and code spans. Token names are letters and digits and are case-sensitive; an unknown token is the error
-`token-unknown` at its line.
+reads a file, in the title, the summary, the descriptions, contents, and `expect` fragments of examples, the data files
+of examples, and the body, including code blocks and code spans. Token names are letters and digits and are
+case-sensitive; an unknown token is the error `token-unknown` at its line.
 
 Two tokens always exist: `tool` and `version`. They come from the builder, `ToolName` and `ToolVersion`; the tool
 name defaults to the name of the first source and the version to nothing. Further tokens belong to one source and are
@@ -229,6 +229,10 @@ shows as `pkg{{Package}}`. An unknown `{{token}}` that is not escaped is still t
 backslash is kept as written (`C:\dir` is unchanged). In `\\{{tool}}` the first backslash is literal and the second one
 escapes, so the result is `\{{tool}}`; there is no way to put a backslash directly before a replaced token. The
 validator does not check for stray backslashes.
+
+In a double-quoted front-matter value the only escapes are `\\` and `\"`, so `"\{{x}}"` is a syntax error there. Write
+`"\\{{x}}"`, or use a single-quoted value (`'\{{x}}'`), a plain value, or a literal block, where a backslash needs no
+escape.
 
 **Beta note.** Before 0.1.0-beta.4 there was no escape: `\{{tool}}` was a backslash followed by the value of `tool`.
 Remove such a backslash, or write the text another way, when you upgrade.

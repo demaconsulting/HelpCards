@@ -12,7 +12,8 @@ immutable catalog.
 The subsystem contains these units:
 
 - **HelpCli** (public) is the command-line helper: a tool creates it once, calls `TryRun` before its own parser, and
-  prints `Footer` in its usage text. With it go the public `HelpCliOptions`, `HelpCliSection`, and `HelpCliAnswer`.
+  prints `Footer` in its usage text. With it go the public `HelpCliOptions`, `HelpCliSection`, `HelpCliAnswer`,
+  `HelpCliError`, and `HelpCliExitCodes`.
 - **CliArgumentParser** (internal) reads the arguments after the verb into a request or the first usage error. The
   internal `CliRequest`, `CliMode`, and `CliParseResult` are its supporting types.
 - **CliDispatcher** (internal) runs one help command: it creates the catalog when it is needed, selects the answer of
@@ -77,7 +78,8 @@ with line feeds only.
 callback that receives the writer and a `HelpCliError` and writes the error members inside whatever envelope is in
 effect), and `ExitCodes` (success, usage error, internal error, each from 0 to 255). The three are independent and all
 default to the contract of the helper, so a tool that sets none sees no change. The answer of a fallback resolver keeps
-the exit code the tool gave it. The agent tool does not read these options.
+the exit code the tool gave it, and its text is written as it is, also with `--json`, without the envelope. The agent
+tool does not read these options.
 
 **Links as commands.** The helper renders with the command link style and a command template made from the tool name and
 the verb, so every link in an answer is something the reader can type. The width is the width of the command, the
@@ -96,6 +98,9 @@ used as a path.
 
 **Failure model.** Programming mistakes (null arguments, invalid options) throw `ArgumentException` or
 `ArgumentNullException` where the helper or tool is created or called; bad input from a person or an agent never throws.
+The callbacks of the tool are the exception: what `JsonEnvelope`, `JsonError`, `OutputProvider`, `ErrorProvider`, or
+`FallbackResolver` throws, and the `ArgumentException` for an envelope that returns null, propagates out of the helper
+unchanged.
 
 The unit design documents describe each unit in detail; the verification design describes how the subsystem is tested
 through the helper and the tool.

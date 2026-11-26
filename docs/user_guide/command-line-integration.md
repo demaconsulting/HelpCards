@@ -169,12 +169,19 @@ A `FallbackResolver` lets a tool keep answers that are not cards. It receives th
 and answers with a not-found error. The options object is kept by the helper, not copied; do not change it after you
 create a helper from it.
 
-A provider is the way to follow an option that the tool reads after it created the helper, such as `--silent`:
-`OutputProvider = () => silent ? TextWriter.Null : null`, with `ErrorProvider` likewise, is evaluated each time a
-command writes. A provider counts as a writer that is not the console, so `--width auto` uses `OutputWidthProvider`
-or 78. Providers are also how help goes through the writers or the logger of a host application: return a
-`TextWriter` that forwards to them, and every answer, JSON documents and JSON errors included, is written there. There
-is no other routing setting.
+The text of a `HelpCliAnswer` is written to the output as it is, also with `--json`: an answer of the fallback resolver
+bypasses `JsonEnvelope` and `JsonError`, so a tool that needs JSON for its own subjects returns that JSON itself. The
+exit code of the answer is kept as it is and is not mapped by `ExitCodes`. to follow an option that the tool reads after
+it created the helper, such as `--silent`:
+
+A provider is the way to follow an option that the tool reads after it created the helper, such as
+`--silent`:`OutputProvider = () => silent ? TextWriter.Null : null`, with `ErrorProvider` likewise, is evaluated each
+time a command writes. A provider counts as a writer that is not the console, so `--width auto` uses
+`OutputWidthProvider` or 78. The routing settings are `Output`, `OutputProvider`, `Error`, and `ErrorProvider`.
+Providers are also how help goes through the writers or the logger of a host application: return a `TextWriter` that
+forwards to them, and every answer, JSON documents and JSON errors included, is written there. A forwarding writer must
+be given to `ErrorProvider` (or `Error`) as well as to `OutputProvider` (or `Output`), because text and Markdown errors
+are written to the error writer. The helper does not catch what a provider throws.
 
 To prove in a test that the cards of the tool are valid in the composition that users get, pass the same
 configuration to the validator:
@@ -295,9 +302,11 @@ var help = HelpCli.Create(new HelpCliOptions
 ```
 
 The helper makes the result ASCII, as it does for the default envelope. Text and Markdown errors are not JSON, so
-`JsonError` does not change them. To send everything through the writers or the logger of the host, give
-`OutputProvider` and `ErrorProvider` (see [Customizing the Helper](#customizing-the-helper)). The agent tool does not
-read any of these options.
+`JsonError` does not change them. The helper does not catch what the callbacks throw: an exception from `JsonEnvelope`,
+`JsonError`, a provider, or the fallback resolver, and the `ArgumentException` for an envelope that returns `null`,
+propagates out of `Run` and `TryRun`, so the tool decides how it fails. To send everything through the writers or the
+logger of the host, give `OutputProvider` and `ErrorProvider` (see [Customizing the Helper](#customizing-the-helper)).
+The agent tool does not read any of these options.
 
 ## Rendering Without the Helper
 

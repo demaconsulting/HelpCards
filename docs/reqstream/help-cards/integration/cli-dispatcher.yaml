@@ -162,21 +162,60 @@ sections:
               - id: HelpCards-Integration-CliDispatcher-Contract
                 title: >-
                   The dispatcher shall write every JSON document, the errors included, through the envelope callback of
-                  the options when there is one, write the body of a JSON error through the error callback of the
-                  options, inside the envelope in effect, when there is one, give that callback the code, message, hint,
-                  and candidates of the failure, use the exit codes of the options for success, for usage errors, not
-                  found and ambiguous names, and for a catalog that is defective or not created, keep the exit code of
-                  an answer of the fallback resolver, and change nothing when the options set none of these.
+                  the options when there is one.
                 justification: |
-                  A tool with a JSON contract and exit codes of its own must be able to use the helper without changing
-                  them, and a tool without one must see no difference.
+                  A tool with a JSON contract of its own must be able to use the helper without changing it.
                 tests:
                   - CliDispatcher_Run_JsonEnvelope_WrapsEveryKindOfDocument
                   - CliDispatcher_Run_UsageErrorInJson_IsTheErrorShapeOfTheTool
+                  - CliDispatcher_Run_JsonError_FormatJson_UsesTheContractOfTheTool
+
+              - id: HelpCards-Integration-CliDispatcher-ErrorBody
+                title: >-
+                  The dispatcher shall write the body of a JSON error through the error callback of the options,
+                  inside the envelope in effect, when there is one.
+                justification: |
+                  A tool writes its errors in its own shape, whether or not it also has an envelope of its own.
+                tests:
                   - CliDispatcher_Run_NotFoundInJson_WritesTheHintAndGivesTheCandidatesToTheBody
-                  - CliDispatcher_Run_JsonError_ReceivesTheDataOfEveryFailure
                   - CliDispatcher_Run_EnvelopeAndErrorBody_AreIndependentSettings
-                  - CliDispatcher_Run_JsonErrorBody_DoesNotChangeTheTextError
+
+              - id: HelpCards-Integration-CliDispatcher-ErrorData
+                title: >-
+                  The dispatcher shall give the error callback the code, message, hint, and candidates of the failure,
+                  with no candidates for the codes that name nothing.
+                justification: |
+                  The callback can only write the shape of the tool if it has everything the default body has.
+                tests:
+                  - CliDispatcher_Run_JsonError_ReceivesTheDataOfEveryFailure
+                  - CliDispatcher_Run_JsonError_Ambiguous_ReceivesTheQualifiedNamesAsCandidates
+                  - CliDispatcher_Run_JsonError_UnknownSource_ReceivesTheKnownSourcesAsCandidates
+                  - CliDispatcher_Run_JsonError_UnknownTag_ReceivesTheKnownTagsAsCandidates
+
+              - id: HelpCards-Integration-CliDispatcher-ExitCodes
+                title: >-
+                  The dispatcher shall use the exit codes of the options for success, for usage errors, not found and
+                  ambiguous names, and for a catalog that is defective or not created.
+                justification: |
+                  A tool with exit codes of its own must be able to use the helper without changing them.
+                tests:
                   - CliDispatcher_Run_ExitCodesOfTheTool_AreUsedForEveryFailure
                   - CliDispatcher_Run_ExitCodes_AreMappedIndependentlyAndNotForTheFallback
+
+              - id: HelpCards-Integration-CliDispatcher-ExitCodesFallback
+                title: >-
+                  The dispatcher shall keep the exit code of an answer of the fallback resolver and not map it with
+                  the exit codes of the options.
+                justification: |
+                  The tool that answers a subject of its own also chose its exit code.
+                tests:
+                  - CliDispatcher_Run_ExitCodes_AreMappedIndependentlyAndNotForTheFallback
+
+              - id: HelpCards-Integration-CliDispatcher-ContractDefaults
+                title: >-
+                  The dispatcher shall write the documents and use the exit codes of the helper when the options set
+                  none of the envelope, the error callback, and the exit codes.
+                justification: |
+                  A tool without a contract of its own must see no difference.
+                tests:
                   - CliDispatcher_Run_ContractSettingsUnset_KeepDocumentsAndExitCodes

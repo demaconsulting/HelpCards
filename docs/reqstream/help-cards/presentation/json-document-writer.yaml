@@ -104,14 +104,22 @@ sections:
                 title: >-
                   The writer shall write error documents only for the codes usage-error, not-found, ambiguous, and
                   catalog-error, write candidates only for not-found and ambiguous, leave out an absent hint, and
-                  reject any other code, and shall write the members of an error through a callback of the caller,
-                  inside the envelope in effect, when one is given.
+                  reject any other code.
                 justification: |
-                  The error codes are part of the frozen contract, and a tool with a contract of its own writes the
-                  error in its own shape.
+                  The error codes are part of the frozen contract.
                 tests:
                   - JsonDocumentWriter_WriteError_Codes_ControlCandidatesAndHint
                   - JsonDocumentWriter_WriteError_InvalidArguments_Throw
+
+              - id: HelpCards-Presentation-JsonDocumentWriter-ErrorBody
+                title: >-
+                  The writer shall write the members of an error through a callback of the caller, in place of the
+                  default members and inside the envelope in effect, when one is given, and shall still reject a code
+                  that is not one of the contract.
+                justification: |
+                  A tool with a contract of its own writes the error in its own shape and keeps the envelope it
+                  chose.
+                tests:
                   - JsonDocumentWriter_WriteError_WithBody_ReplacesTheMembersInsideTheEnvelope
 
               - id: HelpCards-Presentation-JsonDocumentWriter-Determinism

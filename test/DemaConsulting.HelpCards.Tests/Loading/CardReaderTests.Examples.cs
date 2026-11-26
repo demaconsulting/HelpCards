@@ -437,6 +437,69 @@ public partial class CardReaderTests
     }
 
     /// <summary>
+    ///     Proves that <c>tokens: false</c> works on an example of an overlay like on an example of a card.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensFalse_OnOverlayExampleIsVerbatim()
+    {
+        // Arrange: an overlay with one verbatim and one replaced example that share the folder of the overlay
+        var source = Read(
+            (
+                "extra/ov.md",
+                "---\nextends: a\nexamples:\n"
+                + "  - name: raw\n    kind: snippet\n    language: yaml\n    file: raw.yaml\n    tokens: false\n    description: D.\n"
+                + "  - name: cooked\n    kind: snippet\n    language: yaml\n    file: cooked.yaml\n    description: D.\n---\n"),
+            ("extra/raw.yaml", "k: {{tool}} \\{{x}}"),
+            ("extra/cooked.yaml", "k: {{tool}}"));
+
+        // Act
+        var examples = Assert.Single(source.Overlays).Examples;
+
+        // Assert
+        Assert.Empty(source.Problems);
+        Assert.Equal(["k: {{tool}} \\{{x}}", "k: demo"], examples.Select(example => example.Content));
+    }
+
+    /// <summary>
+    ///     Proves that <c>tokens</c> is not a key of a translated example: it is reported as a translation key and the
+    ///     neutral example keeps replacing its tokens.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensInTranslation_ReportsTranslationKey()
+    {
+        // Arrange: the neutral example replaces tokens and the translation tries to turn that off
+        var source = ReadFor(
+            "de",
+            ("a.md", "---\ntitle: Title\nsummary: Summary.\nexamples:\n  - name: render\n    kind: command\n    language: shell\n    content: '{{tool}} run'\n    description: Render.\n---\nText."),
+            ("a.de.md", "---\nexamples:\n  - name: render\n    description: D.\n    tokens: false\n---\nText."));
+
+        // Act
+        var example = Assert.Single(Assert.Single(source.Cards).Examples);
+
+        // Assert: the key is rejected at its line and has no effect on the content
+        AssertProblem(Assert.Single(source.Problems), RuleIds.TranslationKey, "a.de.md", 5);
+        Assert.Equal("demo run", example.Content);
+    }
+
+    /// <summary>
+    ///     Proves that a card with an invalid <c>tokens</c> value is dropped and listed as failed, like a card with any
+    ///     other structural error in an example.
+    /// </summary>
+    [Fact]
+    public void CardReader_Read_ExampleTokensInvalid_DropsTheCard()
+    {
+        // Arrange: one valid example and one with a value that is not a boolean
+        var source = Read(("a.md", ExampleCard(
+            "  - name: good\n    kind: command\n    language: shell\n    content: run\n    description: D.\n"
+            + "  - name: bad\n    kind: command\n    language: shell\n    content: run\n    tokens: maybe\n    description: D.\n")));
+
+        // Act / Assert
+        AssertProblem(Assert.Single(source.Problems), RuleIds.ValueInvalid, "a.md", 14);
+        Assert.Empty(source.Cards);
+        Assert.Equal(["a"], source.FailedIds);
+    }
+
+    /// <summary>
     ///     Proves that content with tokens turned off is still checked for being empty.
     /// </summary>
     [Fact]

@@ -301,8 +301,10 @@ region translation, a language translation, and a card without translation.
 
 Validates the embedded `simple` fixture and gets no problem, validates a source with a broken link and gets the error
 without an exception, validates a source with a long summary and gets one warning, and asserts that `AssertValid` throws
-one exception with the same error and accepts a catalog that only has a warning. The other quality warnings of
-the\nrequirement are verified by the scenarios of the Testing subsystem (`docs/verification/help-cards/testing.md`).
+one exception with the same error and accepts a catalog that only has a warning. It also validates a card with a long
+line inside a fenced block with a line limit only and gets one `line-length` warning, and with a fence limit as well and
+gets none. The other quality warnings of the requirement are verified by the scenarios of the Testing subsystem
+(`docs/verification/help-cards/testing.md`).
 
 ### Validation: Running the Examples
 

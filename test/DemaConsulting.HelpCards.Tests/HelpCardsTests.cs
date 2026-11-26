@@ -1208,12 +1208,15 @@ public class HelpCardsTests
             SourceReading.Files(("a.md", SourceReading.Card(body: "See [[missing]].")), ("b.md", SourceReading.Card(summary: new string('x', 90)))),
             "test");
         var longSummary = HelpSource.FromFiles(SourceReading.Files(("b.md", SourceReading.Card(summary: new string('x', 90)))), "test");
+        var wide = HelpSource.FromFiles(SourceReading.Files(("c.md", SourceReading.Card(body: $"```text\n{new string('c', 100)}\n```"))), "test");
 
         // Act
         var validProblems = HelpCardValidator.Validate(valid);
         var errors = HelpCardValidator.Validate(broken);
         var warnings = HelpCardValidator.Validate(longSummary);
         var exception = Assert.Throws<HelpCatalogException>(() => HelpCardValidator.AssertValid(broken));
+        var proseLimitOnly = HelpCardValidator.Validate(wide, new HelpValidationOptions { MaxLineLength = 40 });
+        var withFenceLimit = HelpCardValidator.Validate(wide, new HelpValidationOptions { MaxLineLength = 40, MaxFenceLineLength = 120 });
 
         // Assert
         Assert.Empty(validProblems);
@@ -1221,6 +1224,10 @@ public class HelpCardsTests
         Assert.Equal(HelpSeverity.Warning, Assert.Single(warnings).Severity);
         Assert.Equal(errors, exception.Problems);
         HelpCardValidator.AssertValid(CatalogBuilding.Create(longSummary));
+
+        // A long line of a fenced block is a warning of the line limit and is accepted with a fence limit of its own
+        Assert.Equal("line-length", Assert.Single(proseLimitOnly).RuleId);
+        Assert.Empty(withFenceLimit);
     }
 
     /// <summary>

@@ -24,9 +24,9 @@ examples. `CliOutcome` is the text or the `CliFailure` (code, message, hint, can
   configuration of the options (`GetCatalogConfiguration` with the culture of the request) or, for options with a
   factory, by calling the factory with that culture.
   The fallback is offered for plain card commands only: `--examples` and `--example` with a subject that only the tool
-  owns are answered by the catalog as not found. A `HelpCatalogException` becomes exit code 70 with
-  `Help is unavailable: {first problem}`; so does a factory that returns nothing. The mode then selects the answer and
-  the outcome is written.
+  owns are answered by the catalog as not found. A `HelpCatalogException` becomes the internal error code of the options
+  (70 by default) with `Help is unavailable: {first problem}`; so does a factory that returns nothing. The mode then
+  selects the answer and the outcome is written.
 - **Index** writes, in text, the usage lines under `Usage:`, the preamble, each section as its heading and indented
   lines, `Help topics:` with the index lines of the roots (the whole tree for `--all`), and the footer, separated by
   blank lines; in JSON it is the index document with the usage lines.
@@ -53,7 +53,10 @@ there is one and, when `JsonError` is set, with the members that the callback wr
 code, message, hint, and candidates, which are empty for the codes that have none) in place of the default members. The
 same envelope is passed to every document of the modes through the render options, and to the usage errors that are
 reported before they exist. All writing uses a single line feed at the end and line feeds
-only inside. Null arguments throw `ArgumentNullException`.
+only inside. Null arguments throw `ArgumentNullException`. The dispatcher does not guard the callbacks of the tool: an
+exception from `JsonEnvelope`, `JsonError`, a writer provider, or the fallback resolver, and the `ArgumentException` for
+an envelope that returns null, propagate out of `Run`. The text of a fallback answer is written to the output as it
+is, also for JSON requests, so it bypasses the envelope and the error body.
 
 #### Dependencies
 

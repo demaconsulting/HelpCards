@@ -66,6 +66,10 @@ sections:
               - HelpCards-Loading-CardReader-Examples
               - HelpCards-Loading-CardReader-ExampleExpectations
               - HelpCards-Loading-CardReader-ExampleTokens
+              - HelpCards-Loading-CardReader-ExampleTokensSchemas
+              - HelpCards-Loading-CardReader-ExampleTokensText
+              - HelpCards-Loading-CardReader-ExampleTokensInvalid
+              - HelpCards-Loading-CardReader-ExampleTokensTranslation
               - HelpCards-Loading-CardReader-ExampleSaveAs
               - HelpCards-Loading-CardReader-SchemaCompatibility
               - HelpCards-Loading-CardReader-SourceFile
@@ -95,6 +99,10 @@ sections:
               - HelpCards-Loading-TokenResolver-Names
               - HelpCards-Loading-CardReader-Tokens
               - HelpCards-Loading-CardReader-ExampleTokens
+              - HelpCards-Loading-CardReader-ExampleTokensSchemas
+              - HelpCards-Loading-CardReader-ExampleTokensText
+              - HelpCards-Loading-CardReader-ExampleTokensInvalid
+              - HelpCards-Loading-CardReader-ExampleTokensTranslation
             tests:
               - Loading_Tokens_ImportedTokensAreInScope
               - Loading_Tokens_EscapeAndOptOut_ReadLiteralBraces

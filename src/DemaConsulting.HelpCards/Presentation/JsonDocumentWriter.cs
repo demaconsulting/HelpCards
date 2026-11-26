@@ -59,8 +59,12 @@ internal static partial class JsonDocumentWriter
     /// </summary>
     /// <remarks>
     ///     The candidates are written only for the codes <c>not-found</c> and <c>ambiguous</c>, and then always, as
-    ///     an array that is empty when there is no candidate. There is no public member for this document: the
-    ///     command-line helper and the agent tool are its callers.
+    ///     an array that is empty when there is no candidate. When <paramref name="writeBody"/> is given, the writer
+    ///     writes none of these default members: <paramref name="message"/>, <paramref name="hint"/>, and
+    ///     <paramref name="candidates"/> are not passed to the callback, which alone writes the members, so it must
+    ///     already hold the values it needs (the command-line helper gives them to the callback of the tool in a
+    ///     <c>HelpCliError</c>). The <paramref name="code"/> is checked in both cases. There is no public member for
+    ///     this document: the command-line helper and the agent tool are its callers.
     /// </remarks>
     /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
     /// <param name="code">One of <c>usage-error</c>, <c>not-found</c>, <c>ambiguous</c>, or <c>catalog-error</c>.</param>
@@ -68,8 +72,9 @@ internal static partial class JsonDocumentWriter
     /// <param name="hint">A hint for the reader, or <see langword="null"/> to leave it out.</param>
     /// <param name="candidates">The global ids that could have been meant, or <see langword="null"/> for none.</param>
     /// <param name="writeBody">
-    ///     Writes the body of the error in place of the default one (the same <paramref name="code"/>, message, hint,
-    ///     and candidates) into the open object, or <see langword="null"/> for the default body.
+    ///     Writes the body of the error in place of the default one into the open object, or <see langword="null"/>
+    ///     for the default body. The default members are not written when it is given, and the values of
+    ///     <paramref name="message"/>, <paramref name="hint"/>, and <paramref name="candidates"/> are not passed to it.
     /// </param>
     /// <returns>The document.</returns>
     /// <exception cref="ArgumentException">

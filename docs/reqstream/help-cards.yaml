@@ -403,8 +403,9 @@ sections:
         title: >-
           A product shall be able to validate its help sources and catalogs in its own tests and get every defect
           as a problem list, with quality warnings for long summaries, large cards, reserved headings, fenced blocks
-          without a language or never closed, unused tokens, long lines, and commands that cannot be run, and to
-          fail a test with one exception for the errors.
+          without a language or never closed, unused tokens, long lines (with a limit of their own inside fenced
+          blocks), and commands that cannot be run with the reason, and to fail a test with one exception for the
+          errors.
         tags: [system]
         justification: |
           Help is content that ships with the product; a test that checks it keeps broken or unreadable cards from
@@ -544,8 +545,9 @@ sections:
 
       - id: HelpCards-Cli-ExitCodes
         title: >-
-          The help command shall exit with 0 on success, 2 for wrong arguments and unknown names, and 70 for a defective
-          catalog, and write an error to the error output as text, or to the output as a JSON error document.
+          The help command shall exit by default with 0 on success, 2 for wrong arguments and unknown names, and 70 for
+          a defective catalog, with codes that a tool can set differently, and write an error to the error output as
+          text, or to the output as a JSON error document.
         tags: [system]
         justification: |
           Scripts depend on exit codes and on where a message is written.
@@ -606,6 +608,9 @@ sections:
           that contract instead of its own.
         children:
           - HelpCards-Integration-CliContract
+          - HelpCards-Integration-CliContractError
+          - HelpCards-Integration-CliContractExitCodes
+          - HelpCards-Integration-CliContractDefaults
         tests:
           - HelpCards_Cli_ToolContract_EnvelopeErrorBodyAndExitCodesFollowTheTool
           - HelpCards_Cli_ToolContract_UnsetKeepsTheDefaultDocumentsAndExitCodes

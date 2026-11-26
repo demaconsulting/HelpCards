@@ -50,7 +50,10 @@ themselves and then set the name and the version on their own builder; exactly o
 
 Programming mistakes throw `ArgumentException`, `ArgumentNullException`, or, for an exit code outside 0 to 255,
 `ArgumentOutOfRangeException`. Help commands never throw for their input; a defective catalog is, by default, exit code
-70.
+70. The callbacks of the tool are not guarded: an exception from `JsonEnvelope`, `JsonError`, `OutputProvider`,
+`ErrorProvider`, or `FallbackResolver`, and the `ArgumentException` for a `JsonEnvelope` callback that returns null,
+propagate out of `Run` and `TryRun`, so the tool decides how it fails. Only a `HelpCatalogException` from the catalog
+configuration or factory is turned into the internal error code.
 
 #### Dependencies
 

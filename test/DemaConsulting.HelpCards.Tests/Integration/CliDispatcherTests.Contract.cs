@@ -185,6 +185,111 @@ public partial class CliDispatcherTests
     }
 
     /// <summary>
+    ///     Proves that the error body receives the code, the message, and the hint of an ambiguous example name and the
+    ///     qualified names as candidates.
+    /// </summary>
+    [Fact]
+    public void CliDispatcher_Run_JsonError_Ambiguous_ReceivesTheQualifiedNamesAsCandidates()
+    {
+        // Arrange: two roots of one source mounted below one card have an example of the same name
+        const string example = "examples:\n  - name: x\n    kind: command\n    language: shell\n    content: tool x\n    description: An example.\n";
+        var files = new[]
+        {
+            ("a.md", SourceReading.Card(title: "A", extraFrontMatter: example)),
+            ("b.md", SourceReading.Card(title: "B", extraFrontMatter: example.Replace("tool x", "tool y", StringComparison.Ordinal))),
+        };
+        var source = HelpSource.FromFiles(SourceReading.Files(files), "lib");
+        var catalog = HelpCatalog.Create(builder => builder.AddMountedSource(source, "m"));
+        HelpCliError? received = null;
+        var harness = new CliHarness(catalog, jsonError: (writer, error) => { received = error; ToolContract.ErrorBody(writer, error); }, exitCodes: ToolContract.ExitCodes);
+
+        // Act
+        var code = harness.Run("m", "--example", "x", "--json");
+
+        // Assert
+        Assert.Equal(1, code);
+        Assert.NotNull(received);
+        Assert.Equal("ambiguous", received.Code);
+        Assert.Equal("The example name 'x' matches several examples.", received.Message);
+        Assert.Equal("Use one of: m/a#x, m/b#x.", received.Hint);
+        Assert.Equal(["m/a#x", "m/b#x"], received.Candidates);
+        Assert.Contains("\"error\":{\"code\":\"ambiguous\"", harness.Output.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the error body receives the known sources as candidates for a source that does not exist.
+    /// </summary>
+    [Fact]
+    public void CliDispatcher_Run_JsonError_UnknownSource_ReceivesTheKnownSourcesAsCandidates()
+    {
+        // Arrange
+        var catalog = HelpCatalog.Create(builder => builder.AddSource(CatalogBuilding.LibA()).AddSource(CatalogBuilding.LibB()));
+        HelpCliError? received = null;
+        var harness = new CliHarness(catalog, jsonError: (writer, error) => { received = error; ToolContract.ErrorBody(writer, error); }, exitCodes: ToolContract.ExitCodes);
+
+        // Act
+        var code = harness.Run("--source", "lib-c", "--json");
+
+        // Assert
+        Assert.Equal(1, code);
+        Assert.NotNull(received);
+        Assert.Equal("not-found", received.Code);
+        Assert.Equal("Unknown help source 'lib-c'.", received.Message);
+        Assert.Equal("Known sources: lib-a, lib-b.", received.Hint);
+        Assert.Equal(["lib-a", "lib-b"], received.Candidates);
+        Assert.Contains("\"error\":{\"code\":\"not-found\"", harness.Output.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that the error body receives the known tags as candidates for a tag that does not exist.
+    /// </summary>
+    [Fact]
+    public void CliDispatcher_Run_JsonError_UnknownTag_ReceivesTheKnownTagsAsCandidates()
+    {
+        // Arrange
+        HelpCliError? received = null;
+        var harness = new CliHarness(
+            CatalogBuilding.Create(CatalogBuilding.Fixture("big")),
+            jsonError: (writer, error) => { received = error; ToolContract.ErrorBody(writer, error); },
+            exitCodes: ToolContract.ExitCodes);
+
+        // Act
+        var code = harness.Run("--tag", "nope", "--json");
+
+        // Assert
+        Assert.Equal(1, code);
+        Assert.NotNull(received);
+        Assert.Equal("not-found", received.Code);
+        Assert.Equal("Unknown tag 'nope'.", received.Message);
+        Assert.Equal("Known tags: build, quality, release.", received.Hint);
+        Assert.Equal(["build", "quality", "release"], received.Candidates);
+        Assert.Contains("\"error\":{\"code\":\"not-found\"", harness.Output.ToString(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     Proves that <c>--format json</c> asks for the contract of the tool exactly like <c>--json</c>, for a usage
+    ///     error that is reported before any catalog exists and for a name that is not found.
+    /// </summary>
+    [Fact]
+    public void CliDispatcher_Run_JsonError_FormatJson_UsesTheContractOfTheTool()
+    {
+        // Arrange
+        var usage = ToolHarness();
+        var notFound = ToolHarness();
+
+        // Act
+        var usageCode = usage.Run("--format", "json", "--bogus");
+        var notFoundCode = notFound.Run("qqqqqqqq", "--format", "json");
+
+        // Assert
+        Assert.Equal([1, 1], new[] { usageCode, notFoundCode });
+        Assert.StartsWith("{\"schemaVersion\":2,\"ok\":false,\"command\":\"help\",\"kind\":\"error\",\"error\":{\"code\":\"usage-error\"", usage.Output.ToString(), StringComparison.Ordinal);
+        Assert.StartsWith("{\"schemaVersion\":2,\"ok\":false,\"command\":\"help\",\"kind\":\"error\",\"error\":{\"code\":\"not-found\"", notFound.Output.ToString(), StringComparison.Ordinal);
+        Assert.Empty(usage.Error.ToString());
+        Assert.Empty(notFound.Error.ToString());
+    }
+
+    /// <summary>
     ///     Proves that the error body does not change the text and Markdown errors, which are not JSON.
     /// </summary>
     [Fact]

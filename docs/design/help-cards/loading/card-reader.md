@@ -70,7 +70,8 @@ grammars, values and the key matrix, examples, cards and translations, and the s
 - **Token opt-out.** An example may have `tokens` (`true` by default, or `false`). `ReadExampleTokens` reads it
   before the content: absent is `true`; the text exactly `true` or `false` is that value; anything else (empty,
   `yes`, `True`) is `value-invalid` at the line of the key and counts as a structure error, so the example
-  is dropped. With `false`, `NormalizeContent` skips `TokenResolver.Substitute` for the inline `content` and the
+  is dropped and, as for every structure error in an example, the card that holds it fails and is listed as failed.
+  With `false`, `NormalizeContent` skips `TokenResolver.Substitute` for the inline `content` and the
   companion data file, so neither tokens nor the `\{{` escape are processed; line endings still become LF, trailing
   line feeds are removed, and the empty, blank-first-line, and single-line-command checks still apply. It affects only
   content and data file: `description` and `expect` always have tokens replaced. The key is additive: it needs no

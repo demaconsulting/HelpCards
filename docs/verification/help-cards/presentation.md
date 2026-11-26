@@ -41,5 +41,9 @@ only generated lines, and the output must not depend on the culture of the machi
 - **Lists**: the index down to the roots, a card list, search results, and the sentence for no results.
 - **Wrapping**: a narrow width wraps the generated lines and leaves the authored body unchanged.
 - **Options**: the defaults, and the argument errors for a width, a format, and a command template.
-- **JSON contract**: a card of the contract source with commands, and a replaced top-level object.
+- **JSON contract**: a card of the contract source with commands, a replaced top-level object, and the error document
+  of every code on one line of ASCII.
+- **JSON error body**: a callback that writes the members of an error replaces the default members inside the default
+  envelope and inside a replaced top-level object, the text it writes is escaped to ASCII, and an unknown code is still
+  rejected.
 - **Determinism**: two renderings under two cultures are equal, use LF only, and have no trailing line feed.

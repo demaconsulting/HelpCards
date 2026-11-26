@@ -699,8 +699,12 @@ reviews:
       - "src/DemaConsulting.HelpCards/Integration/HelpCliOptions.cs"   # unit source
       - "src/DemaConsulting.HelpCards/Integration/HelpCliSection.cs"   # unit source
       - "src/DemaConsulting.HelpCards/Integration/HelpCliAnswer.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliError.cs"   # unit source
+      - "src/DemaConsulting.HelpCards/Integration/HelpCliExitCodes.cs"   # unit source
       - "test/DemaConsulting.HelpCards.Tests/Integration/HelpCliTests.cs"   # unit tests
+      - "test/DemaConsulting.HelpCards.Tests/Integration/HelpCliTests.Contract.cs"   # unit tests
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CliHarness.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/ToolContract.cs"   # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support
 
@@ -739,6 +743,7 @@ reviews:
       - "src/DemaConsulting.HelpCards/Integration/CliFailure.cs"   # unit source
       - "test/DemaConsulting.HelpCards.Tests/Integration/CliDispatcherTests*.cs"   # unit tests
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CliHarness.cs"   # test support
+      - "test/DemaConsulting.HelpCards.Tests/TestSupport/ToolContract.cs"   # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/GoldenFiles.cs"   # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/CatalogBuilding.cs"   # test support
       - "test/DemaConsulting.HelpCards.Tests/TestSupport/SourceReading.cs"   # test support

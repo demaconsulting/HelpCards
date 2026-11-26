@@ -174,9 +174,14 @@ grammar. The first word must be the tool name, and the remaining words are the a
 characters, single-quoted text without escapes, and double-quoted text in which only a backslash and a quote can be
 escaped. Unquoted characters exclude the space, the quotes, and ``| & ; < > ( ) $ ` * ? [ ] { } ~ ! # \ %``. Pipes,
 redirections, variables, wildcards, comments, and line continuations are therefore rejected with a message that names
-the character and the column, for example `shell operator '|' is not allowed in an example command`. The `command-parse`
-warning of the validator repeats this message, for example
-`shell expansion character '{' is not allowed in an example command (column 12)`.
+the character and the column, for example `shell operator '|' is not allowed in an example command (column 10)` for
+`tool run | more`. The
+`command-parse` warning of the validator wraps this message with the example and the card, and ends it with a period.
+For an example `load` of the card `getting-started` whose command is `tool load {a}`, the whole message reads:
+
+```text
+The command example 'load' of 'getting-started' cannot be run as written: shell expansion character '{' is not allowed in an example command (column 11); quote it with single quotes if it is meant literally.
+```
 
 ## Testing Documentation Against Cards
 
