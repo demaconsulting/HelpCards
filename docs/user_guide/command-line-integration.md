@@ -171,12 +171,11 @@ create a helper from it.
 
 The text of a `HelpCliAnswer` is written to the output as it is, also with `--json`: an answer of the fallback resolver
 bypasses `JsonEnvelope` and `JsonError`, so a tool that needs JSON for its own subjects returns that JSON itself. The
-exit code of the answer is kept as it is and is not mapped by `ExitCodes`. to follow an option that the tool reads after
-it created the helper, such as `--silent`:
+exit code of the answer is kept as it is and is not mapped by `ExitCodes`.
 
-A provider is the way to follow an option that the tool reads after it created the helper, such as
-`--silent`:`OutputProvider = () => silent ? TextWriter.Null : null`, with `ErrorProvider` likewise, is evaluated each
-time a command writes. A provider counts as a writer that is not the console, so `--width auto` uses
+A provider is the way to follow an option that the tool reads after it created the helper, such as `--silent`:
+`OutputProvider = () => silent ? TextWriter.Null : null`, with `ErrorProvider` likewise, is evaluated each time a
+command writes. A provider counts as a writer that is not the console, so `--width auto` uses
 `OutputWidthProvider` or 78. The routing settings are `Output`, `OutputProvider`, `Error`, and `ErrorProvider`.
 Providers are also how help goes through the writers or the logger of a host application: return a `TextWriter` that
 forwards to them, and every answer, JSON documents and JSON errors included, is written there. A forwarding writer must
