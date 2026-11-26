@@ -5,8 +5,10 @@ namespace DemaConsulting.HelpCards.Loading;
 /// </summary>
 /// <remarks>
 ///     An example is data, never code that runs. <paramref name="Content"/> is already normalized (LF line
-///     endings, trailing line feeds removed, tokens replaced) and comes either from the inline
-///     <c>content</c> or from the data file next to the card. Descriptions of a selected translation
+///     endings, trailing line feeds removed) and comes either from the inline <c>content</c> or from the data
+///     file next to the card. Tokens are replaced and <c>\{{</c> escapes are resolved unless the example sets
+///     <c>tokens: false</c>; then the content, or the content of the data file, is verbatim and may contain
+///     <c>{{...}}</c>. Descriptions of a selected translation
 ///     have already replaced the neutral descriptions. A command may state the result it is expected to give
 ///     (<paramref name="ExitCode"/> and <paramref name="Expect"/>); the library never runs the command.
 /// </remarks>
@@ -18,7 +20,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///     <see langword="null"/> for a command.
 /// </param>
 /// <param name="Description">The one-line description.</param>
-/// <param name="Content">The normalized content.</param>
+/// <param name="Content">The normalized content, verbatim when the example sets <c>tokens: false</c>.</param>
 /// <param name="ExitCode">The exit code a command is expected to end with, from 0 to 255; 0 when not stated or not a command.</param>
 /// <param name="Expect">The fragments the output of a command must contain; empty when not stated or not a command.</param>
 /// <param name="File">The path of the card or overlay file the example is written in.</param>

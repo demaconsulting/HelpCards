@@ -5,11 +5,13 @@ namespace DemaConsulting.HelpCards.Catalog;
 /// </summary>
 /// <remarks>
 ///     An example is never run or saved by the library. Its <see cref="Content"/> is final: line endings are
-///     normalized to LF, trailing line feeds are removed, and tokens are replaced. The type is immutable and
+///     normalized to LF and trailing line feeds are removed. Unless the example sets <c>tokens: false</c>, tokens
+///     are replaced and <c>\{{</c> escapes are resolved; with <c>tokens: false</c> the content, including the
+///     content of a data file, is verbatim and may contain <c>{{...}}</c>. The type is immutable and
 ///     therefore safe for concurrent use. Instances are created by the catalog and cannot be created by callers.
 ///     In a card file an example is an item of the front-matter key <c>examples</c> with the keys <c>name</c>,
 ///     <c>kind</c>, <c>language</c>, <c>description</c>, <c>file</c>, <c>content</c>, <c>save-as</c> (schema 2),
-///     <c>exit</c> and <c>expect</c>. <see cref="FileName"/> is the name to save a <c>source</c> or <c>snippet</c> as: the
+///     <c>tokens</c>, <c>exit</c> and <c>expect</c>. <see cref="FileName"/> is the name to save a <c>source</c> or <c>snippet</c> as: the
 ///     <c>save-as</c> of schema 2 (by default the last segment of its <c>file</c>), or the <c>file</c> of schema 1; a
 ///     <c>command</c> has none. <c>exit</c> is <see cref="ExitCode"/> and <c>expect</c> is <see cref="Expect"/>, and only
 ///     a <c>command</c> has them. The complete grammar is on the page of the <c>DemaConsulting.HelpCards.Loading</c>
@@ -40,7 +42,7 @@ public sealed class HelpExample
     /// <param name="language">The language of the content, one lower-case word.</param>
     /// <param name="fileName">The save-as name of a source or snippet, or <see langword="null"/> for a command.</param>
     /// <param name="description">The one-line description.</param>
-    /// <param name="content">The normalized content.</param>
+    /// <param name="content">The normalized content, verbatim when the example sets <c>tokens: false</c>.</param>
     /// <param name="sourceName">The name of the source the example comes from.</param>
     /// <param name="exitCode">The exit code a command is expected to end with, from 0 to 255.</param>
     /// <param name="expect">The fragments the output of a command must contain; <see langword="null"/> for none.</param>
@@ -94,6 +96,10 @@ public sealed class HelpExample
     /// <summary>
     ///     Gets the content: the command line, or the text of the file or fragment.
     /// </summary>
+    /// <remarks>
+    ///     Tokens are replaced and <c>\{{</c> escapes are resolved, unless the example sets <c>tokens: false</c>;
+    ///     then the content is verbatim and may contain <c>{{...}}</c>.
+    /// </remarks>
     public string Content { get; }
 
     /// <summary>
@@ -116,7 +122,7 @@ public sealed class HelpExample
     /// </summary>
     /// <remarks>
     ///     The list is empty when the example has no <c>expect</c> key and for every example that is not a command.
-    ///     Every fragment is one line of text after token replacement.
+    ///     Every fragment is one line of text after token replacement; <c>tokens: false</c> does not affect it.
     /// </remarks>
     public IReadOnlyList<string> Expect { get; }
 }
