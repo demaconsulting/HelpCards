@@ -98,10 +98,14 @@ that the schema is 1, one with schema 2 and asserts that the schema is 2, and on
 
 ### Tokens: Replacement and Unknown Tokens
 
-**Tests**: `HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced`, `HelpCards_Tokens_UnknownToken_ReportsFileAndLine`
+**Tests**: `HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced`, `HelpCards_Tokens_UnknownToken_ReportsFileAndLine`,
+`HelpCards_Tokens_EscapeAndOptOut_ShowLiteralBraces`
 
 Reads cards that use the built-in tokens and a token of the source, and a card with an unknown token on its
-second body line; asserts the replaced text and the exact file and line of the problem.
+second body line; asserts the replaced text and the exact file and line of the problem. Creates a catalog from files
+whose card has an example with an escaped data file (`pkg\{{Package}}`), one with `tokens: false` and a data file
+`pkg{{Package}}`, and an escape in the body; asserts with `FindExample` that both examples give `pkg{{Package}}` and
+that the body shows `{{`, and that a real unknown token next to an escape still fails with `token-unknown`.
 
 ### Cultures: Per-File Selection With Fallback
 

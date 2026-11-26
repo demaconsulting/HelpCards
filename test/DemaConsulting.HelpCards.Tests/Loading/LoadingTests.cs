@@ -206,6 +206,32 @@ public class LoadingTests
     }
 
     /// <summary>
+    ///     Proves that a memory source with data files reads literal braces through an escape and through
+    ///     <c>tokens: false</c>, while a real token is still replaced.
+    /// </summary>
+    [Fact]
+    public void Loading_Tokens_EscapeAndOptOut_ReadLiteralBraces()
+    {
+        // Arrange: a card with an escaped data file, a verbatim data file, and a token in the body
+        var definition = SourceReading.Read(SourceReading.Files(
+            ("a.md", SourceReading.Card(
+                extraFrontMatter: "examples:\n"
+                    + "  - name: escaped\n    kind: snippet\n    language: mermaid\n    file: escaped.mmd\n    description: D.\n"
+                    + "  - name: raw\n    kind: snippet\n    language: mermaid\n    file: raw.mmd\n    tokens: false\n    description: D.\n",
+                body: "Run {{tool}} and write \\{{x}}.")),
+            ("escaped.mmd", "pkg\\{{Package}}\n"),
+            ("raw.mmd", "pkg{{Package}}\n")));
+
+        // Act
+        var card = Assert.Single(definition.Cards);
+
+        // Assert: no problem, literal braces in both examples, and the body has both rules applied
+        Assert.Empty(definition.Problems);
+        Assert.Equal(["pkg{{Package}}", "pkg{{Package}}"], card.Examples.Select(example => example.Content));
+        Assert.Equal("Run demo and write {{x}}.", Assert.Single(card.Body).Text);
+    }
+
+    /// <summary>
     ///     Proves that links are recognized outside code only and typos are reported with their lines.
     /// </summary>
     [Fact]

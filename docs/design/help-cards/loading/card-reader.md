@@ -43,12 +43,12 @@ grammars, values and the key matrix, examples, cards and translations, and the s
 - **Classification.** A card file is `<segment>.md` in folders that are segments (at most eight segments in
   total); a translation is `<segment>.<culture>.md`; `_source.md` and `_source.<culture>.md` only at the root;
   a data file matches `^[A-Za-z0-9][A-Za-z0-9._-]*$` and does not end in `.md`. Other names are `file-name`.
-- **Key matrix.** Cards allow title, summary (both required), aliases, tags, order, children, see-also,
-  examples (whose items allow name, kind, language, description, file, content, exit, and expect); overlays (files with
-  `extends`) allow extends, optional, title, summary, see-also, examples;
-  `_source.md` allows title, summary, aliases, children, schema, name, language; extension keys `x-*` are
-  allowed except in translations; translations allow title, summary, aliases (not for overlays), examples
-  with name and description only, and report other keys as `translation-key`.
+- **Key matrix.** Cards allow title, summary (both required), aliases, tags, order, children, see-also, examples (whose
+  items allow name, kind, language, description, file, content, exit, expect, and tokens); overlays (files with
+  `extends`) allow extends, optional, title, summary, see-also, examples; `_source.md` allows title, summary, aliases,
+  children, schema, name, language; extension keys `x-*` are allowed except in translations; translations allow title,
+  summary, aliases (not for overlays), examples with name and description only, and report other keys as
+  `translation-key`.
 - **Values.** Names, tags, aliases, and children are segments; `order` is an integer of at most seven digits;
   references are `[source:]localId`; examples follow the kind matrix (command: one-line content, no file;
   source and snippet: see the schemas below). Data files are resolved relative to the folder of the card or overlay
@@ -67,6 +67,16 @@ grammars, values and the key matrix, examples, cards and translations, and the s
   `expect` as in the content. `exit` or `expect` on a source or snippet, an `exit` outside 0 to 255, and an empty
   `expect` or one that starts with a blank line are `value-invalid` at the line of the key. Both keys are additive:
   they need no schema change and are read in every schema.
+- **Token opt-out.** An example may have `tokens` (`true` by default, or `false`). `ReadExampleTokens` reads it
+  before the content: absent is `true`; the text exactly `true` or `false` is that value; anything else (empty,
+  `yes`, `True`) is `value-invalid` at the line of the key and counts as a structure error, so the example
+  is dropped. With `false`, `NormalizeContent` skips `TokenResolver.Substitute` for the inline `content` and the
+  companion data file, so neither tokens nor the `\{{` escape are processed; line endings still become LF, trailing
+  line feeds are removed, and the empty, blank-first-line, and single-line-command checks still apply. It affects only
+  content and data file: `description` and `expect` always have tokens replaced. The key is additive: it needs no
+  schema change (like `exit` and `expect`), is allowed for every kind in every schema and in overlays, and is not
+  allowed in a translation example (`translation-key`). The data file cache holds raw text, so one file named by
+  several examples can be verbatim for one and replaced for another.
 - **Cultures.** All translations are read and validated; `CultureSelector` picks one per file; title, summary,
   and example descriptions fall back individually; a translation without a body is ignored completely.
 - **Source name.** A name given with `WithName` wins over `name` in `_source.md`; a missing or malformed name

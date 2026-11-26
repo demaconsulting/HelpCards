@@ -164,7 +164,7 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <c>name</c> (a segment, unique within the card),
 ///         <c>kind</c> (<c>command</c>, <c>source</c> or <c>snippet</c>), <c>language</c> (one lower-case word such as
 ///         <c>shell</c>, <c>yaml</c> or <c>csharp</c>), <c>description</c> (one line), <c>file</c>, <c>content</c>,
-///         <c>save-as</c> (schema 2), and, for a <c>command</c> only, the expected result <c>exit</c> and <c>expect</c>;
+///         <c>save-as</c> (schema 2), <c>tokens</c>, and, for a <c>command</c> only, the expected result <c>exit</c> and <c>expect</c>;
 ///         <c>name</c>, <c>kind</c>, <c>language</c> and <c>description</c> are always required.
 ///     </para>
 ///     <para>
@@ -212,6 +212,18 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         runs a command.
 ///     </para>
 ///     <para>
+///         <b>Turning tokens off for an example.</b> The example key <c>tokens</c> is <c>true</c> (the default) or
+///         <c>false</c>. With <c>tokens: false</c> the <c>content</c> of the example, or its companion data file, is
+///         taken as written: tokens are not replaced and <c>\{{</c> is not an escape. Line endings still become LF,
+///         trailing line feeds are removed, and the empty and blank-first-line checks still apply. It affects only the
+///         <c>content</c> and the data file; the <c>description</c> and <c>expect</c> still have their tokens replaced.
+///         The key is additive and needs no schema change, is allowed for every kind in schema 1 and schema 2 and in
+///         overlays (not in a translation), and any value other than <c>true</c> or <c>false</c> is
+///         <c>value-invalid</c>. A data file that several examples name is read once, so one example may turn
+///         tokens off and another may leave them on. The validator reads whole files, so a token that appears only
+///         inside a <c>tokens: false</c> example still counts as used for <c>unused-token</c>.
+///     </para>
+///     <para>
 ///         The data file of a <c>source</c> or <c>snippet</c> without <c>content</c> is read from the folder of the card
 ///         file, so a card <c>getting-started</c> (<c>Help/getting-started.md</c>) names <c>getting-started/settings.yaml</c>
 ///         and must find it (<c>example-file-missing</c>). File names (<c>file</c> and <c>save-as</c>) use letters,
@@ -254,6 +266,18 @@ namespace DemaConsulting.HelpCards.Loading;
 ///         <c>HelpSource.WithTokens</c>; a source sees its own tokens, those of the sources it imports, and the two
 ///         built-in ones. An unknown token is <c>token-unknown</c>; a name defined twice, or a built-in name
 ///         redefined, is <c>token-redefined</c>.
+///     </para>
+///     <para>
+///         <b>A literal <c>{{</c>.</b> Write <c>\{{</c> to get a literal <c>{{</c>: the backslash is dropped and the
+///         text after the escape is not read as a token, so <c>pkg\{{Package}}</c> shows as <c>pkg{{Package}}</c>
+///         and is never <c>token-unknown</c>. The escape works wherever tokens are replaced (title, summary, example
+///         <c>description</c>, <c>content</c>, <c>expect</c>, a companion data file and the body); a real unknown
+///         <c>{{token}}</c> next to it is still <c>token-unknown</c>. Every other backslash is kept, and in
+///         <c>\\{{tool}}</c> the first backslash is literal and the second escapes, so a backslash cannot directly
+///         precede a replaced token. This changed in 0.1.0-beta.4: before it, <c>\{{tool}}</c> was a backslash
+///         followed by the value of <c>tool</c>. The validator does not check for stray backslashes. To keep a whole
+///         example free of tokens and escapes (a template that has many <c>{{...}}</c>), set the example key
+///         <c>tokens: false</c>; see <em>Examples</em>.
 ///     </para>
 ///     <para>
 ///         <b>Cultures.</b> A translation is a file with a culture suffix before the extension (<c>compile.de.md</c>,

@@ -325,6 +325,38 @@ public class HelpCardsTests
     }
 
     /// <summary>
+    ///     Proves that an escape and a per-example opt-out show literal braces end to end, while a real unknown token
+    ///     still fails.
+    /// </summary>
+    [Fact]
+    public void HelpCards_Tokens_EscapeAndOptOut_ShowLiteralBraces()
+    {
+        // Arrange: data files with an escaped name and with tokens turned off, and an escape in the body
+        var catalog = CatalogBuilding.FromFiles(
+            ("card.md", SourceReading.Card(
+                extraFrontMatter: "examples:\n"
+                    + "  - name: escaped\n    kind: snippet\n    language: mermaid\n    file: escaped.mmd\n    description: D.\n"
+                    + "  - name: raw\n    kind: snippet\n    language: mermaid\n    file: raw.mmd\n    tokens: false\n    description: D.\n",
+                body: "Write \\{{Package}} for a literal.")),
+            ("escaped.mmd", "graph TD\n  pkg\\{{Package}}\n"),
+            ("raw.mmd", "graph TD\n  pkg{{Package}}\n"));
+
+        // Act
+        var card = catalog.Find("card")!;
+        var escaped = catalog.FindExample(card, "escaped");
+        var raw = catalog.FindExample(card, "raw");
+
+        // Assert: both examples and the body show the braces
+        Assert.Equal("graph TD\n  pkg{{Package}}", escaped?.Example.Content);
+        Assert.Equal("graph TD\n  pkg{{Package}}", raw?.Example.Content);
+        Assert.Equal("Write {{Package}} for a literal.", card.Body);
+
+        // Assert: a real unknown token is still an error
+        var exception = Assert.Throws<HelpCatalogException>(() => CatalogBuilding.FromFiles(("card.md", SourceReading.Card(body: "\\{{a}} {{nope}}"))));
+        Assert.Equal("token-unknown", Assert.Single(exception.Problems).RuleId);
+    }
+
+    /// <summary>
     ///     Proves that translations are chosen per file with fallback to less specific cultures and the neutral file.
     /// </summary>
     [Fact]

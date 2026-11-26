@@ -40,6 +40,8 @@ provider must show no calls before reading, one listing, and one read per file u
   invalid are listed as failed.
 - **Cultures select the translation per file**: one card is translated and one falls back to neutral.
 - **Imported tokens are in scope**: a card of an importing source uses a token that only the import defines.
+- **Escape and opt-out read literal braces**: a memory source with an escaped data file, a data file of an example with
+  `tokens: false`, and an escape in the body reads literal braces in both examples and in the body, with no problem.
 - **Body links are recognized outside code only**: a link, a link in a span, a link in a fence, and a typo.
 - **Front-matter error names file and line**: a duplicate key in a nested file.
 - **Read failure is reported and other files are read**: a failing read becomes a `source-read` problem.

@@ -65,6 +65,7 @@ sections:
               - HelpCards-Loading-CardReader-Overlays
               - HelpCards-Loading-CardReader-Examples
               - HelpCards-Loading-CardReader-ExampleExpectations
+              - HelpCards-Loading-CardReader-ExampleTokens
               - HelpCards-Loading-CardReader-ExampleSaveAs
               - HelpCards-Loading-CardReader-SchemaCompatibility
               - HelpCards-Loading-CardReader-SourceFile
@@ -79,20 +80,24 @@ sections:
           - id: HelpCards-Loading-Tokens
             title: >-
               The subsystem shall replace tokens in the text of cards with the values of the source, the
-              sources it imports, and the built-in tool name and version, and report unknown and redefined
-              tokens.
+              sources it imports, and the built-in tool name and version, report unknown and redefined
+              tokens, let an author write a literal "{{" with an escape, and let an example turn token
+              replacement off.
             justification: |
               Tokens keep shared values in one place so that cards stay correct when a limit or a tool name
-              changes.
+              changes, while examples that contain double braces stay writable.
             children:
               - HelpCards-Loading-TokenResolver-Syntax
+              - HelpCards-Loading-TokenResolver-Escape
               - HelpCards-Loading-TokenResolver-Scope
               - HelpCards-Loading-TokenResolver-Redefinition
               - HelpCards-Loading-TokenResolver-UnknownTokens
               - HelpCards-Loading-TokenResolver-Names
               - HelpCards-Loading-CardReader-Tokens
+              - HelpCards-Loading-CardReader-ExampleTokens
             tests:
               - Loading_Tokens_ImportedTokensAreInScope
+              - Loading_Tokens_EscapeAndOptOut_ReadLiteralBraces
               - Loading_MemorySource_ReadsCardsLinksTokensAndExamples
 
           - id: HelpCards-Loading-Cultures

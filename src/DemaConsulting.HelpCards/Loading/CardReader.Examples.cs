@@ -36,13 +36,13 @@ internal sealed partial class CardReader
     /// <summary>
     ///     The keys an example may have in schema 1.
     /// </summary>
-    private static readonly string[] ExampleKeysSchema1 = ["name", "kind", "language", "description", "file", "content", "exit", "expect"];
+    private static readonly string[] ExampleKeysSchema1 = ["name", "kind", "language", "description", "file", "content", "exit", "expect", "tokens"];
 
     /// <summary>
     ///     The keys an example may have in schema 2.
     /// </summary>
     private static readonly string[] ExampleKeysSchema2 =
-        ["name", "kind", "language", "description", "file", "content", "save-as", "exit", "expect"];
+        ["name", "kind", "language", "description", "file", "content", "save-as", "exit", "expect", "tokens"];
 
     /// <summary>
     ///     The keys an example of a translation may have.
@@ -136,7 +136,8 @@ internal sealed partial class CardReader
         CheckFileKeys(map, kind, file, item.Line);
         var fileName = _schema >= 2 ? saveAs ?? LastSegment(dataFile) : dataFile;
 
-        var content = ReadExampleContent(map, kind, dataFile, file, item.Line);
+        var substitute = ReadExampleTokens(map, file);
+        var content = ReadExampleContent(map, kind, dataFile, file, item.Line, substitute);
         var exitCode = ReadExampleExit(map, kind, file);
         var expect = ReadExampleExpect(map, kind, file);
         if (_structureErrors > before || name is null || kind is null || language is null)
@@ -316,6 +317,38 @@ internal sealed partial class CardReader
         }
 
         return code;
+    }
+
+    /// <summary>
+    ///     Reads the <c>tokens</c> of an example: whether tokens and escapes are processed in its content.
+    /// </summary>
+    /// <remarks>
+    ///     The key is additive and needs no schema change. It applies only to the example <c>content</c> and its
+    ///     companion data file; the <c>description</c> and the <c>expect</c> fragments always have their tokens
+    ///     replaced.
+    /// </remarks>
+    /// <param name="map">The entries of the example.</param>
+    /// <param name="file">The path of the file.</param>
+    /// <returns>
+    ///     <see langword="false"/> when the key is <c>false</c>; <see langword="true"/> when it is <c>true</c>,
+    ///     absent or invalid.
+    /// </returns>
+    private bool ReadExampleTokens(IReadOnlyList<FrontMatterEntry> map, string file)
+    {
+        var entry = Find(map, "tokens");
+        if (entry is null)
+        {
+            return true;
+        }
+
+        var text = entry.Scalar?.Text;
+        if (text is "true" or "false")
+        {
+            return text == "true";
+        }
+
+        ReportStructure(RuleIds.ValueInvalid, file, entry.Line, "The value of 'tokens' must be 'true' or 'false'.");
+        return true;
     }
 
     /// <summary>
@@ -501,20 +534,24 @@ internal sealed partial class CardReader
     /// <param name="fileName">The valid data file named by <c>file</c>, or <see langword="null"/>.</param>
     /// <param name="file">The path of the file that contains the example.</param>
     /// <param name="line">The line of the example.</param>
+    /// <param name="substitute">
+    ///     <see langword="false"/> to take the content as written, without replacing tokens or processing escapes.
+    /// </param>
     /// <returns>The normalized content; empty when it cannot be determined.</returns>
     private string ReadExampleContent(
         IReadOnlyList<FrontMatterEntry> map,
         string? kind,
         string? fileName,
         string file,
-        int line)
+        int line,
+        bool substitute)
     {
         var entry = Find(map, "content");
         if (entry is not null)
         {
             return entry.Scalar is null
                 ? ReportInvalidContent(file, entry.Line, "The example 'content' must be text, not a list.")
-                : NormalizeContent(entry.Scalar.Text, file, entry.Scalar.Line, kind);
+                : NormalizeContent(entry.Scalar.Text, file, entry.Scalar.Line, kind, substitute);
         }
 
         if (kind == CommandKind)
@@ -523,7 +560,7 @@ internal sealed partial class CardReader
             return string.Empty;
         }
 
-        return fileName is null ? string.Empty : ReadExampleFileContent(fileName, file, kind, line);
+        return fileName is null ? string.Empty : ReadExampleFileContent(fileName, file, kind, line, substitute);
     }
 
     /// <summary>
@@ -533,8 +570,11 @@ internal sealed partial class CardReader
     /// <param name="file">The path of the card or overlay file.</param>
     /// <param name="kind">The kind of the example.</param>
     /// <param name="line">The line of the example.</param>
+    /// <param name="substitute">
+    ///     <see langword="false"/> to take the content as written, without replacing tokens or processing escapes.
+    /// </param>
     /// <returns>The normalized content; empty when the file is missing or unreadable.</returns>
-    private string ReadExampleFileContent(string fileName, string file, string? kind, int line)
+    private string ReadExampleFileContent(string fileName, string file, string? kind, int line, bool substitute)
     {
         var slash = file.LastIndexOf('/');
         var path = (slash < 0 ? string.Empty : file[..(slash + 1)]) + fileName;
@@ -544,7 +584,7 @@ internal sealed partial class CardReader
             return string.Empty;
         }
 
-        return TryReadExampleText(path, out var text) ? NormalizeContent(text, path, 1, kind) : string.Empty;
+        return TryReadExampleText(path, out var text) ? NormalizeContent(text, path, 1, kind, substitute) : string.Empty;
     }
 
     /// <summary>
@@ -570,18 +610,25 @@ internal sealed partial class CardReader
     ///     Normalizes example content and checks it against its kind.
     /// </summary>
     /// <remarks>
-    ///     Line endings become LF, trailing line feeds are removed, and tokens are replaced. The content must
+    ///     Line endings become LF, trailing line feeds are removed, and tokens are replaced and escapes
+    ///     processed unless <paramref name="substitute"/> is <see langword="false"/>. The content must
     ///     not be empty and must not start with a blank line; a command must be exactly one line.
     /// </remarks>
     /// <param name="raw">The raw content.</param>
     /// <param name="file">The path of the file the content came from.</param>
     /// <param name="firstLine">The one-based line of the first content line in that file.</param>
     /// <param name="kind">The kind of the example.</param>
+    /// <param name="substitute">
+    ///     <see langword="false"/> to keep the content as written, without replacing tokens or processing escapes.
+    /// </param>
     /// <returns>The normalized content.</returns>
-    private string NormalizeContent(string raw, string file, int firstLine, string? kind)
+    private string NormalizeContent(string raw, string file, int firstLine, string? kind, bool substitute)
     {
         var text = raw.Replace("\r\n", "\n", StringComparison.Ordinal).TrimEnd('\n');
-        text = _tokens.Substitute(text, file, firstLine, _problems);
+        if (substitute)
+        {
+            text = _tokens.Substitute(text, file, firstLine, _problems);
+        }
         if (text.Length == 0)
         {
             return ReportInvalidContent(file, firstLine, "The example content must not be empty.");

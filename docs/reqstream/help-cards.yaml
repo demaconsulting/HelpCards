@@ -127,17 +127,19 @@ sections:
       - id: HelpCards-Tokens-Substitution
         title: >-
           Text of cards shall be able to use tokens that are replaced with the values of the source and the
-          built-in tool name and version, and an unknown token shall be an error that names the file and the
-          line.
+          built-in tool name and version, an unknown token shall be an error that names the file and the
+          line, and an author shall be able to write a literal token with an escape or by turning token
+          replacement off for an example.
         tags: [system]
         justification: |
           Tokens keep values such as limits and tool names in one place so that help stays correct when
-          they change.
+          they change, and examples that show double braces must still be writable.
         children:
           - HelpCards-Loading-Tokens
         tests:
           - HelpCards_Tokens_BuiltInAndSourceTokens_AreReplaced
           - HelpCards_Tokens_UnknownToken_ReportsFileAndLine
+          - HelpCards_Tokens_EscapeAndOptOut_ShowLiteralBraces
 
       - id: HelpCards-Cultures-Fallback
         title: >-
