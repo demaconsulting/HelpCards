@@ -1125,7 +1125,7 @@ public class HelpCardsTests
             "DemaConsulting.HelpCards.Testing.HelpExampleRunReport: AssertSucceeded, CommandsRun, Problems, Succeeded",
             "DemaConsulting.HelpCards.Testing.HelpExampleRunner: Materialize, Run",
             "DemaConsulting.HelpCards.Testing.HelpExamples: Enumerate",
-            "DemaConsulting.HelpCards.Testing.HelpValidationOptions: .ctor, MaxCardChars, MaxLineLength, MaxRootIndexChars, MaxRootSummaryChars, MaxSummaryChars, RequireExternalSources, Rules, WarningsAreErrors",
+            "DemaConsulting.HelpCards.Testing.HelpValidationOptions: .ctor, MaxCardChars, MaxFenceLineLength, MaxLineLength, MaxRootIndexChars, MaxRootSummaryChars, MaxSummaryChars, RequireExternalSources, Rules, WarningsAreErrors",
             "DemaConsulting.HelpCards.Testing.IHelpCardRule: Check"
         ];
 

@@ -95,22 +95,41 @@ sections:
               - id: HelpCards-Testing-HelpCardValidator-LineLength
                 title: >-
                   The validator shall report a "line-length" warning at the line of every body line that is longer
-                  than the limit when a limit is set, and shall report none when no limit is set.
+                  than the line limit when a line limit is set, including the lines of fenced blocks unless a fence
+                  limit is set, and shall report none when no limit is set.
                 justification: |
                   Some products keep cards within a width so that they read well in a terminal and in a diff.
                 tests:
+                  - HelpCardValidator_Validate_LongLines_ReportLineLengthOnlyWithLimit
+
+              - id: HelpCards-Testing-HelpCardValidator-FenceLineLength
+                title: >-
+                  The validator shall check the lines of a fenced code block, including its opening and closing
+                  fence lines and the lines of a fence that is never closed, against the fence line limit instead of
+                  the line limit when a fence limit is set, shall keep checking every other line against the line
+                  limit, shall check only the lines of fenced blocks when only the fence limit is set, and shall
+                  name in the "line-length" message the limit that applied.
+                justification: |
+                  Code and command samples are usually wider than prose, so a product wants a longer limit inside
+                  fences (for example 80 for prose and 120 for code) without giving up the limit for prose.
+                tests:
+                  - HelpCardValidator_Validate_FenceLineLimit_UsesSeparateLimitInsideFences
+                  - HelpCardValidator_Validate_OnlyFenceLineLimit_ChecksFenceLinesAndNotProse
                   - HelpCardValidator_Validate_LongLines_ReportLineLengthOnlyWithLimit
 
               - id: HelpCards-Testing-HelpCardValidator-CommandParse
                 title: >-
                   The validator shall report a "command-parse" warning for every command example that does not
                   parse for the tool name of the catalog, which is the name set on the builder and otherwise the
-                  name of the first source, and shall not check examples of other kinds.
+                  name of the first source, and shall not check examples of other kinds, and shall include in the
+                  message the reason that the command-line parser gives, which names the offending character and
+                  its one-based column in the command.
                 justification: |
                   A command example that no test can run is a defective example.
                 tests:
                   - HelpCardValidator_Validate_CommandExamples_ReportCommandParse
                   - HelpCardValidator_Validate_CommandWithoutToolName_UsesSourceName
+                  - HelpCardValidator_Validate_CommandWithUnquotedBrace_NamesCharacterAndColumn
 
               - id: HelpCards-Testing-HelpCardValidator-SaveAsDuplicate
                 title: >-
@@ -158,7 +177,8 @@ sections:
               - id: HelpCards-Testing-HelpCardValidator-Options
                 title: >-
                   The options shall default to a card limit of 6000, an index limit of 3500, a summary limit of 100
-                  for cards and 80 for roots, no line limit, no rules, no required sources, and warnings that do not
+                  for cards and 80 for roots, no line limit, no fence line limit, no rules, no required sources, and
+                  warnings that do not
                   fail; shall return every value that is set, copying the rules; and shall reject limits that are
                   not positive and null rules where they are set.
                 justification: |

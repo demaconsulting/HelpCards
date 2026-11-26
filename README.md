@@ -300,6 +300,7 @@ release must reference at least that version in its `PackageReference`.
 | `HelpCliOptions.JsonEnvelope`, `JsonError`, `ExitCodes`, `HelpCliError`, `HelpCliExitCodes` (API) | 0.1.0-beta.4 |
 | `tokens` (examples) | 0.1.0-beta.4 |
 | The escape `\{{` for a literal `{{` | 0.1.0-beta.4 |
+| `HelpValidationOptions.MaxFenceLineLength` (API) | 0.1.0-beta.4 |
 
 Omitting `schema` means schema 1. Schema 2 splits the `file` key of an example into `save-as` (the name to save it as)
 and `file` (a companion data file); schema 1 is still read exactly as before and stays supported. A source that declares

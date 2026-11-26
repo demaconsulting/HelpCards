@@ -22,8 +22,8 @@ namespace DemaConsulting.HelpCards.Testing;
 ///             <c>HelpCatalog</c> that already exists.
 ///         </description></item>
 ///         <item><description>
-///             Tighten the quality rules with <c>HelpValidationOptions</c>: limits for card, summary and line length,
-///             <c>RequireExternalSources</c>, your own <c>Rules</c>, and <c>WarningsAreErrors</c> so warnings fail
+///             Tighten the quality rules with <c>HelpValidationOptions</c>: limits for card, summary, line, and fenced-line
+///             length, <c>RequireExternalSources</c>, your own <c>Rules</c>, and <c>WarningsAreErrors</c> so warnings fail
 ///             <c>AssertValid</c> too.
 ///         </description></item>
 ///         <item><description>

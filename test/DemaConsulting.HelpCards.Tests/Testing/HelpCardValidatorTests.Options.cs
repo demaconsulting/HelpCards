@@ -78,6 +78,7 @@ public partial class HelpCardValidatorTests
         Assert.Equal(100, options.MaxSummaryChars);
         Assert.Equal(80, options.MaxRootSummaryChars);
         Assert.Null(options.MaxLineLength);
+        Assert.Null(options.MaxFenceLineLength);
         Assert.Empty(options.Rules);
         Assert.False(options.RequireExternalSources);
         Assert.False(options.WarningsAreErrors);
@@ -100,6 +101,7 @@ public partial class HelpCardValidatorTests
             MaxSummaryChars = 3,
             MaxRootSummaryChars = 4,
             MaxLineLength = 5,
+            MaxFenceLineLength = 6,
             Rules = rules,
             RequireExternalSources = true,
             WarningsAreErrors = true
@@ -107,7 +109,9 @@ public partial class HelpCardValidatorTests
         rules.Clear();
 
         // Assert
-        Assert.Equal((1, 2, 3, 4, 5), (options.MaxCardChars, options.MaxRootIndexChars, options.MaxSummaryChars, options.MaxRootSummaryChars, options.MaxLineLength));
+        Assert.Equal(
+            (1, 2, 3, 4, 5, 6),
+            (options.MaxCardChars, options.MaxRootIndexChars, options.MaxSummaryChars, options.MaxRootSummaryChars, options.MaxLineLength, options.MaxFenceLineLength));
         Assert.Single(options.Rules);
         Assert.True(options.RequireExternalSources);
         Assert.True(options.WarningsAreErrors);
@@ -126,6 +130,9 @@ public partial class HelpCardValidatorTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new HelpValidationOptions { MaxRootSummaryChars = 0 });
         Assert.Throws<ArgumentOutOfRangeException>(() => new HelpValidationOptions { MaxLineLength = 0 });
         Assert.Null(new HelpValidationOptions { MaxLineLength = null }.MaxLineLength);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new HelpValidationOptions { MaxFenceLineLength = 0 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new HelpValidationOptions { MaxFenceLineLength = -1 });
+        Assert.Null(new HelpValidationOptions { MaxFenceLineLength = null }.MaxFenceLineLength);
     }
 
     /// <summary>
